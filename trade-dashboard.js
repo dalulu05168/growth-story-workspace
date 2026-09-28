@@ -1,0 +1,307 @@
+/* Trade dashboard, local TOTP auth, holdings and daily trade planning. */
+(function(){
+'use strict';
+
+const AUTH_KEY='growth-workspace-auth-v1';
+const AUTH_SESSION='growth-workspace-auth-session';
+const SALE_WARNING_MINUTES=120;
+let tradeTab='sell';
+
+function byId(id){return document.getElementById(id)}
+function safe(v){return String(v==null?'':v).replace(/[&<>"']/g,function(m){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m]})}
+function localDate(d){const x=d?new Date(d):new Date();return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0')}
+function localDateTime(d){const x=new Date(d);if(Number.isNaN(x.getTime()))return'--';return x.toLocaleString('zh-CN',{hour12:false})}
+function pLabel(p){return p?(p.name||p.frenchName||p.id):'未知人物'}
+function opened(p){return !!(p&&p.account&&p.account.opened)}
+function joined(p){return !!(p&&p.crm&&p.crm.joined_group)}
+
+function ensureTradeState(){
+  db.portfolio=db.portfolio&&typeof db.portfolio==='object'?db.portfolio:{};
+  db.portfolio.holdings=Array.isArray(db.portfolio.holdings)?db.portfolio.holdings:[];
+  db.portfolio.buyPlans=Array.isArray(db.portfolio.buyPlans)?db.portfolio.buyPlans:[];
+  db.portfolio.settings=db.portfolio.settings&&typeof db.portfolio.settings==='object'?db.portfolio.settings:{};
+  const s=db.portfolio.settings;
+  if(!Number.isFinite(Number(s.todayTarget)))s.todayTarget=8;
+  if(typeof s.includeHolding!=='boolean')s.includeHolding=false;
+  if(!s.defaultSymbol)s.defaultSymbol='';
+  if(!s.defaultStockName)s.defaultStockName='';
+  if(!Number.isFinite(Number(s.warningMinutes)))s.warningMinutes=SALE_WARNING_MINUTES;
+  db.people.forEach(function(p){
+    p.trade_profile=p.trade_profile&&typeof p.trade_profile==='object'?p.trade_profile:{};
+    if(!p.trade_profile.participation_frequency){
+      const a=(p.customer_relation&&p.customer_relation.activity_level)||'中';
+      p.trade_profile.participation_frequency=a==='高'?'HIGH':(a==='低'?'LOW':'MEDIUM');
+    }
+    if(typeof p.trade_profile.required_today!=='boolean')p.trade_profile.required_today=false;
+  });
+}
+
+function activeHoldings(){ensureTradeState();return db.portfolio.holdings.filter(function(h){return h.status!=='sold'})}
+function holdingIds(){return new Set(activeHoldings().map(function(h){return String(h.personId)}))}
+function noHoldingPeople(){const set=holdingIds();return db.people.filter(function(p){return !set.has(String(p.id))})}
+function todaySell(){
+  const today=localDate();
+  return activeHoldings().filter(function(h){return h.plannedSellAt&&localDate(h.plannedSellAt)===today}).sort(function(a,b){return String(a.plannedSellAt).localeCompare(String(b.plannedSellAt))});
+}
+function todayBuy(){const today=localDate();ensureTradeState();return db.portfolio.buyPlans.filter(function(x){return x.status==='planned'&&x.date===today})}
+function dueSoon(h){
+  if(!h.plannedSellAt)return false;
+  const diff=new Date(h.plannedSellAt).getTime()-Date.now();
+  return diff<=Number(db.portfolio.settings.warningMinutes||SALE_WARNING_MINUTES)*60000;
+}
+function countdown(h){
+  if(!h.plannedSellAt)return'未设时间';
+  const ms=new Date(h.plannedSellAt).getTime()-Date.now();
+  if(ms<=0)return'已到计划时间';
+  const m=Math.floor(ms/60000), hh=Math.floor(m/60), mm=m%60;
+  return hh>0?hh+'小时'+mm+'分':mm+'分钟';
+}
+function seededScore(id,date){
+  let x=2166136261;
+  const s=String(id)+'|'+String(date);
+  for(let i=0;i<s.length;i++){x^=s.charCodeAt(i);x=Math.imul(x,16777619)}
+  return ((x>>>0)%100000)/100000;
+}
+function freqWeight(p){
+  const f=p&&p.trade_profile&&p.trade_profile.participation_frequency;
+  return f==='HIGH'?3:(f==='LOW'?1:2);
+}
+
+function ensureTradeUI(){
+  const nav=document.querySelector('.nav');
+  if(nav&&!document.querySelector('[data-page="trades"]')){
+    const b=document.createElement('button');
+    b.dataset.page='trades';b.innerHTML='<i>◈</i><span>交易计划</span>';
+    const groups=document.querySelector('[data-page="groups"]');
+    if(groups&&groups.nextSibling)nav.insertBefore(b,groups.nextSibling);else nav.appendChild(b);
+    b.onclick=function(){go('trades');tradeTab='sell';renderTrades()};
+  }
+  if(!byId('trades')){
+    const s=document.createElement('section');s.id='trades';s.className='section';
+    s.innerHTML='<div class="topbar"><div><div class="eyebrow">TRADE OPERATIONS</div><h1 class="page-title">持仓与交易计划</h1><p class="sub">按持仓、计划卖出时间和参与频率生成今日操作名单。</p></div><div class="actions"><button class="btn ghost" id="generateBuyList">生成 / 重算今日买入名单</button><button class="btn primary" id="addHolding">＋ 新增持仓</button></div></div><div class="trade-tabs" id="tradeTabs"></div><div id="tradePanel"></div>';
+    const records=byId('records');records.parentNode.insertBefore(s,records);
+  }
+  const overview=byId('overview');
+  if(overview&&!byId('tradeOverview')){
+    const block=document.createElement('div');block.id='tradeOverview';block.style.marginTop='18px';
+    overview.appendChild(block);
+  }
+  if(!byId('tradeExtraStyles')){
+    const st=document.createElement('style');st.id='tradeExtraStyles';
+    st.textContent='.app-lock{visibility:hidden}.trade-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}.trade-tab{padding:9px 13px;border-radius:10px;background:#fff;border:1px solid var(--line);font-weight:750;color:var(--muted)}.trade-tab.active{background:var(--blue);border-color:var(--blue);color:#fff}.click-card{cursor:pointer;transition:.2s}.click-card:hover{transform:translateY(-2px);box-shadow:0 14px 32px rgba(31,52,86,.11)}.trade-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.trade-list{display:grid;gap:10px}.trade-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;padding:13px;border:1px solid var(--line);border-radius:13px;background:#fff}.trade-item.due{border-color:#f1c27b;background:#fffaf0}.trade-item.overdue{border-color:#e7a8ac;background:#fff5f5}.trade-meta{color:var(--muted);font-size:12px;margin-top:4px}.trade-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.pill{font-size:11px;padding:4px 8px;border-radius:999px;background:#f2f4f8;color:#5b6678}.pill.hot{background:var(--amber-weak);color:var(--amber)}.pill.good{background:var(--green-weak);color:var(--green)}.auth-root{position:fixed;z-index:9999;inset:0;background:radial-gradient(circle at 20% 10%,#243a68 0,#101a31 35%,#08101f 75%);color:#fff;display:grid;place-items:center;overflow:hidden}.auth-root.hidden{display:none}.auth-orb{position:absolute;border-radius:50%;filter:blur(2px);opacity:.38;animation:floatOrb 8s ease-in-out infinite}.auth-orb.a{width:340px;height:340px;background:#526eff;left:-90px;top:-80px}.auth-orb.b{width:280px;height:280px;background:#47d7bb;right:-80px;bottom:-60px;animation-delay:-3s}.auth-lines{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:42px 42px;mask-image:linear-gradient(to bottom,black,transparent 90%)}.auth-card{position:relative;width:min(460px,calc(100vw - 32px));padding:30px;border:1px solid rgba(255,255,255,.12);border-radius:22px;background:rgba(13,24,45,.82);box-shadow:0 28px 90px rgba(0,0,0,.38);backdrop-filter:blur(18px)}.auth-logo{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;background:linear-gradient(135deg,#7394ff,#3b63ec);font-weight:900;font-size:20px;box-shadow:0 12px 30px rgba(72,101,244,.35)}.auth-title{font-size:26px;margin:18px 0 5px}.auth-sub{color:#9fb0cf;margin:0 0 22px}.auth-field{display:grid;gap:6px;margin:12px 0}.auth-field label{font-size:12px;color:#b8c5db}.auth-field input{width:100%;border:1px solid rgba(255,255,255,.13);border-radius:11px;background:rgba(255,255,255,.06);padding:12px;color:#fff;outline:none}.auth-field input:focus{border-color:#7893ff;box-shadow:0 0 0 3px rgba(120,147,255,.12)}.auth-btn{width:100%;margin-top:15px;padding:12px;border-radius:11px;background:linear-gradient(135deg,#5c7bff,#3659d9);color:#fff;font-weight:800}.auth-note{font-size:11px;color:#8294b4;margin-top:15px;line-height:1.6}.auth-error{min-height:20px;color:#ffaaaa;font-size:12px;margin-top:10px}.auth-secret{word-break:break-all;background:rgba(255,255,255,.06);border-radius:10px;padding:10px;font-family:ui-monospace,monospace;color:#bfe6dc}.splash-mark{position:relative;width:88px;height:88px;border-radius:26px;display:grid;place-items:center;background:linear-gradient(135deg,#6889ff,#3d5fd8);font-size:32px;font-weight:900;box-shadow:0 0 0 14px rgba(96,129,255,.08),0 0 0 28px rgba(96,129,255,.04);animation:pulseMark 1.4s ease-in-out infinite}.splash-copy{margin-top:26px;text-align:center;color:#b7c4db;letter-spacing:.12em;font-size:12px}@keyframes floatOrb{50%{transform:translateY(30px) translateX(15px) scale(1.08)}}@keyframes pulseMark{50%{transform:scale(1.06);box-shadow:0 0 0 18px rgba(96,129,255,.06),0 0 0 36px rgba(96,129,255,.02)}}@media(max-width:900px){.trade-grid{grid-template-columns:1fr}}';
+    document.head.appendChild(st);
+  }
+}
+function tabButton(id,label){return '<button class="trade-tab '+(tradeTab===id?'active':'')+'" data-trade-tab="'+id+'">'+label+'</button>'}
+function renderTabs(){
+  const t=byId('tradeTabs');if(!t)return;
+  t.innerHTML=tabButton('sell','今日待售')+tabButton('buy','今日待买')+tabButton('holdings','全部持仓')+tabButton('unholding','未持仓人员')+tabButton('settings','规则设置');
+  t.querySelectorAll('[data-trade-tab]').forEach(function(b){b.onclick=function(){tradeTab=b.dataset.tradeTab;renderTrades()}});
+}
+
+function renderDashboard(){
+  ensureTradeState();
+  const holds=activeHoldings(),hid=holdingIds(),sell=todaySell(),buy=todayBuy();
+  const openedCount=db.people.filter(opened).length;
+  const notJoined=db.people.filter(function(p){return !joined(p)}).length;
+  const holdingPeopleCount=hid.size;
+  const noHold=db.people.filter(function(p){return !hid.has(String(p.id))}).length;
+  const metrics=byId('metrics');
+  if(metrics){
+    metrics.innerHTML=
+      '<div class="card metric click-card" data-dash="all"><span class="label">人物总数</span><strong>'+db.people.length+'</strong><span class="trend">完整人物画像</span></div>'+
+      '<div class="card metric click-card" data-dash="opened"><span class="label">已开户人员</span><strong>'+openedCount+'</strong><span class="trend">点击查看人物</span></div>'+
+      '<div class="card metric click-card" data-dash="not_joined"><span class="label">未入群人员</span><strong>'+notJoined+'</strong><span class="trend">点击查看名单</span></div>'+
+      '<div class="card metric click-card" data-dash="holding"><span class="label">持仓人员</span><strong>'+holdingPeopleCount+'</strong><span class="trend">'+holds.length+' 笔持仓</span></div>'+
+      '<div class="card metric click-card" data-dash="unholding"><span class="label">未持仓人员</span><strong>'+noHold+'</strong><span class="trend">点击查看名单</span></div>'+
+      '<div class="card metric click-card" data-dash="sell"><span class="label">今日待售</span><strong>'+sell.length+'</strong><span class="trend">'+sell.filter(dueSoon).length+' 笔临近/到时</span></div>'+
+      '<div class="card metric click-card" data-dash="buy"><span class="label">今日待买人员</span><strong>'+buy.length+'</strong><span class="trend">按规则生成</span></div>'+
+      '<div class="card metric click-card" data-dash="groups"><span class="label">自定义小组</span><strong>'+db.customGroups.length+'</strong><span class="trend">人员规划</span></div>';
+  }
+  const ov=byId('tradeOverview');
+  if(ov){
+    const sellHtml=sell.slice(0,6).map(function(h){
+      const p=person(h.personId),cls=dueSoon(h)?' due':'';
+      return '<div class="trade-item'+cls+'"><div><b>'+safe(h.symbol||h.name||'未命名股票')+' · '+safe(pLabel(p))+'</b><div class="trade-meta">计划卖出 '+safe(localDateTime(h.plannedSellAt))+' · '+safe(countdown(h))+'</div></div><button class="link-btn" data-person-detail="'+safe(h.personId)+'">人物详情</button></div>';
+    }).join('')||'<div class="empty">今天没有待售持仓</div>';
+    const buyHtml=buy.slice(0,6).map(function(x){
+      const p=person(x.personId);
+      return '<div class="trade-item"><div><b>'+safe(pLabel(p))+'</b><div class="trade-meta">'+safe(x.symbol||'股票待定')+' '+safe(x.stockName||'')+' · '+safe(x.reason||x.source||'规则名单')+'</div></div><button class="link-btn" data-person-detail="'+safe(x.personId)+'">人物详情</button></div>';
+    }).join('')||'<div class="empty">尚未生成今日待买入名单</div>';
+    ov.innerHTML='<div class="trade-grid"><div class="card panel"><div class="panel-head"><h2>今日待售股票与人员</h2><button class="link-btn" data-dash="sell">进入模块 →</button></div><div class="trade-list">'+sellHtml+'</div></div><div class="card panel"><div class="panel-head"><h2>今日待买入人员名单</h2><button class="link-btn" data-dash="buy">进入模块 →</button></div><div class="trade-list">'+buyHtml+'</div></div></div>';
+  }
+  document.querySelectorAll('[data-dash]').forEach(function(el){el.onclick=function(){openDash(el.dataset.dash)}});
+  document.querySelectorAll('[data-person-detail]').forEach(function(el){el.onclick=function(){viewPerson(el.dataset.personDetail)}});
+}
+function openDash(type){
+  if(type==='opened'||type==='not_joined'||type==='all'){
+    go('people');
+    const f=byId('systemGroupFilter');
+    if(f){f.value=type==='opened'?'opened':(type==='not_joined'?'not_joined':'all');renderPeople()}
+    return;
+  }
+  if(type==='groups'){go('groups');return}
+  go('trades');
+  tradeTab=type==='holding'?'holdings':type;
+  renderTrades();
+}
+
+function renderTrades(){
+  ensureTradeState();renderTabs();
+  const panel=byId('tradePanel');if(!panel)return;
+  if(tradeTab==='sell')panel.innerHTML=renderSell();
+  else if(tradeTab==='buy')panel.innerHTML=renderBuy();
+  else if(tradeTab==='holdings')panel.innerHTML=renderHoldings();
+  else if(tradeTab==='unholding')panel.innerHTML=renderUnholding();
+  else panel.innerHTML=renderSettings();
+  bindTradeActions();
+}
+function renderSell(){
+  const rows=todaySell();
+  return '<div class="card panel"><div class="panel-head"><h2>今日待售股票</h2><span class="muted">临近 '+Number(db.portfolio.settings.warningMinutes||SALE_WARNING_MINUTES)+' 分钟会高亮</span></div><div class="trade-list">'+
+    (rows.map(function(h){
+      const p=person(h.personId),over=new Date(h.plannedSellAt).getTime()<=Date.now(),cl=over?' overdue':(dueSoon(h)?' due':'');
+      return '<div class="trade-item'+cl+'"><div><b>'+safe(h.symbol||'--')+' '+safe(h.name||'')+' · '+safe(pLabel(p))+'</b><div class="trade-meta">数量 '+safe(h.quantity||0)+' · 买入价 '+safe(h.buyPrice||'--')+' · 计划卖出 '+safe(localDateTime(h.plannedSellAt))+' · '+safe(countdown(h))+'</div></div><div class="trade-actions"><span class="pill '+(dueSoon(h)?'hot':'')+'">'+(over?'已到时':(dueSoon(h)?'临近卖出':'待售'))+'</span><button class="btn ghost small" data-person-detail="'+safe(h.personId)+'">人物</button><button class="btn primary small" data-sold="'+safe(h.id)+'">标记已售</button><button class="btn ghost small" data-edit-holding="'+safe(h.id)+'">编辑</button></div></div>';
+    }).join('')||'<div class="empty">今天没有计划卖出的持仓</div>')+'</div></div>';
+}
+function renderBuy(){
+  const rows=todayBuy();
+  return '<div class="card panel"><div class="panel-head"><h2>今日待买入人员名单</h2><div class="button-row"><button class="btn ghost small" id="addManualBuy">＋ 手工加入</button><button class="btn primary small" id="generateBuyListInline">生成 / 重算</button></div></div><div class="trade-list">'+
+    (rows.map(function(x){
+      const p=person(x.personId),isHold=holdingIds().has(String(x.personId));
+      return '<div class="trade-item"><div><b>'+safe(pLabel(p))+' · '+safe(x.symbol||'股票待定')+' '+safe(x.stockName||'')+'</b><div class="trade-meta">参与频率 '+safe(freqLabel(p))+' · '+(isHold?'已有持仓':'当前未持仓')+' · '+safe(x.reason||'规则生成')+'</div></div><div class="trade-actions">'+(p&&p.trade_profile&&p.trade_profile.required_today?'<span class="pill hot">指定参与</span>':'')+'<button class="btn ghost small" data-person-detail="'+safe(x.personId)+'">人物</button><button class="btn primary small" data-buy-done="'+safe(x.id)+'">标记已买</button><button class="btn danger small" data-buy-remove="'+safe(x.id)+'">移除</button></div></div>';
+    }).join('')||'<div class="empty">尚未生成今天的买入人员名单</div>')+'</div></div>';
+}
+function renderHoldings(){
+  const rows=activeHoldings();
+  return '<div class="card panel"><div class="panel-head"><h2>全部持仓</h2><button class="btn primary small" id="addHoldingInline">＋ 新增持仓</button></div><div class="table-wrap"><table class="mini-table"><thead><tr><th>人员</th><th>股票</th><th>数量</th><th>买入价</th><th>买入时间</th><th>计划卖出</th><th>操作</th></tr></thead><tbody>'+
+    (rows.map(function(h){const p=person(h.personId);return'<tr><td><button class="link-btn" data-person-detail="'+safe(h.personId)+'">'+safe(pLabel(p))+'</button></td><td>'+safe(h.symbol||'--')+' '+safe(h.name||'')+'</td><td>'+safe(h.quantity||0)+'</td><td>'+safe(h.buyPrice||'--')+'</td><td>'+safe(localDateTime(h.buyAt))+'</td><td>'+safe(localDateTime(h.plannedSellAt))+'</td><td><button class="link-btn" data-edit-holding="'+safe(h.id)+'">编辑</button> <button class="link-btn danger" data-delete-holding="'+safe(h.id)+'">删除</button></td></tr>'}).join('')||'<tr><td colspan="7" class="empty">暂无持仓</td></tr>')+'</tbody></table></div></div>';
+}
+function renderUnholding(){
+  const rows=noHoldingPeople();
+  return '<div class="card panel"><div class="panel-head"><h2>未持仓人员</h2><span class="muted">'+rows.length+' 人</span></div><div class="profile-list">'+
+    rows.map(function(p){return'<div class="profile-row"><div class="avatar">'+safe((pLabel(p).split(' ').map(function(x){return x[0]}).join('')).slice(0,2))+'</div><div class="person"><b>'+safe(p.id)+' · '+safe(pLabel(p))+'</b><small>'+(opened(p)?'已开户':'未开户')+' · '+(joined(p)?'已入群':'未入群')+' · 参与频率 '+safe(freqLabel(p))+'</small></div><button class="link-btn" data-person-detail="'+safe(p.id)+'">详情</button><button class="btn ghost small" data-trade-pref="'+safe(p.id)+'">交易设置</button></div>'}).join('')+
+    '</div></div>';
+}
+function renderSettings(){
+  const s=db.portfolio.settings;
+  return '<div class="card panel"><div class="panel-head"><h2>今日买入名单生成规则</h2><span class="muted">规则保存在当前浏览器</span></div><form id="tradeSettingsForm" class="form-grid"><div class="field"><label>目标人数</label><input class="input" type="number" min="1" max="70" name="target" value="'+safe(s.todayTarget)+'"></div><div class="field"><label>持仓人员是否可继续参与</label><select class="select" name="includeHolding"><option value="0" '+(!s.includeHolding?'selected':'')+'>否，优先未持仓</option><option value="1" '+(s.includeHolding?'selected':'')+'>是，可继续参与</option></select></div><div class="field"><label>今日拟买股票代码</label><input class="input" name="symbol" value="'+safe(s.defaultSymbol)+'" placeholder="例如 AIR.PA"></div><div class="field"><label>今日拟买股票名称</label><input class="input" name="stockName" value="'+safe(s.defaultStockName)+'" placeholder="例如 Airbus"></div><div class="field"><label>卖出临近提醒（分钟）</label><input class="input" type="number" min="5" max="1440" name="warning" value="'+safe(s.warningMinutes)+'"></div><div class="field full"><div class="notice">生成顺序：用户指定参与人员优先；其余从已开户人员中按参与频率、是否持仓和每日稳定随机分值综合排序。名单每日固定，重算时按当前规则重新生成。</div></div><div class="field full"><button class="btn primary">保存规则</button></div></form><div style="margin-top:20px"><h3>人员参与规则</h3><p class="muted">在人物库或“未持仓人员”里点击“交易设置”，可设置高/中/低参与频率，并强制指定今天参与。</p></div></div>';
+}
+function freqLabel(p){const f=p&&p.trade_profile&&p.trade_profile.participation_frequency;return f==='HIGH'?'高':(f==='LOW'?'低':'中')}
+
+function bindTradeActions(){
+  document.querySelectorAll('[data-person-detail]').forEach(function(b){b.onclick=function(){viewPerson(b.dataset.personDetail)}});
+  document.querySelectorAll('[data-sold]').forEach(function(b){b.onclick=function(){const h=db.portfolio.holdings.find(function(x){return x.id===b.dataset.sold});if(h){h.status='sold';h.soldAt=new Date().toISOString();save();render()}}});
+  document.querySelectorAll('[data-buy-done]').forEach(function(b){b.onclick=function(){const x=db.portfolio.buyPlans.find(function(v){return v.id===b.dataset.buyDone});if(x){x.status='done';x.doneAt=new Date().toISOString();save();render()}}});
+  document.querySelectorAll('[data-buy-remove]').forEach(function(b){b.onclick=function(){db.portfolio.buyPlans=db.portfolio.buyPlans.filter(function(x){return x.id!==b.dataset.buyRemove});save();render()}});
+  document.querySelectorAll('[data-edit-holding]').forEach(function(b){b.onclick=function(){openHolding(b.dataset.editHolding)}});
+  document.querySelectorAll('[data-delete-holding]').forEach(function(b){b.onclick=function(){if(confirm('删除这笔持仓？')){db.portfolio.holdings=db.portfolio.holdings.filter(function(x){return x.id!==b.dataset.deleteHolding});save();render()}}});
+  document.querySelectorAll('[data-trade-pref]').forEach(function(b){b.onclick=function(){openTradePrefs(b.dataset.tradePref)}});
+  const add=byId('addHoldingInline');if(add)add.onclick=function(){openHolding()};
+  const add2=byId('addHolding');if(add2)add2.onclick=function(){openHolding()};
+  const gen=byId('generateBuyListInline');if(gen)gen.onclick=generateBuyList;
+  const gen2=byId('generateBuyList');if(gen2)gen2.onclick=generateBuyList;
+  const manual=byId('addManualBuy');if(manual)manual.onclick=openManualBuy;
+  const form=byId('tradeSettingsForm');if(form)form.onsubmit=function(e){e.preventDefault();const f=new FormData(form),s=db.portfolio.settings;s.todayTarget=Math.max(1,Math.min(70,Number(f.get('target'))||8));s.includeHolding=f.get('includeHolding')==='1';s.defaultSymbol=String(f.get('symbol')||'').trim();s.defaultStockName=String(f.get('stockName')||'').trim();s.warningMinutes=Math.max(5,Math.min(1440,Number(f.get('warning'))||SALE_WARNING_MINUTES));save();render();toast('交易规则已保存')};
+}
+
+function openHolding(id){
+  ensureTradeState();
+  const h=id?db.portfolio.holdings.find(function(x){return x.id===id}):{id:'h'+Date.now(),personId:'',symbol:'',name:'',quantity:0,buyPrice:'',buyAt:new Date().toISOString().slice(0,16),plannedSellAt:new Date(Date.now()+3*86400000).toISOString().slice(0,16),status:'holding'};
+  if(!h)return;
+  const opts=db.people.filter(opened).map(function(p){return'<option value="'+safe(p.id)+'" '+(String(p.id)===String(h.personId)?'selected':'')+'>'+safe(p.id)+' · '+safe(pLabel(p))+'</option>'}).join('');
+  openModal(id?'编辑持仓':'新增持仓','<div class="form-grid"><div class="field"><label>持仓人员 *</label><select class="select" name="personId" required><option value="">请选择</option>'+opts+'</select></div><div class="field"><label>股票代码 *</label><input class="input" name="symbol" required value="'+safe(h.symbol||'')+'"></div><div class="field"><label>股票名称</label><input class="input" name="name" value="'+safe(h.name||'')+'"></div><div class="field"><label>数量</label><input class="input" type="number" min="0" step="0.0001" name="quantity" value="'+safe(h.quantity||0)+'"></div><div class="field"><label>买入价</label><input class="input" type="number" min="0" step="0.0001" name="buyPrice" value="'+safe(h.buyPrice||'')+'"></div><div class="field"><label>买入时间</label><input class="input" type="datetime-local" name="buyAt" value="'+safe(String(h.buyAt||'').slice(0,16))+'"></div><div class="field"><label>计划卖出时间 *</label><input class="input" type="datetime-local" required name="plannedSellAt" value="'+safe(String(h.plannedSellAt||'').slice(0,16))+'"></div></div>',function(f){const x=id?h:h;x.personId=String(f.get('personId'));x.symbol=String(f.get('symbol')).trim();x.name=String(f.get('name')).trim();x.quantity=Number(f.get('quantity'))||0;x.buyPrice=Number(f.get('buyPrice'))||0;x.buyAt=f.get('buyAt')?new Date(String(f.get('buyAt'))).toISOString():new Date().toISOString();x.plannedSellAt=new Date(String(f.get('plannedSellAt'))).toISOString();x.status='holding';if(!id)db.portfolio.holdings.push(x)});
+}
+function openTradePrefs(id){
+  const p=person(id);if(!p)return;ensureTradeState();
+  openModal('交易参与设置 · '+pLabel(p),'<div class="form-grid"><div class="field"><label>参与频率</label><select class="select" name="freq"><option value="HIGH" '+(p.trade_profile.participation_frequency==='HIGH'?'selected':'')+'>高</option><option value="MEDIUM" '+(p.trade_profile.participation_frequency==='MEDIUM'?'selected':'')+'>中</option><option value="LOW" '+(p.trade_profile.participation_frequency==='LOW'?'selected':'')+'>低</option></select></div><div class="field"><label>今天强制参与</label><select class="select" name="required"><option value="0" '+(!p.trade_profile.required_today?'selected':'')+'>否</option><option value="1" '+(p.trade_profile.required_today?'selected':'')+'>是</option></select></div></div>',function(f){p.trade_profile.participation_frequency=String(f.get('freq'));p.trade_profile.required_today=f.get('required')==='1'});
+}
+function openManualBuy(){
+  const opts=db.people.filter(opened).map(function(p){return'<option value="'+safe(p.id)+'">'+safe(p.id)+' · '+safe(pLabel(p))+'</option>'}).join('');
+  openModal('手工加入今日买入名单','<div class="form-grid"><div class="field"><label>人员 *</label><select class="select" name="personId" required><option value="">请选择</option>'+opts+'</select></div><div class="field"><label>股票代码</label><input class="input" name="symbol" value="'+safe(db.portfolio.settings.defaultSymbol||'')+'"></div><div class="field"><label>股票名称</label><input class="input" name="stockName" value="'+safe(db.portfolio.settings.defaultStockName||'')+'"></div><div class="field full"><label>原因</label><input class="input" name="reason" value="用户手工指定"></div></div>',function(f){const date=localDate();db.portfolio.buyPlans.push({id:'bp'+Date.now(),personId:String(f.get('personId')),date:date,symbol:String(f.get('symbol')||'').trim(),stockName:String(f.get('stockName')||'').trim(),reason:String(f.get('reason')||'手工指定'),source:'manual',status:'planned'})});
+}
+function generateBuyList(){
+  ensureTradeState();
+  const date=localDate(),s=db.portfolio.settings,hids=holdingIds();
+  let candidates=db.people.filter(opened);
+  const required=candidates.filter(function(p){return p.trade_profile&&p.trade_profile.required_today});
+  if(!s.includeHolding)candidates=candidates.filter(function(p){return !hids.has(String(p.id))});
+  const requiredIds=new Set(required.map(function(p){return String(p.id)}));
+  candidates=candidates.filter(function(p){return !requiredIds.has(String(p.id))});
+  candidates.sort(function(a,b){
+    const as=freqWeight(a)*10+(hids.has(String(a.id))?-4:4)+seededScore(a.id,date);
+    const bs=freqWeight(b)*10+(hids.has(String(b.id))?-4:4)+seededScore(b.id,date);
+    return bs-as;
+  });
+  const target=Math.max(Number(s.todayTarget)||8,required.length);
+  const selected=required.concat(candidates.slice(0,Math.max(0,target-required.length)));
+  db.portfolio.buyPlans=db.portfolio.buyPlans.filter(function(x){return x.date!==date||x.source==='manual'||x.status!=='planned'});
+  selected.forEach(function(p){db.portfolio.buyPlans.push({id:'bp'+Date.now()+Math.random().toString(16).slice(2),personId:String(p.id),date:date,symbol:s.defaultSymbol||'',stockName:s.defaultStockName||'',reason:(p.trade_profile&&p.trade_profile.required_today)?'用户指定参与':'系统规则生成',source:'auto',status:'planned'})});
+  save();tradeTab='buy';render();toast('今日买入名单已生成：'+selected.length+' 人');
+}
+
+function enhancePeopleRows(){
+  document.querySelectorAll('#peopleList .profile-row').forEach(function(row){
+    const edit=row.querySelector('.edit-person');if(!edit||row.querySelector('.trade-pref-btn'))return;
+    const b=document.createElement('button');b.className='link-btn trade-pref-btn';b.textContent='交易设置';b.dataset.tradePref=edit.dataset.id;b.onclick=function(){openTradePrefs(b.dataset.tradePref)};
+    row.insertBefore(b,edit);
+  });
+}
+
+function wrapRender(){
+  const core=render;
+  render=function(){ensureTradeState();core();ensureTradeUI();renderDashboard();renderTrades();enhancePeopleRows();bindTradeActions()};
+}
+
+function bytesToB64(bytes){let s='';bytes.forEach(function(b){s+=String.fromCharCode(b)});return btoa(s)}
+function b64ToBytes(s){const bin=atob(s),a=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);return a}
+async function passwordHash(password,saltB64){
+  const enc=new TextEncoder(),key=await crypto.subtle.importKey('raw',enc.encode(password),'PBKDF2',false,['deriveBits']);
+  const bits=await crypto.subtle.deriveBits({name:'PBKDF2',salt:b64ToBytes(saltB64),iterations:150000,hash:'SHA-256'},key,256);
+  return bytesToB64(new Uint8Array(bits));
+}
+const B32='ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+function b32encode(bytes){let bits=0,val=0,out='';for(const b of bytes){val=(val<<8)|b;bits+=8;while(bits>=5){out+=B32[(val>>>(bits-5))&31];bits-=5}}if(bits>0)out+=B32[(val<<(5-bits))&31];return out}
+function b32decode(s){s=String(s).toUpperCase().replace(/[^A-Z2-7]/g,'');let bits=0,val=0,out=[];for(const c of s){val=(val<<5)|B32.indexOf(c);bits+=5;if(bits>=8){out.push((val>>>(bits-8))&255);bits-=8}}return new Uint8Array(out)}
+async function totp(secret,offset){
+  const key=await crypto.subtle.importKey('raw',b32decode(secret),{name:'HMAC',hash:'SHA-1'},false,['sign']);
+  const counter=Math.floor(Date.now()/30000)+(offset||0),buf=new ArrayBuffer(8),view=new DataView(buf);
+  view.setUint32(0,Math.floor(counter/4294967296));view.setUint32(4,counter>>>0);
+  const sig=new Uint8Array(await crypto.subtle.sign('HMAC',key,buf)),o=sig[sig.length-1]&15;
+  const n=((sig[o]&127)<<24)|((sig[o+1]&255)<<16)|((sig[o+2]&255)<<8)|(sig[o+3]&255);
+  return String(n%1000000).padStart(6,'0');
+}
+async function verifyTotp(secret,code){code=String(code||'').trim();for(let i=-1;i<=1;i++){if(await totp(secret,i)===code)return true}return false}
+function authConfig(){try{return JSON.parse(localStorage.getItem(AUTH_KEY)||'null')}catch(_){return null}}
+
+function injectAuth(){
+  document.querySelector('.app').classList.add('app-lock');
+  const root=document.createElement('div');root.id='authRoot';root.className='auth-root';
+  root.innerHTML='<div class="auth-lines"></div><div class="auth-orb a"></div><div class="auth-orb b"></div><div id="authStage"><div class="splash-mark">IW</div><div class="splash-copy">INVESTOR WORKSPACE · SECURE ACCESS</div></div>';
+  document.body.appendChild(root);
+  setTimeout(showAuthCard,1100);
+}
+function showAuthCard(){
+  const cfg=authConfig(),stage=byId('authStage');if(!stage)return;
+  if(sessionStorage.getItem(AUTH_SESSION)==='1'){unlockApp();return}
+  if(!cfg){renderSetup(stage);return}
+  stage.innerHTML='<div class="auth-card"><div class="auth-logo">IW</div><h1 class="auth-title">安全登录</h1><p class="auth-sub">账户密码 + 2FA 动态验证码</p><form id="loginForm"><div class="auth-field"><label>账户</label><input name="user" autocomplete="username" required></div><div class="auth-field"><label>密码</label><input type="password" name="password" autocomplete="current-password" required></div><div class="auth-field"><label>2FA 验证码</label><input name="code" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" autocomplete="one-time-code" required></div><button class="auth-btn">进入系统</button><div class="auth-error" id="authError"></div></form><div class="auth-note">当前仓库为静态部署：此本机认证适合内部测试/单机使用。正式公网域名建议接入服务端身份认证后再开放。</div></div>';
+  byId('loginForm').onsubmit=async function(e){e.preventDefault();const f=new FormData(e.target),err=byId('authError');err.textContent='正在验证…';const user=String(f.get('user')||''),pw=String(f.get('password')||''),code=String(f.get('code')||'');const hash=await passwordHash(pw,cfg.salt);const ok=user===cfg.user&&hash===cfg.hash&&await verifyTotp(cfg.totpSecret,code);if(!ok){err.textContent='账户、密码或 2FA 验证码错误';return}sessionStorage.setItem(AUTH_SESSION,'1');unlockApp()};
+}
+function renderSetup(stage){
+  stage.innerHTML='<div class="auth-card"><div class="auth-logo">IW</div><h1 class="auth-title">首次安全设置</h1><p class="auth-sub">创建本机管理员账户并绑定 TOTP 2FA。</p><form id="setupForm"><div class="auth-field"><label>管理员账户</label><input name="user" required></div><div class="auth-field"><label>密码（至少 10 位）</label><input type="password" name="password" minlength="10" required></div><div class="auth-field"><label>确认密码</label><input type="password" name="confirm" minlength="10" required></div><button class="auth-btn">生成 2FA 密钥</button><div class="auth-error" id="authError"></div></form><div class="auth-note">2FA 使用标准 TOTP，可录入 Google Authenticator、Microsoft Authenticator、1Password 等支持 TOTP 的应用。</div></div>';
+  byId('setupForm').onsubmit=function(e){e.preventDefault();const f=new FormData(e.target),pw=String(f.get('password')||''),cf=String(f.get('confirm')||''),err=byId('authError');if(pw!==cf){err.textContent='两次密码不一致';return}if(pw.length<10){err.textContent='密码至少 10 位';return}const bytes=new Uint8Array(20);crypto.getRandomValues(bytes);const secret=b32encode(bytes);renderTotpBind(stage,String(f.get('user')||'').trim(),pw,secret)};
+}
+function renderTotpBind(stage,user,pw,secret){
+  const uri='otpauth://totp/InvestorWorkspace:'+encodeURIComponent(user)+'?secret='+secret+'&issuer=InvestorWorkspace';
+  stage.innerHTML='<div class="auth-card"><div class="auth-logo">2F</div><h1 class="auth-title">绑定 2FA</h1><p class="auth-sub">在验证器中手工添加以下密钥，然后输入当前 6 位验证码。</p><div class="auth-field"><label>TOTP 密钥</label><div class="auth-secret">'+safe(secret)+'</div></div><div class="auth-field"><label>otpauth 地址（支持时可复制导入）</label><div class="auth-secret">'+safe(uri)+'</div></div><form id="bindForm"><div class="auth-field"><label>当前 6 位验证码</label><input name="code" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" required></div><button class="auth-btn">完成安全设置</button><div class="auth-error" id="authError"></div></form></div>';
+  byId('bindForm').onsubmit=async function(e){e.preventDefault();const code=new FormData(e.target).get('code'),err=byId('authError');if(!await verifyTotp(secret,code)){err.textContent='验证码不正确，请检查验证器时间';return}const saltBytes=new Uint8Array(16);crypto.getRandomValues(saltBytes);const salt=bytesToB64(saltBytes),hash=await passwordHash(pw,salt);localStorage.setItem(AUTH_KEY,JSON.stringify({user:user,salt:salt,hash:hash,totpSecret:secret,createdAt:new Date().toISOString(),mode:'local-totp'}));sessionStorage.setItem(AUTH_SESSION,'1');unlockApp()};
+}
+function unlockApp(){const root=byId('authRoot');if(root)root.classList.add('hidden');document.querySelector('.app').classList.remove('app-lock')}
+
+function boot(){
+  ensureTradeState();ensureTradeUI();wrapRender();render();injectAuth();
+  setInterval(function(){if(byId('trades')&&byId('trades').classList.contains('active'))renderTrades();if(byId('overview')&&byId('overview').classList.contains('active'))renderDashboard()},60000);
+}
+boot();
+})();
