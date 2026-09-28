@@ -1,9 +1,7 @@
-/* Trade dashboard, local TOTP auth, holdings and daily trade planning. */
+/* Trade dashboard, cloud password auth, holdings and daily trade planning. */
 (function(){
 'use strict';
 
-const AUTH_KEY='growth-workspace-auth-v1';
-const AUTH_SESSION='growth-workspace-auth-session';
 const SALE_WARNING_MINUTES=120;
 let tradeTab='sell';
 
@@ -76,7 +74,7 @@ function ensureTradeUI(){
     if(groups&&groups.nextSibling)nav.insertBefore(b,groups.nextSibling);else nav.appendChild(b);
     b.onclick=function(){go('trades');tradeTab='sell';renderTrades()};
   }
-  if(nav&&!byId('logoutBtn')){const out=document.createElement('button');out.id='logoutBtn';out.innerHTML='<i>↪</i><span>退出登录</span>';out.onclick=function(){sessionStorage.removeItem(AUTH_SESSION);location.reload()};nav.appendChild(out)}
+  if(nav&&!byId('logoutBtn')){const out=document.createElement('button');out.id='logoutBtn';out.innerHTML='<i>↪</i><span>退出登录</span>';out.onclick=async function(){await window.ChenNanCloud?.logout?.();location.reload()};nav.appendChild(out)}
   if(!byId('trades')){
     const s=document.createElement('section');s.id='trades';s.className='section';
     s.innerHTML='<div class="topbar"><div><div class="eyebrow">TRADE OPERATIONS</div><h1 class="page-title">持仓与交易计划</h1><p class="sub">按持仓、计划卖出时间和参与频率生成今日操作名单。</p></div><div class="actions"><button class="btn ghost" id="generateBuyList">生成 / 重算今日买入名单</button><button class="btn primary" id="addHolding">＋ 新增持仓</button></div></div><div class="trade-tabs" id="tradeTabs"></div><div id="tradePanel"></div>';
@@ -254,51 +252,31 @@ function wrapRender(){
   render=function(){ensureTradeState();core();ensureTradeUI();renderDashboard();renderTrades();enhancePeopleRows();bindTradeActions()};
 }
 
-function bytesToB64(bytes){let s='';bytes.forEach(function(b){s+=String.fromCharCode(b)});return btoa(s)}
-function b64ToBytes(s){const bin=atob(s),a=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);return a}
-async function passwordHash(password,saltB64){
-  const enc=new TextEncoder(),key=await crypto.subtle.importKey('raw',enc.encode(password),'PBKDF2',false,['deriveBits']);
-  const bits=await crypto.subtle.deriveBits({name:'PBKDF2',salt:b64ToBytes(saltB64),iterations:150000,hash:'SHA-256'},key,256);
-  return bytesToB64(new Uint8Array(bits));
-}
-const B32='ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-function b32encode(bytes){let bits=0,val=0,out='';for(const b of bytes){val=(val<<8)|b;bits+=8;while(bits>=5){out+=B32[(val>>>(bits-5))&31];bits-=5}}if(bits>0)out+=B32[(val<<(5-bits))&31];return out}
-function b32decode(s){s=String(s).toUpperCase().replace(/[^A-Z2-7]/g,'');let bits=0,val=0,out=[];for(const c of s){val=(val<<5)|B32.indexOf(c);bits+=5;if(bits>=8){out.push((val>>>(bits-8))&255);bits-=8}}return new Uint8Array(out)}
-async function totp(secret,offset){
-  const key=await crypto.subtle.importKey('raw',b32decode(secret),{name:'HMAC',hash:'SHA-1'},false,['sign']);
-  const counter=Math.floor(Date.now()/30000)+(offset||0),buf=new ArrayBuffer(8),view=new DataView(buf);
-  view.setUint32(0,Math.floor(counter/4294967296));view.setUint32(4,counter>>>0);
-  const sig=new Uint8Array(await crypto.subtle.sign('HMAC',key,buf)),o=sig[sig.length-1]&15;
-  const n=((sig[o]&127)<<24)|((sig[o+1]&255)<<16)|((sig[o+2]&255)<<8)|(sig[o+3]&255);
-  return String(n%1000000).padStart(6,'0');
-}
-async function verifyTotp(secret,code){code=String(code||'').trim();for(let i=-1;i<=1;i++){if(await totp(secret,i)===code)return true}return false}
-function authConfig(){try{return JSON.parse(localStorage.getItem(AUTH_KEY)||'null')}catch(_){return null}}
-
 function injectAuth(){
   document.querySelector('.app').classList.add('app-lock');
   const root=document.createElement('div');root.id='authRoot';root.className='auth-root';
-  root.innerHTML='<div class="auth-lines"></div><div class="auth-orb a"></div><div class="auth-orb b"></div><div id="authStage"><div class="ink-brush" aria-hidden="true"><span class="brush-handle"></span><span class="brush-nib"></span><span class="brush-bitcoin">₿</span></div><div class="splash-mark">辰南</div><div class="splash-copy">笔尖上的比特币</div></div>';
+  root.innerHTML='<div class="auth-lines"></div><div class="auth-orb a"></div><div class="auth-orb b"></div><div id="authStage"><div class="splash-mark">辰南</div><div class="splash-copy">CHENNAN · INVESTOR WORKSPACE</div></div>';
   document.body.appendChild(root);
-  setTimeout(showAuthCard,1100);
+  setTimeout(showAuthCard,650);
 }
-function showAuthCard(){
-  const cfg=authConfig(),stage=byId('authStage');if(!stage)return;
-  if(cfg&&sessionStorage.getItem(AUTH_SESSION)==='1'){unlockApp();return}
-  if(!cfg){sessionStorage.removeItem(AUTH_SESSION);renderSetup(stage);return}
-  stage.innerHTML='<div class="auth-card"><div class="auth-logo">辰南</div><h1 class="auth-title">笔尖上的比特币</h1><p class="auth-sub">落笔有形，故事有迹。</p><form id="loginForm"><div class="auth-field"><label>账户</label><input name="user" autocomplete="username" required></div><div class="auth-field"><label>密码</label><input type="password" name="password" autocomplete="current-password" required></div><div class="auth-field"><label>动态验证码</label><input name="code" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" autocomplete="one-time-code" required></div><button class="auth-btn">入卷 · 辰南</button><div class="auth-error" id="authError"></div></form><div class="auth-note">人物 · 交易 · 持仓 · 文档</div></div>';
-  byId('loginForm').onsubmit=async function(e){e.preventDefault();const f=new FormData(e.target),err=byId('authError');err.textContent='正在验证…';const user=String(f.get('user')||''),pw=String(f.get('password')||''),code=String(f.get('code')||'');const hash=await passwordHash(pw,cfg.salt);if(user!==cfg.user||hash!==cfg.hash){err.textContent='账户或密码错误';return}if(!await verifyTotp(cfg.totpSecret,code)){err.textContent='动态验证码错误：请填写验证器当前的六位数字，并检查设备时间自动同步';return}sessionStorage.setItem(AUTH_SESSION,'1');unlockApp()};
+async function showAuthCard(){
+  const stage=byId('authStage');if(!stage)return;
+  if(window.ChenNanCloud?.hasSession?.()){
+    stage.innerHTML='<div class="auth-card"><div class="auth-logo">辰南</div><h1 class="auth-title">正在连接云端</h1><p class="auth-sub">正在同步人物、交易、持仓与文档数据…</p><div class="auth-error" id="authError"></div></div>';
+    if(await window.ChenNanCloud.resume()){unlockApp();return}
+  }
+  stage.innerHTML='<div class="login-shell"><div class="login-hero"><div class="hero-wordmark">辰南</div><div class="hero-en">CHENNAN · INVESTOR MANAGEMENT SYSTEM</div><h2>让人物、交易与记忆<br>保持在同一条时间线上</h2><p>人物档案 · 推荐交易 · 持仓管理 · 每日文档 · 云端同步</p><div class="hero-pills"><span>人物画像</span><span>交易计划</span><span>云端数据</span></div></div><div class="auth-card"><div class="auth-logo">辰南</div><div class="auth-kicker">CHENNAN INVESTOR MANAGEMENT</div><h1 class="auth-title">辰南工作台</h1><p class="auth-sub">使用管理员账号进入云端工作区</p><form id="loginForm"><div class="auth-field"><label>账户</label><input name="user" autocomplete="username" value="chennan118" required></div><div class="auth-field"><label>密码</label><input type="password" name="password" autocomplete="current-password" required></div><button class="auth-btn">登录辰南</button><div class="auth-error" id="authError"></div></form><div class="auth-note"><span class="cloud-dot"></span> Supabase 云端数据 · 账号密码验证</div></div></div>';
+  byId('loginForm').onsubmit=async function(e){
+    e.preventDefault();const f=new FormData(e.target),err=byId('authError'),btn=e.target.querySelector('button');
+    err.textContent='正在验证并同步云端数据…';btn.disabled=true;
+    try{await window.ChenNanCloud.login(String(f.get('user')||'').trim(),String(f.get('password')||''));unlockApp()}
+    catch(ex){err.textContent=ex?.message||'登录失败';btn.disabled=false}
+  };
 }
-function renderSetup(stage){
-  stage.innerHTML='<div class="auth-card"><div class="auth-logo">辰南</div><h1 class="auth-title">笔尖上的比特币</h1><p class="auth-sub">首次在此浏览器使用，请完成本机安全设置。</p><form id="setupForm"><div class="auth-field"><label>管理员账户</label><input name="user" required></div><div class="auth-field"><label>密码（至少 10 位）</label><input type="password" name="password" minlength="10" required></div><div class="auth-field"><label>确认密码</label><input type="password" name="confirm" minlength="10" required></div><button class="auth-btn">生成 2FA 密钥</button><div class="auth-error" id="authError"></div></form><div class="auth-note">此设置仅保存在当前浏览器，不会同步已有账号。</div></div>';
-  byId('setupForm').onsubmit=function(e){e.preventDefault();const f=new FormData(e.target),pw=String(f.get('password')||''),cf=String(f.get('confirm')||''),err=byId('authError');if(pw!==cf){err.textContent='两次密码不一致';return}if(pw.length<10){err.textContent='密码至少 10 位';return}const bytes=new Uint8Array(20);crypto.getRandomValues(bytes);const secret=b32encode(bytes);renderTotpBind(stage,String(f.get('user')||'').trim(),pw,secret)};
+function unlockApp(){
+  const root=byId('authRoot');if(root)root.classList.add('hidden');
+  document.querySelector('.app').classList.remove('app-lock');document.querySelector('.app').classList.add('app-ready');
 }
-function renderTotpBind(stage,user,pw,secret){
-  const uri='otpauth://totp/InvestorWorkspace:'+encodeURIComponent(user)+'?secret='+secret+'&issuer=InvestorWorkspace';
-  stage.innerHTML='<div class="auth-card"><div class="auth-logo">2F</div><h1 class="auth-title">绑定 2FA</h1><p class="auth-sub">在验证器中手工添加以下密钥，然后输入当前 6 位验证码。</p><div class="auth-field"><label>TOTP 密钥</label><div class="auth-secret">'+safe(secret)+'</div></div><div class="auth-field"><label>otpauth 地址（支持时可复制导入）</label><div class="auth-secret">'+safe(uri)+'</div></div><form id="bindForm"><div class="auth-field"><label>当前 6 位验证码</label><input name="code" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" required></div><button class="auth-btn">完成安全设置</button><div class="auth-error" id="authError"></div></form></div>';
-  byId('bindForm').onsubmit=async function(e){e.preventDefault();const code=new FormData(e.target).get('code'),err=byId('authError');if(!await verifyTotp(secret,code)){err.textContent='验证码不正确，请检查验证器时间';return}const saltBytes=new Uint8Array(16);crypto.getRandomValues(saltBytes);const salt=bytesToB64(saltBytes),hash=await passwordHash(pw,salt);localStorage.setItem(AUTH_KEY,JSON.stringify({user:user,salt:salt,hash:hash,totpSecret:secret,createdAt:new Date().toISOString(),mode:'local-totp'}));sessionStorage.setItem(AUTH_SESSION,'1');unlockApp()};
-}
-function unlockApp(){const root=byId('authRoot');if(root)root.classList.add('hidden');document.querySelector('.app').classList.remove('app-lock');document.querySelector('.app').classList.add('app-ready')}
 
 function boot(){
   ensureTradeState();ensureTradeUI();wrapRender();render();injectAuth();
