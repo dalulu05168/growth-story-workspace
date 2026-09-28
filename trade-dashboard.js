@@ -300,7 +300,7 @@ function showAuthCard(){
       byId('recoverTotp').remove();
     }catch(_){error.textContent='密钥读取失败，请在原浏览器重试'}
   };
-  byId('loginForm').onsubmit=async function(e){e.preventDefault();const f=new FormData(e.target),err=byId('authError');err.textContent='正在验证…';const user=String(f.get('user')||''),pw=String(f.get('password')||''),code=String(f.get('code')||'');const hash=await passwordHash(pw,cfg.salt);const ok=user===cfg.user&&hash===cfg.hash&&await verifyTotp(cfg.totpSecret,code);if(!ok){err.textContent='账户、密码或 2FA 验证码错误';return}sessionStorage.setItem(AUTH_SESSION,'1');unlockApp()};
+  byId('loginForm').onsubmit=async function(e){e.preventDefault();const f=new FormData(e.target),err=byId('authError');err.textContent='正在验证…';const user=String(f.get('user')||''),pw=String(f.get('password')||''),code=String(f.get('code')||'');const hash=await passwordHash(pw,cfg.salt);if(user!==cfg.user||hash!==cfg.hash){err.textContent='账户或密码错误';return}if(!await verifyTotp(cfg.totpSecret,code)){err.textContent='动态验证码错误：请填写验证器当前的六位数字，并检查设备时间自动同步';return}sessionStorage.setItem(AUTH_SESSION,'1');unlockApp()};
 }
 function renderSetup(stage){
   stage.innerHTML='<div class="auth-card"><div class="auth-logo">辰南</div><h1 class="auth-title">笔尖上的比特币</h1><p class="auth-sub">首次在此浏览器使用，请完成本机安全设置。</p><form id="setupForm"><div class="auth-field"><label>管理员账户</label><input name="user" required></div><div class="auth-field"><label>密码（至少 10 位）</label><input type="password" name="password" minlength="10" required></div><div class="auth-field"><label>确认密码</label><input type="password" name="confirm" minlength="10" required></div><button class="auth-btn">生成 2FA 密钥</button><div class="auth-error" id="authError"></div></form><div class="auth-note">此设置仅保存在当前浏览器，不会同步已有账号。</div></div>';
