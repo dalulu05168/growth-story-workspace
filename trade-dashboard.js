@@ -76,6 +76,7 @@ function ensureTradeUI(){
     if(groups&&groups.nextSibling)nav.insertBefore(b,groups.nextSibling);else nav.appendChild(b);
     b.onclick=function(){go('trades');tradeTab='sell';renderTrades()};
   }
+  if(nav&&!byId('logoutBtn')){const out=document.createElement('button');out.id='logoutBtn';out.innerHTML='<i>↪</i><span>退出登录</span>';out.onclick=function(){sessionStorage.removeItem(AUTH_SESSION);location.reload()};nav.appendChild(out)}
   if(!byId('trades')){
     const s=document.createElement('section');s.id='trades';s.className='section';
     s.innerHTML='<div class="topbar"><div><div class="eyebrow">TRADE OPERATIONS</div><h1 class="page-title">持仓与交易计划</h1><p class="sub">按持仓、计划卖出时间和参与频率生成今日操作名单。</p></div><div class="actions"><button class="btn ghost" id="generateBuyList">生成 / 重算今日买入名单</button><button class="btn primary" id="addHolding">＋ 新增持仓</button></div></div><div class="trade-tabs" id="tradeTabs"></div><div id="tradePanel"></div>';
