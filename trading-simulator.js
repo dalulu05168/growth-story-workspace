@@ -137,6 +137,9 @@ function editOffer(id){
 }
 function makeRecommendations(offerId){
   const o=offer(offerId);if(!o)return;
+  // Preserve today's decisions when refreshing the recommendation list.
+  const existing=recommendationFor(offerId);
+  if(existing){renderRecommend();toast('今日名单已生成，已保留邀请和成交状态');return}
   const planMap=new Map(todayPlans().map(x=>[String(x.personId),x]));
   const openedPeople=db.people.filter(opened);
   const fromToday=openedPeople.filter(p=>planMap.has(String(p.id))).sort((a,b)=>score(b)-score(a));
@@ -148,10 +151,11 @@ function makeRecommendations(offerId){
   db.tradeSim.recommendations.push(rec);save();renderRecommend();toast('已推荐 '+chosen.length+' 人，优先使用今日待买名单');
 }
 function setCandidate(offerId,pid,status){
-  const rec=recommendationFor(offerId);if(!rec)return;const c=rec.candidates.find(x=>String(x.personId)===String(pid));if(!c)return;c.status=status;
+  const rec=recommendationFor(offerId);if(!rec)return;const c=rec.candidates.find(x=>String(x.personId)===String(pid));if(!c||c.status==='bought'||!['invited','rejected'].includes(status))return;
   const o=offer(offerId);
+  if(!o)return;c.status=status;
   if(status==='invited'){
-    const exists=db.portfolio.buyPlans.some(x=>x.date===day()&&String(x.personId)===String(pid)&&x.symbol===o.symbol&&x.status==='planned');
+    const exists=db.portfolio.buyPlans.some(x=>x.date===day()&&String(x.personId)===String(pid)&&x.offerId===o.id&&x.status==='planned');
     if(!exists)db.portfolio.buyPlans.push({id:'bp'+Date.now()+pid,personId:String(pid),date:day(),symbol:o.symbol,stockName:o.name,reason:'模拟交易邀请',source:'recommendation',offerId:o.id,status:'planned'});
   }else if(status==='rejected'){
     db.portfolio.buyPlans=db.portfolio.buyPlans.filter(x=>!(x.date===day()&&String(x.personId)===String(pid)&&x.offerId===o.id&&x.status==='planned'));
@@ -160,7 +164,8 @@ function setCandidate(offerId,pid,status){
 }
 function confirmBuy(offerId,pid){
   const o=offer(offerId),rec=recommendationFor(offerId);if(!o||!rec)return;
-  const c=rec.candidates.find(x=>String(x.personId)===String(pid));if(!c)return;
+  const c=rec.candidates.find(x=>String(x.personId)===String(pid));if(!c||c.status!=='invited')return;
+  if(!person(pid)||!opened(person(pid)))return;
   const buyAt=new Date().toISOString(),plannedSellAt=sellAt(o.holdDays,buyAt);
   db.portfolio.holdings.push({id:'h'+Date.now()+pid,offerId:o.id,personId:String(pid),symbol:o.symbol,name:o.name,quantity:o.minShares,buyPrice:o.unitPrice,buyAt,plannedSellAt,status:'holding',simulated:true});
   db.portfolio.buyPlans.forEach(x=>{if(x.offerId===o.id&&String(x.personId)===String(pid)&&x.status==='planned'){x.status='done';x.doneAt=buyAt}});
