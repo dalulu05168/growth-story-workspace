@@ -286,7 +286,20 @@ function showAuthCard(){
   const cfg=authConfig(),stage=byId('authStage');if(!stage)return;
   if(cfg&&sessionStorage.getItem(AUTH_SESSION)==='1'){unlockApp();return}
   if(!cfg){sessionStorage.removeItem(AUTH_SESSION);renderSetup(stage);return}
-  stage.innerHTML='<div class="auth-card"><div class="auth-logo">辰南</div><h1 class="auth-title">笔尖上的比特币</h1><p class="auth-sub">落笔有形，故事有迹。</p><form id="loginForm"><div class="auth-field"><label>账户</label><input name="user" autocomplete="username" required></div><div class="auth-field"><label>密码</label><input type="password" name="password" autocomplete="current-password" required></div><div class="auth-field"><label>动态验证码</label><input name="code" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" autocomplete="one-time-code" required></div><button class="auth-btn">入卷 · 辰南</button><div class="auth-error" id="authError"></div></form><div class="auth-note">人物 · 交易 · 持仓 · 文档</div></div>';
+  stage.innerHTML='<div class="auth-card"><div class="auth-logo">辰南</div><h1 class="auth-title">笔尖上的比特币</h1><p class="auth-sub">落笔有形，故事有迹。</p><form id="loginForm"><div class="auth-field"><label>账户</label><input name="user" autocomplete="username" required></div><div class="auth-field"><label>密码</label><input type="password" name="password" autocomplete="current-password" required></div><div class="auth-field"><label>动态验证码</label><input name="code" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" autocomplete="one-time-code" required></div><button class="auth-btn">入卷 · 辰南</button><div class="auth-error" id="authError"></div></form><button type="button" class="auth-recover" id="recoverTotp">已有账号但没有动态密钥？验证密码后查看</button><div class="auth-error" id="recoverError"></div><div class="auth-note">人物 · 交易 · 持仓 · 文档</div></div>';
+  byId('recoverTotp').onclick=async function(){
+    const form=byId('loginForm'),user=form.elements.user.value.trim(),password=form.elements.password.value;
+    const error=byId('recoverError');error.textContent='';
+    if(!user||!password){error.textContent='请先输入已有账户和密码';return}
+    try{
+      const hash=await passwordHash(password,cfg.salt);
+      if(user!==cfg.user||hash!==cfg.hash){error.textContent='账户或密码不正确';return}
+      const secret=document.createElement('div');secret.className='auth-secret';
+      secret.textContent=cfg.totpSecret;
+      error.replaceWith(secret);
+      byId('recoverTotp').remove();
+    }catch(_){error.textContent='密钥读取失败，请在原浏览器重试'}
+  };
   byId('loginForm').onsubmit=async function(e){e.preventDefault();const f=new FormData(e.target),err=byId('authError');err.textContent='正在验证…';const user=String(f.get('user')||''),pw=String(f.get('password')||''),code=String(f.get('code')||'');const hash=await passwordHash(pw,cfg.salt);const ok=user===cfg.user&&hash===cfg.hash&&await verifyTotp(cfg.totpSecret,code);if(!ok){err.textContent='账户、密码或 2FA 验证码错误';return}sessionStorage.setItem(AUTH_SESSION,'1');unlockApp()};
 }
 function renderSetup(stage){
