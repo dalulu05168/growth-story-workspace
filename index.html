@@ -420,7 +420,10 @@ function nextPersonId(){
   const nums=db.people.map(p=>Number(String(p.id).match(/(\d+)$/)?.[1]||0));return 'FR'+String(Math.max(0,...nums)+1).padStart(4,'0');
 }
 function deletePerson(id){
-  const p=person(id);if(!p)return;if(!confirm(`确定删除 ${pName(p)}（${p.id}）吗？\n该人物会同时从所有自定义小组中移除。`))return;
+  const p=person(id);if(!p)return;
+  const linked=[...(db.records||[]),...(db.portfolio?.holdings||[]),...(db.portfolio?.buyPlans||[])].some(x=>String(x.personId)===String(id))||(db.tradeSim?.recommendations||[]).some(r=>(r.candidates||[]).some(x=>String(x.personId)===String(id)))||(db.docs||[]).some(d=>String(d.html||'').includes('data-person="'+id+'"'));
+  if(linked){toast('该人物有关联记录、交易或文档，请保留人物以维护历史完整性');return}
+  if(!confirm(`确定删除 ${pName(p)}（${p.id}）吗？\n该人物会同时从所有自定义小组中移除。`))return;
   db.people=db.people.filter(x=>String(x.id)!==String(id));db.customGroups.forEach(g=>g.members=(g.members||[]).filter(x=>String(x)!==String(id)));save();render();toast('人物已删除');
 }
 function openSystemGroup(id){go('people');$('#systemGroupFilter').value=id;$('#customGroupFilter').value='all';renderPeople()}
@@ -468,7 +471,8 @@ seedDefaultPeople();
 </script>
 <script src="./trade-dashboard.js?v=20260928-security-7"></script>
 <script src="./people-detail.js"></script>
-<script src="./trading-simulator.js"></script>
+<script src="./trading-simulator.js?v=20260928-fixes-1"></script>
 <script src="./document-workspace.js?v=20260928-2"></script>
 </body>
 </html>
+
