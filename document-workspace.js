@@ -1,55 +1,135 @@
-/* Rich document workspace: person tokens, memory, consistency warnings. */
+/* 辰南文档中心：每日独立保存、人物发言频次、人物记忆、逻辑一致性检查、离线 DOCX。 */
 (function(){
 'use strict';
-let currentMentionPersonId=null;
-const E=id=>document.getElementById(id), Q=s=>[...document.querySelectorAll(s)];
-const esc2=v=>String(v==null?'':v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-// Keep document formatting while stripping executable markup from imported or saved HTML.
-function cleanDocHtml(markup){
-  const source=new DOMParser().parseFromString(String(markup||''),'text/html');
-  const allowed=new Set(['DIV','P','BR','B','STRONG','I','EM','U','S','SPAN','H1','H2','H3','UL','OL','LI','BLOCKQUOTE']);
-  function clean(node){
-    if(node.nodeType===Node.TEXT_NODE)return document.createTextNode(node.textContent);
-    if(node.nodeType!==Node.ELEMENT_NODE||!allowed.has(node.tagName))return document.createTextNode('');
-    const out=document.createElement(node.tagName.toLowerCase());
-    if(node.tagName==='SPAN'&&node.classList.contains('person-token')&&/^\w+$/.test(node.dataset.person||'')){
-      out.className='person-token';out.contentEditable='false';out.dataset.person=node.dataset.person;
-    }
-    node.childNodes.forEach(child=>out.appendChild(clean(child)));
-    return out;
+let activeDate=dateKey(), currentPersonId=null, autosaveTimer=null;
+const E=id=>document.getElementById(id), QA=s=>[...document.querySelectorAll(s)];
+const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const pname=p=>p?(p.name||p.frenchName||p.id):'未知人物';
+const pnum=p=>String(p?.legacy_id||String(p?.id||'').replace(/\D/g,'')).replace(/^0+/,'')||'0';
+const pcl=p=>(pRelationCode(p)==='OLD'?'老':'新')+(pGender(p)||'');
+function dateKey(d=new Date()){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function byNumber(n){const x=String(n||'').replace(/^0+/,'')||'0';return db.people.find(p=>pnum(p)===x)||null}
+function norm(s){return String(s||'').toLowerCase().replace(/[\s，。！？、,.!?"“”‘’'：:；;（）()\[\]{}]/g,'')}
+function h32(s){let h=2166136261;for(const c of String(s)){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return(h>>>0).toString(16)}
+function ensureDocs(){
+  db.dailyDocs=db.dailyDocs&&typeof db.dailyDocs==='object'&&!Array.isArray(db.dailyDocs)?db.dailyDocs:{};
+  db.meta=db.meta&&typeof db.meta==='object'?db.meta:{};
+  if(!db.meta.dailyDocsMigrated&&Array.isArray(db.docs)&&db.docs.length){
+    db.docs.forEach((d,i)=>{
+      let k=/^\d{4}-\d{2}-\d{2}$/.test(d.updated||'')?d.updated:dateKey();
+      if(db.dailyDocs[k])k=k+'-'+String(i+1).padStart(2,'0');
+      db.dailyDocs[k]={date:k,title:d.title||'历史文档',html:d.html||textHtml(d.content||''),content:d.content||'',updatedAt:new Date().toISOString(),migratedFrom:d.id||null};
+    });
+    db.meta.dailyDocsMigrated=true;
   }
-  const holder=document.createElement('div');source.body.childNodes.forEach(node=>holder.appendChild(clean(node)));
-  return holder.innerHTML;
+  if(!db.dailyDocs[activeDate])db.dailyDocs[activeDate]={date:activeDate,title:'',html:'<div><br></div>',content:'',updatedAt:null};
 }
-const pnm=p=>p?(p.name||p.frenchName||p.id):'未知人物';
-const legacy=p=>String(p?.legacy_id||String(p?.id||'').replace(/\D/g,'')).replace(/^0+/,'')||'0';
-const classLabel=p=>(pRelationCode(p)==='OLD'?'老':'新')+(pGender(p)||'');
-const findByNumber=n=>{const x=String(n||'').replace(/^0+/,'')||'0';return db.people.find(p=>legacy(p)===x)||null};
-const getDoc2=()=>db.docs.find(d=>d.id===selectedDocId)||null;
-const today2=()=>new Date().toISOString().slice(0,10);
-const norm=s=>String(s||'').toLowerCase().replace(/[\s，。！？、,.!?"“”‘’'：:；;（）()\[\]{}]/g,'');
-function hashText(s){let x=2166136261;for(const c of String(s)){x^=c.charCodeAt(0);x=Math.imul(x,16777619)}return(x>>>0).toString(16)}
-function appearanceCount(p){const records=db.records.filter(r=>String(r.personId)===String(p.id)).length;let docs=0;db.docs.forEach(d=>{const t=String(d.content||'');docs+=(t.split(pnm(p)).length-1)});return records+docs}
-function memoryRows(p){const rows=[],add=(date,title,detail,type)=>{if(date)rows.push({date:String(date).slice(0,10),title,detail:detail||'',type:type||''})};add(p.customer_relation?.first_contact_date,'首次联系','建立客户关系','系统');add(p.account?.opened_date,'开户',p.account?.status||'已开户','系统');add(p.crm?.group_joined_date,'入群','加入群组','系统');db.records.filter(r=>String(r.personId)===String(p.id)).forEach(r=>add(r.date,r.title||r.type,r.content,r.type));(db.portfolio?.holdings||[]).filter(x=>String(x.personId)===String(p.id)).forEach(x=>{add(x.buyAt,'买入 '+(x.symbol||''),(x.name||'')+' · '+(x.quantity||0)+'股','交易');if(x.status==='sold')add(x.soldAt,'卖出 '+(x.symbol||''),(x.name||''),'交易')});return rows.sort((a,b)=>String(b.date).localeCompare(String(a.date))).slice(0,50)}
-function statementRows(text){const out=[];String(text||'').split(/\n+/).map(x=>x.trim()).filter(Boolean).forEach(line=>{const m=line.match(/^0*(\d{1,3})(?:新男|新女|老男|老女)?(?:\s*[·\-]\s*[^：:]+)?[：:]\s*(.+)$/);if(m){const p=findByNumber(m[1]);if(p)out.push({p,content:m[2].trim(),raw:line})}});return out}
-const hasAny=(t,a)=>a.some(x=>t.includes(x));
-function detectIssues(p,content){const now=norm(content),past=db.records.filter(r=>String(r.personId)===String(p.id)).map(r=>norm(r.content)),issues=[],opened=!!p.account?.opened;if(opened&&hasAny(now,['未开户','没有开户','从未开户','没有账户']))issues.push('账户状态冲突：系统显示已开户，当前文本却描述为未开户/没有账户。');if(!opened&&hasAny(now,['已开户','有账户','账户已开','已经开户']))issues.push('账户状态冲突：系统显示未开户，当前文本却描述为已开户。');const noTrade=hasAny(now,['从未参与大宗交易','没有参与大宗交易','没参与过大宗交易']),yesTrade=hasAny(now,['参与过大宗交易','参加过大宗交易','参与大宗交易']);if(noTrade&&past.some(x=>hasAny(x,['参与过大宗交易','参加过大宗交易','大宗交易获利','大宗交易盈利'])))issues.push('经历冲突：历史记忆中曾参与大宗交易，当前文本却称从未参与。');if(yesTrade&&past.some(x=>hasAny(x,['从未参与大宗交易','没有参与大宗交易','没参与过大宗交易'])))issues.push('经历冲突：历史记忆中曾称未参与大宗交易，当前文本与之相反。');const trust=hasAny(now,['信任助理','很信任助理','相信助理']),oppose=hasAny(now,['不信任助理','怀疑助理','反驳助理','质疑助理']);if(trust&&past.some(x=>hasAny(x,['不信任助理','怀疑助理','反驳助理','质疑助理'])))issues.push('态度变化提示：历史中存在怀疑/反驳，当前突然转为明显信任，请补充过渡原因。');if(oppose&&past.some(x=>hasAny(x,['信任助理','很信任助理','相信助理'])))issues.push('态度变化提示：历史中存在信任，当前突然转为怀疑/反驳，请补充触发原因。');const ps=norm(p.personality?.summary||'');if(hasAny(ps,['谨慎','审慎','风险敏感','慢热'])&&hasAny(now,['毫不犹豫','完全相信','立刻决定','不考虑风险','马上全仓']))issues.push('人物性格差异：画像偏谨慎/风险敏感，但当前表现为无条件快速决策。');if(db.records.some(r=>String(r.personId)===String(p.id)&&norm(r.content)===now))issues.push('重复记忆：该人物历史中已有完全相同内容。');return[...new Set(issues)]}
-const allIssues=rows=>rows.flatMap(x=>detectIssues(x.p,x.content).map(reason=>({p:x.p,content:x.content,reason})));
-const issueMessage=xs=>xs.slice(0,10).map((x,i)=>(i+1)+'. '+legacy(x.p)+classLabel(x.p)+' · '+pnm(x.p)+'\n'+x.reason+'\n文本：'+x.content).join('\n\n');
-function setupNovel(){const sec=E('novel');if(!sec)return;sec.innerHTML='<div class="topbar"><div><div class="eyebrow">RICH DOCUMENT WORKSPACE</div><h1 class="page-title">文档与人物记忆</h1><p class="sub">富文本编辑、人物编号快捷插入、出场频次、记忆沉淀、成长历程与逻辑一致性提示。</p><div class="actions"><button class="btn ghost" id="docxExport">导出 DOCX</button><button class="btn primary" id="newRichDoc">＋ 新建文档</button></div></div><div class="rich-doc-layout"><div class="card panel"><div class="panel-head"><h2>文档</h2><button class="link-btn" id="renameRichDoc">重命名</button></div><div id="richDocList" class="doc-list"></div></div><div class="card panel"><div class="rich-title-row"><input class="input" id="richDocTitle" placeholder="文档标题"><button class="btn primary small" id="saveRichDoc">保存</button></div><div class="word-toolbar" id="wordToolbar"><button data-cmd="undo">↶</button><button data-cmd="redo">↷</button><button data-cmd="bold"><b>B</b></button><button data-cmd="italic"><i>I</i></button><button data-cmd="underline"><u>U</u></button><button data-block="h1">H1</button><button data-block="h2">H2</button><button data-block="p">正文</button><button data-cmd="insertUnorderedList">•列表</button><button data-cmd="insertOrderedList">1.列表</button><button data-cmd="justifyLeft">左</button><button data-cmd="justifyCenter">中</button><button data-cmd="justifyRight">右</button></div><div id="docPersonSuggest" class="doc-suggest"></div><div id="richEditor" class="rich-editor" contenteditable="true"></div><div class="shortcut">输入人物数字编号，如 <b>21</b>，按回车自动插入“21新女 · 姓名：”。保存和换行时检查人物记忆与逻辑一致性。</div><div id="richDocStatus" class="muted" style="margin-top:8px"></div></div><div class="card panel"><div class="panel-head"><h2>人物记忆</h2><span id="mentionFrequency" class="muted">未选择人物</span></div><div id="memoryPerson"></div><div id="memoryTimeline" class="memory-timeline"></div></div></div>';if(!E('richDocStyles')){const st=document.createElement('style');st.id='richDocStyles';st.textContent='.rich-doc-layout{display:grid;grid-template-columns:220px minmax(0,1fr) 330px;gap:18px}.rich-title-row{display:flex;gap:10px;margin-bottom:10px}.word-toolbar{display:flex;gap:6px;flex-wrap:wrap;padding:8px;border:1px solid var(--line);border-radius:11px 11px 0 0;background:#f8fafc}.word-toolbar button{padding:6px 9px;border-radius:7px;background:#fff;border:1px solid var(--line)}.rich-editor{min-height:520px;border:1px solid var(--line);border-top:0;border-radius:0 0 11px 11px;padding:26px 34px;outline:none;line-height:1.8}.person-token{background:#edf2ff;color:#3656ba;border-radius:6px;padding:2px 5px;font-weight:800}.doc-suggest{display:none;border:1px solid #b9c8ff;background:#f7f9ff;padding:8px 10px;font-size:12px}.doc-suggest.show{display:block}.memory-person-card{border:1px solid var(--line);border-radius:13px;padding:12px;background:#fafbfe}.memory-timeline{display:grid;gap:10px;margin-top:14px;max-height:570px;overflow:auto}.memory-row{border-left:3px solid #dbe3ff;padding:8px 10px;background:#fafbfe;border-radius:0 9px 9px 0}.memory-row b,.memory-row small{display:block}.memory-row small{color:var(--muted)}.memory-row p{margin:4px 0 0;font-size:12px}@media(max-width:1200px){.rich-doc-layout{grid-template-columns:210px minmax(0,1fr)}.rich-doc-layout>.card:last-child{grid-column:1/-1}}@media(max-width:760px){.rich-doc-layout{grid-template-columns:1fr}.rich-doc-layout>.card:last-child{grid-column:auto}}';document.head.appendChild(st)}bindUI();renderDocs2()}
-function bindUI(){E('newRichDoc').onclick=createDoc2;E('saveRichDoc').onclick=saveDoc2;E('renameRichDoc').onclick=renameDoc2;E('docxExport').onclick=exportDocx;E('richDocTitle').oninput=()=>E('richDocStatus').textContent='标题有未保存修改';E('richEditor').addEventListener('input',()=>{E('richDocStatus').textContent='文档有未保存修改';suggest()});E('richEditor').addEventListener('keyup',suggest);E('richEditor').addEventListener('keydown',handleKey);E('richEditor').addEventListener('click',()=>{const p=personFromSelection();if(p){currentMentionPersonId=p.id;renderMemory(p.id)}});Q('#wordToolbar [data-cmd]').forEach(b=>b.onclick=()=>{document.execCommand(b.dataset.cmd,false,null);E('richEditor').focus()});Q('#wordToolbar [data-block]').forEach(b=>b.onclick=()=>{document.execCommand('formatBlock',false,b.dataset.block);E('richEditor').focus()})}
-function renderDocs2(){if(!db.docs.length){createDoc2();return}if(!selectedDocId||!getDoc2())selectedDocId=db.docs[0].id;const d=getDoc2();E('richDocList').innerHTML=db.docs.map(x=>'<button class="doc-item '+(x.id===selectedDocId?'active':'')+'" data-rdoc="'+esc2(x.id)+'"><b>'+esc2(x.title||'未命名')+'</b><small>更新于 '+esc2(x.updated||today2())+'</small></button>').join('');E('richDocTitle').value=d.title||'未命名';E('richEditor').innerHTML=d.html?cleanDocHtml(d.html):String(d.content||'').split(/\n/).map(x=>'<div>'+esc2(x||' ')+'</div>').join('');E('richDocStatus').textContent='已载入';Q('[data-rdoc]').forEach(b=>b.onclick=()=>{if(E('richDocStatus').textContent.includes('未保存')&&!confirm('当前文档有未保存的修改，确定切换吗？'))return;selectedDocId=b.dataset.rdoc;renderDocs2();renderMemory(null)})}
-function canLeaveDoc(){return !E('richDocStatus')?.textContent.includes('未保存')||confirm('当前文档有未保存的修改，确定放弃修改吗？')}
-function createDoc2(){if(!canLeaveDoc())return;const d={id:'d'+Date.now(),title:'新文档',content:'',html:'<div><br></div>',updated:today2()};db.docs.unshift(d);selectedDocId=d.id;save();renderDocs2()}
-function renameDoc2(){if(!canLeaveDoc())return;const d=getDoc2();if(!d)return;const n=prompt('输入新文档标题',d.title||'');if(n!==null){d.title=n.trim()||d.title;save();renderDocs2()}}
-function currentBlock(){const sel=window.getSelection();if(!sel||!sel.rangeCount)return null;let n=sel.anchorNode;if(n?.nodeType===3)n=n.parentElement;while(n&&n!==E('richEditor')&&n.parentElement!==E('richEditor'))n=n.parentElement;return n&&n!==E('richEditor')?n:null}
-function suggest(){const b=currentBlock(),box=E('docPersonSuggest');if(!b)return;const m=b.innerText.trim().match(/^0*(\d{1,3})$/),p=m?findByNumber(m[1]):null;if(p){box.className='doc-suggest show';box.innerHTML='按回车插入：<b>'+esc2(legacy(p)+classLabel(p)+' · '+pnm(p))+'</b>';renderMemory(p.id)}else box.className='doc-suggest'}
+function speechCount(p){return db.records.filter(r=>String(r.personId)===String(p.id)&&r.type==='发言记录').length}
+function ranking(){return [...db.people].sort((a,b)=>speechCount(b)-speechCount(a)||Number(pnum(a))-Number(pnum(b)))}
+function memRows(p){
+  const a=[],add=(d,t,x,k)=>{if(d)a.push({d:String(d).slice(0,10),t,x:x||'',k:k||''})};
+  add(p.customer_relation?.first_contact_date,'首次联系','建立客户关系','系统');
+  add(p.account?.opened_date,'开户',p.account?.status||'已开户','系统');
+  add(p.crm?.group_joined_date,'入群','加入群组','系统');
+  db.records.filter(r=>String(r.personId)===String(p.id)).forEach(r=>add(r.date,r.title||r.type,r.content,r.type));
+  (db.portfolio?.holdings||[]).filter(x=>String(x.personId)===String(p.id)).forEach(x=>{add(x.buyAt,'买入 '+(x.symbol||''),(x.name||'')+' · '+(x.quantity||0)+'股','交易');if(x.status==='sold')add(x.soldAt,'卖出 '+(x.symbol||''),(x.name||'')+' · 卖出价 '+(x.soldPrice||'未录入'),'交易')});
+  return a.sort((x,y)=>String(y.d).localeCompare(String(x.d))).slice(0,60);
+}
+function statements(text){
+  const out=[];String(text||'').split(/\n+/).map(x=>x.trim()).filter(Boolean).forEach(line=>{
+    const m=line.match(/^0*(\d{1,3})(?:新男|新女|老男|老女)?(?:\s*[·\-]\s*[^：:]+)?[：:]\s*(.+)$/);
+    if(m){const p=byNumber(m[1]);if(p)out.push({p,content:m[2].trim()})}
+  });return out;
+}
+const has=(t,a)=>a.some(x=>t.includes(x));
+function detect(p,content){
+  const now=norm(content), issues=[], past=db.records.filter(r=>String(r.personId)===String(p.id)&&!(r.source==='document'&&r.docDate===activeDate)).map(r=>norm(r.content));
+  const opened=!!p.account?.opened;
+  if(opened&&has(now,['未开户','没有开户','从未开户','没有账户']))issues.push('开户状态冲突：系统当前为已开户，文本却描述为未开户/没有账户。');
+  if(!opened&&has(now,['已开户','有账户','账户已开','已经开户']))issues.push('开户状态冲突：系统当前为未开户，文本却描述为已开户。');
+  const noTrade=has(now,['从未参与大宗交易','没有参与大宗交易','没参与过大宗交易','从未参与交易']);
+  const yesTrade=has(now,['参与过大宗交易','参加过大宗交易','参与大宗交易','参加大宗交易']);
+  if(noTrade&&past.some(x=>has(x,['参与过大宗交易','参加过大宗交易','大宗交易获利','大宗交易盈利'])))issues.push('经历冲突：历史中曾参与大宗交易，当前却称从未参与。');
+  if(yesTrade&&past.some(x=>has(x,['从未参与大宗交易','没有参与大宗交易','没参与过大宗交易'])))issues.push('经历冲突：历史中曾称未参与大宗交易，当前文本与之相反。');
+  const trust=has(now,['信任助理','很信任助理','相信助理','完全相信助理']),opp=has(now,['不信任助理','怀疑助理','反驳助理','质疑助理']);
+  if(trust&&past.some(x=>has(x,['不信任助理','怀疑助理','反驳助理','质疑助理'])))issues.push('态度变化：历史存在怀疑/反驳，当前突然明显信任，请补充转变原因。');
+  if(opp&&past.some(x=>has(x,['信任助理','很信任助理','相信助理','完全相信助理'])))issues.push('态度变化：历史存在信任，当前突然怀疑/反驳，请补充触发原因。');
+  const ps=norm(p.personality?.summary||'');
+  if(has(ps,['谨慎','审慎','风险敏感','慢热'])&&has(now,['毫不犹豫','完全相信','立刻决定','不考虑风险','马上全仓']))issues.push('性格差异：人物画像偏谨慎/风险敏感，但当前表现为无条件快速决策。');
+  if(has(ps,['独立','自主','果断'])&&has(now,['完全依赖助理','没有主见','全部听助理']))issues.push('性格差异：人物画像偏独立自主，但当前表现为完全依赖他人。');
+  if(db.records.some(r=>String(r.personId)===String(p.id)&&r.source!=='document'&&norm(r.content)===now))issues.push('重复记忆：历史记录中已有相同内容。');
+  return [...new Set(issues)];
+}
+function allIssues(rows){return rows.flatMap(x=>detect(x.p,x.content).map(reason=>({p:x.p,reason,content:x.content})))}
+function issueText(xs){return xs.slice(0,10).map((x,i)=>(i+1)+'. '+pnum(x.p).padStart(2,'0')+pcl(x.p)+' · '+pname(x.p)+'\n'+x.reason+'\n文本：'+x.content).join('\n\n')}
+function textHtml(t){return String(t||'').split(/\n/).map(x=>'<div>'+esc(x||' ')+'</div>').join('')}
+function cleanHtml(markup){
+  const src=new DOMParser().parseFromString(String(markup||''),'text/html'),allowed=new Set(['DIV','P','BR','B','STRONG','I','EM','U','S','SPAN','H1','H2','H3','UL','OL','LI','BLOCKQUOTE','HR']);
+  function clean(n){
+    if(n.nodeType===Node.TEXT_NODE)return document.createTextNode(n.textContent||'');
+    if(n.nodeType!==Node.ELEMENT_NODE||!allowed.has(n.tagName))return document.createTextNode(n.textContent||'');
+    const o=document.createElement(n.tagName.toLowerCase());
+    if(n.tagName==='SPAN'&&n.classList.contains('person-token')&&/^[-\w]+$/.test(n.dataset.person||'')){o.className='person-token';o.contentEditable='false';o.dataset.person=n.dataset.person}
+    const al=(n.style?.textAlign||'').toLowerCase();if(['left','center','right','justify'].includes(al))o.style.textAlign=al;
+    n.childNodes.forEach(c=>o.appendChild(clean(c)));return o;
+  }
+  const box=document.createElement('div');src.body.childNodes.forEach(n=>box.appendChild(clean(n)));return box.innerHTML;
+}
+function cur(){ensureDocs();return db.dailyDocs[activeDate]}
+function setDate(d){if(!d)return;saveDaily(false,true);activeDate=d;ensureDocs();renderTabs();loadEditor();renderRank();if(currentPersonId)renderMemory(currentPersonId)}
+function renderTabs(){
+  const keys=[...new Set([dateKey(),...Object.keys(db.dailyDocs||{})])].filter(k=>/^\d{4}-\d{2}-\d{2}/.test(k)).sort().reverse().slice(0,7);
+  E('dailyTabs').innerHTML=keys.map(k=>'<button class="daily-tab '+(k===activeDate?'active':'')+'" data-day="'+esc(k)+'">'+esc(k)+'</button>').join('');
+  QA('[data-day]').forEach(b=>b.onclick=()=>setDate(b.dataset.day));E('dailyDatePicker').value=activeDate.slice(0,10);
+}
+function renderRank(){
+  const host=E('speechRanking');if(!host)return;
+  host.innerHTML=ranking().map(p=>'<button class="speech-row '+(String(p.id)===String(currentPersonId)?'active':'')+'" data-sp="'+esc(p.id)+'"><b>'+esc(pnum(p).padStart(2,'0'))+'</b><span class="'+(pGender(p)==='女'?'female':'male')+'">'+esc(pcl(p))+'</span><em>'+speechCount(p)+'次</em></button>').join('');
+  QA('[data-sp]').forEach(b=>b.onclick=()=>{currentPersonId=b.dataset.sp;renderRank();renderMemory(currentPersonId)});
+}
+function setup(){
+  ensureDocs();const sec=E('novel');if(!sec)return;
+  sec.innerHTML='<div class="topbar"><div><div class="eyebrow">DOCUMENT & MEMORY</div><h1 class="page-title">文档中心 · 每日写作</h1><p class="sub">每日内容独立保存，人物发言进入记忆并检查前后逻辑。</p></div><div class="actions"><button class="btn ghost" id="docxExport">导出 DOCX</button><button class="btn primary" id="saveDaily">保存今日</button></div></div><div class="daily-doc-layout"><aside class="card speech-panel"><div class="speech-head"><b>人物频次</b><small>高→低</small></div><div id="speechRanking"></div></aside><section class="card editor-card"><div class="daily-tabs-wrap"><div id="dailyTabs" class="daily-tabs"></div><div class="daily-pick"><input id="dailyDatePicker" type="date"><button class="btn ghost small" id="openDate">打开</button></div></div><div class="rich-title-row"><input class="input" id="dailyTitle" placeholder="当日记录标题（可选）"><span id="dailyStatus">未保存</span></div><div class="word-toolbar" id="wordToolbar"><button data-cmd="undo">↶</button><button data-cmd="redo">↷</button><span></span><button data-cmd="bold"><b>B</b></button><button data-cmd="italic"><i>I</i></button><button data-cmd="underline"><u>U</u></button><button data-cmd="strikeThrough"><s>S</s></button><span></span><button data-block="h1">H1</button><button data-block="h2">H2</button><button data-block="p">正文</button><button data-block="blockquote">引用</button><span></span><button data-cmd="insertUnorderedList">•</button><button data-cmd="insertOrderedList">1.</button><button data-cmd="justifyLeft">左</button><button data-cmd="justifyCenter">中</button><button data-cmd="justifyRight">右</button><button data-cmd="removeFormat">清格式</button></div><div id="personSuggest" class="doc-suggest"></div><div id="dailyEditor" class="rich-editor" contenteditable="true" spellcheck="false"></div><div class="editor-foot"><span>输入编号如 <b>21</b>，回车插入对应人物。</span><span id="wordCount">0 字</span></div></section><aside class="card memory-panel"><div class="panel-head"><h2>人物记忆</h2><span id="personFrequency" class="muted">未选择</span></div><div id="memoryPerson"></div><div id="logicWarnings"></div><div id="memoryTimeline" class="memory-timeline"></div></aside></div>';
+  if(!E('dailyDocStyles')){const st=document.createElement('style');st.id='dailyDocStyles';st.textContent='.daily-doc-layout{display:grid;grid-template-columns:136px minmax(0,1fr) 310px;gap:14px}.speech-panel{padding:10px 8px;max-height:720px;overflow:auto}.speech-head{display:flex;justify-content:space-between;align-items:center;padding:4px 4px 9px;border-bottom:1px solid var(--line);font-size:11px}.speech-head small{color:var(--muted)}.speech-row{width:100%;display:grid;grid-template-columns:27px 1fr auto;gap:4px;align-items:center;padding:7px 4px;border-radius:7px;color:#657386;font-size:11px;text-align:left}.speech-row:hover,.speech-row.active{background:#f1f5f8;color:#344e68}.speech-row b{font-size:11px}.speech-row span{border-radius:999px;padding:2px 3px;text-align:center;font-size:9px}.speech-row .female{background:#f8eef2;color:#a37184}.speech-row .male{background:#edf3f7;color:#66829a}.speech-row em{font-style:normal;color:#8b96a3;font-size:9px}.editor-card,.memory-panel{padding:14px}.daily-tabs-wrap{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:10px}.daily-tabs{display:flex;gap:5px;overflow:auto}.daily-tab{padding:6px 8px;border:1px solid var(--line);border-radius:7px;color:#7c8998;background:#fff;font-size:10px;white-space:nowrap}.daily-tab.active{background:#eef3f7;color:#45647f;border-color:#dbe4ec}.daily-pick{display:flex;gap:5px}.daily-pick input{border:1px solid var(--line);border-radius:7px;padding:5px;color:#758293}.rich-title-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}.rich-title-row .input{flex:1}.rich-title-row #dailyStatus{font-size:10px;color:#84919e;white-space:nowrap}.word-toolbar{display:flex;gap:4px;align-items:center;flex-wrap:wrap;padding:7px;border:1px solid var(--line);border-radius:9px 9px 0 0;background:#fafbfc}.word-toolbar button{padding:5px 7px;border:1px solid #e8edf2;background:#fff;border-radius:6px;color:#667689;font-size:10px}.word-toolbar span{width:1px;height:19px;background:var(--line)}.rich-editor{min-height:560px;padding:24px 28px;border:1px solid var(--line);border-top:0;border-radius:0 0 9px 9px;background:#fff;outline:0;line-height:1.85;font-size:14px}.person-token{background:#eef3f8;color:#4f708c;border-radius:5px;padding:1px 4px;font-weight:750}.doc-suggest{display:none;padding:7px 9px;border:1px solid #d7e1ea;background:#f7f9fb;font-size:10px;color:#60768c}.doc-suggest.show{display:block}.editor-foot{display:flex;justify-content:space-between;color:#929daa;font-size:9px;padding-top:7px}.memory-person-card{padding:11px;border:1px solid var(--line);border-radius:10px;background:#fbfcfd}.memory-person-card b,.memory-person-card small{display:block}.memory-person-card small{color:var(--muted);margin-top:2px}.memory-person-card p{font-size:11px;color:#697789}.logic-warning{margin-top:10px;padding:10px;border-radius:9px;background:#faf2f2;color:#9b666a;font-size:10px}.memory-timeline{display:grid;gap:7px;margin-top:11px;max-height:520px;overflow:auto}.memory-row{border-left:2px solid #dce5ec;padding:6px 8px;background:#fbfcfd}.memory-row b,.memory-row small{display:block}.memory-row b{font-size:10px}.memory-row small{color:#9aa4ae}.memory-row p{margin:3px 0 0;font-size:10px;color:#687687}@media(max-width:1100px){.daily-doc-layout{grid-template-columns:120px minmax(0,1fr)}.memory-panel{grid-column:1/-1}}@media(max-width:720px){.daily-doc-layout{grid-template-columns:1fr}.speech-panel{max-height:210px}.rich-editor{min-height:440px;padding:18px 14px}}';document.head.appendChild(st)}
+  bind();renderTabs();renderRank();loadEditor();renderMemory(null);
+}
+function bind(){
+  E('saveDaily').onclick=()=>saveDaily(true,false);E('docxExport').onclick=exportDocx;E('openDate').onclick=()=>setDate(E('dailyDatePicker').value);
+  E('dailyTitle').oninput=schedule;E('dailyEditor').addEventListener('input',()=>{schedule();suggest();wordCount()});E('dailyEditor').addEventListener('keyup',suggest);E('dailyEditor').addEventListener('keydown',keyDown);E('dailyEditor').addEventListener('click',()=>{const p=selectionPerson();if(p){currentPersonId=p.id;renderRank();renderMemory(p.id)}});
+  QA('#wordToolbar [data-cmd]').forEach(b=>b.onclick=()=>{document.execCommand(b.dataset.cmd,false,null);E('dailyEditor').focus();schedule()});
+  QA('#wordToolbar [data-block]').forEach(b=>b.onclick=()=>{document.execCommand('formatBlock',false,b.dataset.block);E('dailyEditor').focus();schedule()});
+}
+function loadEditor(){const d=cur();E('dailyTitle').value=d.title||'';E('dailyEditor').innerHTML=cleanHtml(d.html||textHtml(d.content||''));E('dailyStatus').textContent=d.updatedAt?'已保存 '+new Date(d.updatedAt).toLocaleTimeString('zh-CN',{hour12:false}):'新建内容';wordCount();renderWarnings()}
+function schedule(){E('dailyStatus').textContent='正在编辑…';clearTimeout(autosaveTimer);autosaveTimer=setTimeout(()=>saveDaily(false,true),900)}
+function wordCount(){E('wordCount').textContent=E('dailyEditor').innerText.replace(/\s/g,'').length+' 字'}
+function saveDaily(showToast=false,silentWarnings=false){
+  if(!E('dailyEditor'))return false;const d=cur(),text=E('dailyEditor').innerText,rows=statements(text),issues=allIssues(rows);
+  if(!silentWarnings&&showToast&&issues.length&&!confirm('保存前发现人物逻辑/塑造风险：\n\n'+issueText(issues)+'\n\n仍要保存今日内容吗？'))return false;
+  d.title=E('dailyTitle').value.trim();d.html=cleanHtml(E('dailyEditor').innerHTML);d.content=text;d.updatedAt=new Date().toISOString();
+  db.records=db.records.filter(r=>!(r.source==='document'&&r.docDate===activeDate));
+  rows.forEach(x=>db.records.push({id:'docmem-'+activeDate+'-'+x.p.id+'-'+h32(x.content),personId:x.p.id,date:activeDate,type:'发言记录',source:'document',docDate:activeDate,title:'每日文档 · '+(d.title||activeDate),content:x.content,topics:['文档记忆']}));
+  save();E('dailyStatus').textContent='已保存 '+new Date().toLocaleTimeString('zh-CN',{hour12:false});renderRank();renderWarnings();if(currentPersonId)renderMemory(currentPersonId);if(showToast)toast('今日文档已保存并同步云端');return true;
+}
+function currentBlock(){const s=window.getSelection();if(!s||!s.rangeCount)return null;let n=s.anchorNode;if(n?.nodeType===3)n=n.parentElement;while(n&&n!==E('dailyEditor')&&n.parentElement!==E('dailyEditor'))n=n.parentElement;return n&&n!==E('dailyEditor')?n:null}
+function suggest(){const b=currentBlock(),box=E('personSuggest');if(!b||!box)return;const m=b.innerText.trim().match(/^0*(\d{1,3})$/),p=m?byNumber(m[1]):null;if(p){box.className='doc-suggest show';box.innerHTML='Enter 插入：<b>'+esc(pnum(p).padStart(2,'0')+pcl(p)+' · '+pname(p))+'</b>　发言 '+speechCount(p)+'次';currentPersonId=p.id;renderRank();renderMemory(p.id)}else box.className='doc-suggest'}
 function caretEnd(n){const r=document.createRange(),s=window.getSelection();r.selectNodeContents(n);r.collapse(false);s.removeAllRanges();s.addRange(r)}
-function handleKey(e){if(e.key!=='Enter')return;const b=currentBlock();if(!b)return;const t=b.innerText.trim(),m=t.match(/^0*(\d{1,3})$/);if(m){const p=findByNumber(m[1]);if(p){e.preventDefault();b.innerHTML='<span class="person-token" contenteditable="false" data-person="'+esc2(p.id)+'">'+esc2(legacy(p)+classLabel(p)+' · '+pnm(p))+'</span>：&nbsp;';caretEnd(b);renderMemory(p.id);E('docPersonSuggest').className='doc-suggest';return}}const issues=allIssues(statementRows(t));if(issues.length&&!confirm('人物逻辑/塑造提示：\n\n'+issueMessage(issues)+'\n\n继续换行吗？'))e.preventDefault()}
-function personFromSelection(){const sel=window.getSelection();if(!sel||!sel.rangeCount)return null;let n=sel.anchorNode;if(n?.nodeType===3)n=n.parentElement;const token=n?.closest?.('.person-token');return token?person(token.dataset.person):null}
-function renderMemory(pid){const p=pid?person(pid):null;if(!p){E('memoryPerson').innerHTML='<div class="empty">输入人物编号或点击人物标签查看记忆</div>';E('memoryTimeline').innerHTML='';E('mentionFrequency').textContent='未选择人物';return}E('mentionFrequency').textContent='系统出场频次 '+appearanceCount(p);E('memoryPerson').innerHTML='<div class="memory-person-card"><b>'+esc2(legacy(p)+classLabel(p)+' · '+pnm(p))+'</b><small>'+esc2(p.age||'--')+'岁 · '+esc2(p.account?.status||'--')+'</small><p>'+esc2(p.personality?.summary||'暂无性格描述')+'</p></div>';E('memoryTimeline').innerHTML=memoryRows(p).map(x=>'<div class="memory-row"><b>'+esc2(x.date)+' · '+esc2(x.title)+'</b><small>'+esc2(x.type)+'</small><p>'+esc2(x.detail)+'</p></div>').join('')||'<div class="empty">暂无历史记忆</div>'}
-function saveDoc2(){const d=getDoc2();if(!d)return false;const text=E('richEditor').innerText,rows=statementRows(text),issues=allIssues(rows);if(issues.length&&!confirm('保存前发现人物逻辑/塑造风险：\n\n'+issueMessage(issues)+'\n\n仍要保存吗？'))return false;d.title=E('richDocTitle').value.trim()||'未命名';d.html=cleanDocHtml(E('richEditor').innerHTML);d.content=text;d.updated=today2();db.records=db.records.filter(r=>!String(r.id).startsWith('docmem-'+d.id+'-'));rows.forEach(x=>{const id='docmem-'+d.id+'-'+x.p.id+'-'+hashText(x.content);if(!db.records.some(r=>r.id===id))db.records.push({id,personId:x.p.id,date:today2(),type:'发言记录',title:'文档记忆 · '+d.title,content:x.content,topics:['文档记忆']})});save();renderDocs2();E('richDocStatus').textContent='已保存并同步人物记忆';toast('文档已保存');return true}
-function ensureDocxLib(){return new Promise((resolve,reject)=>{if(window.docx)return resolve(window.docx);const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js';s.onload=()=>window.docx?resolve(window.docx):reject(new Error('DOCX组件未加载'));s.onerror=()=>reject(new Error('DOCX组件加载失败'));document.head.appendChild(s)})}
-async function exportDocx(){const d=getDoc2();if(!d||saveDoc2()===false)return;try{const D=await ensureDocxLib(),paras=E('richEditor').innerText.split(/\n/).map(t=>new D.Paragraph({children:[new D.TextRun(t)]})),doc=new D.Document({sections:[{children:paras}]}),blob=await D.Packer.toBlob(doc),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(d.title||'文档')+'.docx';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast('DOCX 已导出')}catch(err){alert(err.message)}}
-setupNovel();
+function keyDown(e){if(e.key!=='Enter')return;const b=currentBlock();if(!b)return;const t=b.innerText.trim(),m=t.match(/^0*(\d{1,3})$/);if(m){const p=byNumber(m[1]);if(p){e.preventDefault();b.innerHTML='<span class="person-token" contenteditable="false" data-person="'+esc(p.id)+'">'+esc(pnum(p).padStart(2,'0')+pcl(p)+' · '+pname(p))+'</span>：&nbsp;';caretEnd(b);currentPersonId=p.id;renderRank();renderMemory(p.id);E('personSuggest').className='doc-suggest';schedule();return}}const is=allIssues(statements(t));if(is.length&&!confirm('人物逻辑/塑造提示：\n\n'+issueText(is)+'\n\n继续换行吗？'))e.preventDefault()}
+function selectionPerson(){const s=window.getSelection();if(!s||!s.rangeCount)return null;let n=s.anchorNode;if(n?.nodeType===3)n=n.parentElement;const t=n?.closest?.('.person-token');return t?person(t.dataset.person):null}
+function renderMemory(pid){
+  const p=pid?person(pid):null;if(!p){E('memoryPerson').innerHTML='<div class="empty">点击左侧人物，或输入编号查看记忆</div>';E('memoryTimeline').innerHTML='';E('personFrequency').textContent='未选择';return}
+  E('personFrequency').textContent='发言 '+speechCount(p)+'次';E('memoryPerson').innerHTML='<div class="memory-person-card"><b>'+esc(pnum(p).padStart(2,'0')+pcl(p)+' · '+pname(p))+'</b><small>'+esc(p.age||'--')+'岁 · '+esc(p.account?.status||'--')+' · '+(pVip(p)?esc(p.vip?.level||'VIP'):'非VIP')+'</small><p>'+esc(p.personality?.summary||'暂无性格描述')+'</p></div>';
+  E('memoryTimeline').innerHTML=memRows(p).map(x=>'<div class="memory-row"><b>'+esc(x.d)+' · '+esc(x.t)+'</b><small>'+esc(x.k)+'</small><p>'+esc(x.x)+'</p></div>').join('')||'<div class="empty">暂无历史记忆</div>';
+}
+function renderWarnings(){const host=E('logicWarnings');if(!host)return;const is=allIssues(statements(E('dailyEditor')?.innerText||''));host.innerHTML=is.length?'<div class="logic-warning"><b>逻辑一致性提示 · '+is.length+'条</b><br>'+is.slice(0,3).map(x=>esc(pnum(x.p).padStart(2,'0')+pcl(x.p)+'：'+x.reason)).join('<br>')+'</div>':''}
+
+/* 无 CDN 的最小 DOCX，保留段落/标题/粗体/斜体/下划线/删除线/对齐。 */
+function xml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function crc32(b){let c=-1;for(let i=0;i<b.length;i++){c^=b[i];for(let k=0;k<8;k++)c=(c>>>1)^((c&1)?0xEDB88320:0)}return(c^-1)>>>0}
+const u16=n=>[n&255,(n>>>8)&255],u32=n=>[n&255,(n>>>8)&255,(n>>>16)&255,(n>>>24)&255];
+function cat(parts){const l=parts.reduce((s,x)=>s+x.length,0),o=new Uint8Array(l);let p=0;parts.forEach(x=>{o.set(x,p);p+=x.length});return o}
+function zip(files){const e=new TextEncoder(),ls=[],cs=[];let off=0;files.forEach(f=>{const n=e.encode(f.name),d=typeof f.data==='string'?e.encode(f.data):f.data,c=crc32(d),lh=new Uint8Array([...u32(0x04034b50),...u16(20),...u16(0),...u16(0),...u16(0),...u16(0),...u32(c),...u32(d.length),...u32(d.length),...u16(n.length),...u16(0),...n]);ls.push(lh,d);cs.push(new Uint8Array([...u32(0x02014b50),...u16(20),...u16(20),...u16(0),...u16(0),...u16(0),...u16(0),...u32(c),...u32(d.length),...u32(d.length),...u16(n.length),...u16(0),...u16(0),...u16(0),...u16(0),...u32(0),...u32(off),...n]));off+=lh.length+d.length});const cd=cat(cs),end=new Uint8Array([...u32(0x06054b50),...u16(0),...u16(0),...u16(files.length),...u16(files.length),...u32(cd.length),...u32(off),...u16(0)]);return cat([...ls,cd,end])}
+function run(n,p={}){if(n.nodeType===Node.TEXT_NODE){if(!n.textContent)return'';const r=(p.b?'<w:b/>':'')+(p.i?'<w:i/>':'')+(p.u?'<w:u w:val="single"/>':'')+(p.s?'<w:strike/>':'');return'<w:r>'+(r?'<w:rPr>'+r+'</w:rPr>':'')+'<w:t xml:space="preserve">'+xml(n.textContent)+'</w:t></w:r>'}if(n.nodeType!==Node.ELEMENT_NODE)return'';const q={...p,b:p.b||['B','STRONG'].includes(n.tagName),i:p.i||['I','EM'].includes(n.tagName),u:p.u||n.tagName==='U',s:p.s||n.tagName==='S'};if(n.tagName==='BR')return'<w:r><w:br/></w:r>';return[...n.childNodes].map(x=>run(x,q)).join('')}
+function docXml(){const box=document.createElement('div');box.innerHTML=cleanHtml(E('dailyEditor').innerHTML);let body='';[...box.childNodes].forEach(n=>{const tag=n.tagName||'',al=n.style?.textAlign||'';let pr='';if(['center','right','justify'].includes(al))pr+='<w:jc w:val="'+al+'"/>';if(tag==='H1')pr+='<w:pStyle w:val="Heading1"/>';if(tag==='H2')pr+='<w:pStyle w:val="Heading2"/>';body+='<w:p>'+(pr?'<w:pPr>'+pr+'</w:pPr>':'')+(tag==='LI'?'<w:r><w:t>• </w:t></w:r>':'')+run(n)+'</w:p>'});return'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>'+body+'<w:sectPr/></w:body></w:document>'}
+function exportDocx(){if(saveDaily(true,false)===false)return;const d=cur(),files=[{name:'[Content_Types].xml',data:'<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>'},{name:'_rels/.rels',data:'<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>'},{name:'word/document.xml',data:docXml()}],blob=new Blob([zip(files)],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(activeDate+(d.title?'_'+d.title:'')+'.docx').replace(/[\\/:*?"<>|]/g,'_');a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast('DOCX 已离线导出')}
+setup();
 })();
