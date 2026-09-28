@@ -64,7 +64,17 @@ renderPeople=function(){
     return '<tr data-open-person="'+s(p.id)+'"><td>'+s(p.id)+'</td><td class="namecell">'+s(label(p))+'</td><td>'+s(pGender(p)||'--')+'</td><td>'+s(p.age||'--')+'</td><td>'+s(pRelationName(p)||'--')+'</td><td>'+(pVip(p)?s(p.vip?.level||'VIP'):'否')+'</td><td>'+(isOpened(p)?'已开户':'未开户')+'</td><td>'+(isJoined(p)?'已入群':'未入群')+'</td><td>'+contactCount(p)+'</td><td>'+participationCount(p)+'</td><td>'+(hs.length?hs.length+' 笔':'无')+'</td><td>'+cash(p.finance?.estimated_investable_assets_eur||0)+'</td><td class="'+(pf.ratio==null?'':(pf.ratio>=0?'profit-pos':'profit-neg'))+'">'+s(ratioText(pf.ratio))+'</td><td><button class="link-btn view-person" data-id="'+s(p.id)+'">详情</button> <button class="link-btn" data-trade-pref="'+s(p.id)+'">交易设置</button> <button class="link-btn edit-person" data-id="'+s(p.id)+'">编辑</button> <button class="link-btn danger delete-person" data-id="'+s(p.id)+'">删除</button></td></tr>';
   }).join('')+'</tbody></table></div>';
   host.querySelectorAll('[data-open-person]').forEach(function(row){row.onclick=function(e){if(e.target.closest('button'))return;openDetail(row.dataset.openPerson)}});
+  host.querySelectorAll('.view-person').forEach(function(b){b.onclick=function(e){e.stopPropagation();openDetail(b.dataset.id)}});
+  host.querySelectorAll('[data-trade-pref]').forEach(function(b){b.onclick=function(e){e.stopPropagation();editTradePrefLocal(b.dataset.tradePref)}});
+  host.querySelectorAll('.edit-person').forEach(function(b){b.onclick=function(e){e.stopPropagation();openPerson(b.dataset.id)}});
+  host.querySelectorAll('.delete-person').forEach(function(b){b.onclick=function(e){e.stopPropagation();deletePerson(b.dataset.id)}});
 };
+
+function editTradePrefLocal(id){
+  const p=person(id);if(!p)return;
+  p.trade_profile=p.trade_profile&&typeof p.trade_profile==='object'?p.trade_profile:{participation_frequency:'MEDIUM',required_today:false};
+  openModal('交易参与设置 · '+label(p),'<div class="form-grid"><div class="field"><label>参与频率</label><select class="select" name="freq"><option value="HIGH" '+(p.trade_profile.participation_frequency==='HIGH'?'selected':'')+'>高</option><option value="MEDIUM" '+(p.trade_profile.participation_frequency==='MEDIUM'?'selected':'')+'>中</option><option value="LOW" '+(p.trade_profile.participation_frequency==='LOW'?'selected':'')+'>低</option></select></div><div class="field"><label>今天强制参与</label><select class="select" name="required"><option value="0" '+(!p.trade_profile.required_today?'selected':'')+'>否</option><option value="1" '+(p.trade_profile.required_today?'selected':'')+'>是</option></select></div></div>',function(fd){p.trade_profile.participation_frequency=String(fd.get('freq'));p.trade_profile.required_today=fd.get('required')==='1'});
+}
 
 function journey(p){
   const rows=[],add=function(date,title,detail){if(date)rows.push({date:String(date).slice(0,10),title:title,detail:detail||''})};
@@ -110,9 +120,13 @@ function editPerformance(id){
   const p=person(id);if(!p)return;
   p.performance=p.performance&&typeof p.performance==='object'?p.performance:{};
   const pf=performance(p);
-  openModal('资金与盈利维护 · '+label(p),'<div class="form-grid"><div class="field"><label>累计投入资金 EUR</label><input class="input" type="number" min="0" step="0.01" name="invested" value="'+s(p.performance.invested_capital_eur??(pf.invested||''))+'"></div><div class="field"><label>累计盈利 EUR</label><input class="input" type="number" step="0.01" name="profit" value="'+s(p.performance.total_profit_eur??'')+'" placeholder="亏损可输入负数"></div><div class="field full"><div class="notice">盈利占比 = 累计盈利 ÷ 累计投入资金。系统不会自动伪造价格或收益；未录入盈利时显示“未录入”。</div></div></div>',function(f){p.performance.invested_capital_eur=Number(f.get('invested'))||0;const raw=String(f.get('profit')||'').trim();p.performance.total_profit_eur=raw===''?null:Number(raw)});
+  openModal('资金与盈利维护 · '+label(p),'<div class="form-grid"><div class="field"><label>累计投入资金 EUR</label><input class="input" type="number" min="0" step="0.01" name="invested" value="'+s(p.performance.invested_capital_eur??(pf.invested||''))+'"></div><div class="field"><label>累计盈利 EUR</label><input class="input" type="number" step="0.01" name="profit" value="'+s(p.performance.total_profit_eur??'')+'" placeholder="亏损可输入负数"></div><div class="field full"><div class="notice">盈利占比 = 累计盈利 ÷ 累计投入资金。系统不会自动伪造价格或收益；未录入盈利时显示“未录入”。</div></div></div>',function(f){p.performance.invested_capital_eur=Number(f.get('invested'))||0;const raw=String(f.get('profit')||'').trim();p.performance.total_profit_eur=raw===''?null:Number(raw);setTimeout(function(){openDetail(p.id)},0)});
 }
 viewPerson=openDetail;
+['personSearch','personSort','systemGroupFilter','customGroupFilter'].forEach(function(id){
+  const el=$id(id);if(!el)return;el.dataset.peopleDetailFilterBound='1';
+  if(id==='personSearch')el.oninput=renderPeople;else el.onchange=renderPeople;
+});
 
 function refreshBindings(){
   document.querySelectorAll('#peopleList [data-trade-pref]').forEach(function(b){
