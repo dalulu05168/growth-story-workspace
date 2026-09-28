@@ -278,15 +278,15 @@ function authConfig(){try{return JSON.parse(localStorage.getItem(AUTH_KEY)||'nul
 function injectAuth(){
   document.querySelector('.app').classList.add('app-lock');
   const root=document.createElement('div');root.id='authRoot';root.className='auth-root';
-  root.innerHTML='<div class="auth-lines"></div><div class="auth-orb a"></div><div class="auth-orb b"></div><div id="authStage"><div class="splash-mark">IW</div><div class="splash-copy">INVESTOR WORKSPACE · SECURE ACCESS</div></div>';
+  root.innerHTML='<div class="auth-lines"></div><div class="auth-orb a"></div><div class="auth-orb b"></div><div id="authStage"><div class="splash-mark">辰</div><div class="splash-copy">辰南 · 笔尖上的比特币</div></div>';
   document.body.appendChild(root);
   setTimeout(showAuthCard,1100);
 }
 function showAuthCard(){
   const cfg=authConfig(),stage=byId('authStage');if(!stage)return;
-  if(sessionStorage.getItem(AUTH_SESSION)==='1'){unlockApp();return}
-  if(!cfg){renderSetup(stage);return}
-  stage.innerHTML='<div class="auth-card"><div class="auth-logo">IW</div><h1 class="auth-title">安全登录</h1><p class="auth-sub">账户密码 + 2FA 动态验证码</p><form id="loginForm"><div class="auth-field"><label>账户</label><input name="user" autocomplete="username" required></div><div class="auth-field"><label>密码</label><input type="password" name="password" autocomplete="current-password" required></div><div class="auth-field"><label>2FA 验证码</label><input name="code" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" autocomplete="one-time-code" required></div><button class="auth-btn">进入系统</button><div class="auth-error" id="authError"></div></form><div class="auth-note">当前仓库为静态部署：此本机认证适合内部测试/单机使用。正式公网域名建议接入服务端身份认证后再开放。</div></div>';
+  if(cfg&&sessionStorage.getItem(AUTH_SESSION)==='1'){unlockApp();return}
+  if(!cfg){sessionStorage.removeItem(AUTH_SESSION);renderSetup(stage);return}
+  stage.innerHTML='<div class="auth-card"><div class="auth-logo">辰</div><h1 class="auth-title">辰南</h1><p class="auth-sub">墨落成章 · 笔尖上的比特币</p><form id="loginForm"><div class="auth-field"><label>账户</label><input name="user" autocomplete="username" required></div><div class="auth-field"><label>密码</label><input type="password" name="password" autocomplete="current-password" required></div><div class="auth-field"><label>动态验证码</label><input name="code" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" autocomplete="one-time-code" required></div><button class="auth-btn">进入辰南</button><div class="auth-error" id="authError"></div></form><div class="auth-note">人物、交易与文档，沿墨迹续写。</div></div>';
   byId('loginForm').onsubmit=async function(e){e.preventDefault();const f=new FormData(e.target),err=byId('authError');err.textContent='正在验证…';const user=String(f.get('user')||''),pw=String(f.get('password')||''),code=String(f.get('code')||'');const hash=await passwordHash(pw,cfg.salt);const ok=user===cfg.user&&hash===cfg.hash&&await verifyTotp(cfg.totpSecret,code);if(!ok){err.textContent='账户、密码或 2FA 验证码错误';return}sessionStorage.setItem(AUTH_SESSION,'1');unlockApp()};
 }
 function renderSetup(stage){
@@ -298,7 +298,7 @@ function renderTotpBind(stage,user,pw,secret){
   stage.innerHTML='<div class="auth-card"><div class="auth-logo">2F</div><h1 class="auth-title">绑定 2FA</h1><p class="auth-sub">在验证器中手工添加以下密钥，然后输入当前 6 位验证码。</p><div class="auth-field"><label>TOTP 密钥</label><div class="auth-secret">'+safe(secret)+'</div></div><div class="auth-field"><label>otpauth 地址（支持时可复制导入）</label><div class="auth-secret">'+safe(uri)+'</div></div><form id="bindForm"><div class="auth-field"><label>当前 6 位验证码</label><input name="code" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" required></div><button class="auth-btn">完成安全设置</button><div class="auth-error" id="authError"></div></form></div>';
   byId('bindForm').onsubmit=async function(e){e.preventDefault();const code=new FormData(e.target).get('code'),err=byId('authError');if(!await verifyTotp(secret,code)){err.textContent='验证码不正确，请检查验证器时间';return}const saltBytes=new Uint8Array(16);crypto.getRandomValues(saltBytes);const salt=bytesToB64(saltBytes),hash=await passwordHash(pw,salt);localStorage.setItem(AUTH_KEY,JSON.stringify({user:user,salt:salt,hash:hash,totpSecret:secret,createdAt:new Date().toISOString(),mode:'local-totp'}));sessionStorage.setItem(AUTH_SESSION,'1');unlockApp()};
 }
-function unlockApp(){const root=byId('authRoot');if(root)root.classList.add('hidden');document.querySelector('.app').classList.remove('app-lock')}
+function unlockApp(){const root=byId('authRoot');if(root)root.classList.add('hidden');document.querySelector('.app').classList.remove('app-lock');document.querySelector('.app').classList.add('app-ready')}
 
 function boot(){
   ensureTradeState();ensureTradeUI();wrapRender();render();injectAuth();
