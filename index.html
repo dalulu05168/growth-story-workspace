@@ -2,45 +2,390 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>成长档案 · 人物与小说工作台</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>成长档案 · 投资者人物管理工作台</title>
 <style>
-:root{--ink:#172236;--muted:#6c788c;--line:#e2e8f0;--paper:#fff;--bg:#f3f6fa;--blue:#3568f4;--blue-weak:#edf2ff;--green:#118461;--green-weak:#e6f7f0;--amber:#b96b08;--amber-weak:#fff5df;--red:#bd4b52;--red-weak:#fff0f0;--shadow:0 12px 30px rgba(31,52,86,.06);--radius:16px}
-*{box-sizing:border-box}html{background:var(--bg)}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer;border:0}.app{display:flex;min-height:100vh}.sidebar{width:236px;background:linear-gradient(180deg,#15243d 0%,#172b49 100%);color:#dce6f7;padding:24px 16px;position:fixed;inset:0 auto 0 0;z-index:5}.brand{display:flex;gap:11px;align-items:center;margin:0 10px 38px}.brand-mark{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#7694ff,#2f5be7);display:grid;place-items:center;color:#fff;font-size:19px;font-weight:800;box-shadow:0 8px 18px rgba(39,82,214,.25)}.brand b{display:block;color:#fff;font-size:15px}.brand small{color:#9cafce;font-size:11px}.nav{display:grid;gap:6px}.nav button{background:transparent;color:#aebdd5;text-align:left;padding:12px 13px;border-radius:11px;display:flex;gap:11px;align-items:center}.nav button.active,.nav button:hover{background:#253b61;color:#fff}.nav i{font-style:normal;font-size:17px;width:20px;text-align:center}.side-note{position:absolute;bottom:26px;left:26px;right:24px;color:#8093b2;font-size:12px}.main{margin-left:236px;width:calc(100% - 236px);min-height:100vh;padding:28px 34px 48px}.section{max-width:1580px;margin:0 auto;display:none}.section.active{display:block}.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:23px}.eyebrow{color:var(--blue);font-weight:800;font-size:11px;letter-spacing:.1em}.page-title{font-size:27px;line-height:1.2;margin:6px 0 4px;letter-spacing:-.035em}.sub{color:var(--muted);margin:0}.actions,.toolbar,.button-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.btn{padding:10px 16px;border-radius:10px;font-weight:750;transition:.2s}.btn.primary{background:var(--blue);color:white;box-shadow:0 6px 15px rgba(56,103,244,.22)}.btn.primary:hover{background:#2c56db}.btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}.btn.danger{background:var(--red-weak);color:var(--red)}.btn.small{padding:7px 10px;font-size:12px}.card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}.dashboard{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:18px}.metric{padding:17px 19px;min-height:108px}.metric .label{color:var(--muted);font-size:12px}.metric strong{font-size:30px;line-height:1.1;display:block;margin:7px 0 4px}.metric .trend{color:var(--green);font-size:12px}.grid{display:grid;grid-template-columns:minmax(0,1.28fr) minmax(330px,.72fr);gap:18px}.panel{padding:20px}.panel-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}.panel h2{font-size:16px;margin:0}.panel h3{font-size:14px;margin:0}.muted{color:var(--muted)}.input,.select,textarea{width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;padding:10px 12px;color:var(--ink);outline:none}.input:focus,.select:focus,textarea:focus{border-color:#8fa7ff;box-shadow:0 0 0 3px #eef2ff}.search{max-width:280px}.empty{text-align:center;padding:38px 10px;color:var(--muted)}.notice{padding:11px 13px;border-radius:11px;background:var(--blue-weak);color:#445b9b;font-size:12px;margin-bottom:14px}.notice.warn{background:var(--amber-weak);color:#8a5b0a}.profile-list{display:grid;gap:10px}.profile-row{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--line);border-radius:13px;transition:.2s}.profile-row:hover{border-color:#b9c8ff;background:#f8faff}.avatar{width:42px;height:42px;border-radius:14px;background:#e4e9ff;color:#3656ba;display:grid;place-items:center;font-weight:800;flex:0 0 auto}.profile-row .person{flex:1;min-width:0}.person b{display:block}.person small{color:var(--muted);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.count,.tag{font-size:11px;color:#596579;background:#f2f4f8;padding:3px 8px;border-radius:20px}.link-btn{color:var(--blue);background:transparent;font-weight:700;font-size:12px}.sort-badge{font-size:11px;color:var(--green);background:var(--green-weak);padding:3px 8px;border-radius:20px}.timeline{display:grid;gap:12px}.timeline-item{display:grid;grid-template-columns:82px 16px 1fr;gap:11px}.date{color:var(--muted);font-size:12px;padding-top:11px;text-align:right}.dotline{position:relative}.dotline:before{content:"";position:absolute;top:15px;left:4px;width:8px;height:8px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 4px #e9edff}.dotline:after{content:"";position:absolute;top:27px;bottom:-18px;left:7px;width:2px;background:#e5e9f1}.timeline-item:last-child .dotline:after{display:none}.event{border:1px solid var(--line);border-radius:13px;padding:12px 14px;background:#fff}.event-head{display:flex;justify-content:space-between;gap:10px;align-items:start}.event-title{font-weight:750}.type{font-size:11px;padding:3px 7px;border-radius:20px;background:var(--blue-weak);color:var(--blue);white-space:nowrap}.type.talk{background:var(--green-weak);color:var(--green)}.event p{margin:5px 0;color:#4f5b6d}.tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.tabs{display:flex;gap:7px;border-bottom:1px solid var(--line);margin-bottom:18px}.tabs button{background:transparent;color:var(--muted);padding:9px 13px;border-bottom:2px solid transparent}.tabs button.active{color:var(--blue);font-weight:700;border-color:var(--blue)}.novel-layout{display:grid;grid-template-columns:250px minmax(0,1fr);gap:18px}.doc-list{display:grid;gap:8px}.doc-item{padding:11px 12px;border:1px solid var(--line);border-radius:11px;background:#fff;text-align:left}.doc-item.active{border-color:#9eb1ff;background:var(--blue-weak)}.doc-item b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.doc-item small{color:var(--muted)}.editor-toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}.editor{min-height:420px;resize:vertical;line-height:1.8;font-size:15px}.shortcut{padding:10px 12px;border:1px dashed #b9c8ff;background:#f8faff;color:#4f65a5;border-radius:10px;font-size:12px;margin-top:10px}.conflict-list{display:grid;gap:8px;margin-top:9px}.conflict{border:1px solid #f0c774;background:#fff9e9;border-radius:10px;padding:10px 12px;color:#7b5a1a;font-size:12px}.conflict strong{display:block;color:#6b4b0b;margin-bottom:3px}.danger-conflict{border-color:#edb0b4;background:#fff4f4;color:#8d3d45}.check-box{padding:13px;border-radius:12px;border:1px solid var(--line);background:#fafbfe;margin-top:12px}.check-box h3{margin:0 0 4px;font-size:14px}.check-box ul{margin:6px 0 0 18px;padding:0}.check-box li{margin:3px 0}.modal-wrap{display:none;position:fixed;inset:0;background:rgba(12,21,39,.4);z-index:10;align-items:center;justify-content:center;padding:20px}.modal-wrap.show{display:flex}.modal{background:#fff;border-radius:18px;width:min(650px,100%);max-height:90vh;overflow:auto;padding:24px;box-shadow:0 22px 60px rgba(16,28,52,.25)}.modal h2{margin:0 0 18px;font-size:19px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}.field{display:grid;gap:6px}.field.full{grid-column:1/-1}.field label{font-size:12px;font-weight:700;color:#526078}.modal-foot{display:flex;justify-content:flex-end;gap:10px;margin-top:21px}.toast{position:fixed;right:22px;bottom:22px;background:#18212f;color:#fff;padding:11px 16px;border-radius:10px;opacity:0;transform:translateY(8px);pointer-events:none;transition:.25s;z-index:20}.toast.show{opacity:1;transform:none}
-@media(min-width:1500px){.main{padding-left:42px;padding-right:42px}.panel{padding:22px}}@media(max-width:1100px){.sidebar{width:74px;padding:20px 10px}.brand{margin:0 6px 28px}.brand>div:last-child,.nav span,.side-note{display:none}.brand-mark{width:42px}.main{margin-left:74px;width:calc(100% - 74px);padding:26px 22px 50px}.grid,.novel-layout{grid-template-columns:1fr}.section{max-width:none}}@media(max-width:650px){.main{padding:20px 14px}.topbar{align-items:flex-start;gap:15px;flex-direction:column}.page-title{font-size:24px}.actions{width:100%}.actions .btn{flex:1}.dashboard{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.metric{padding:14px;min-height:96px}.metric strong{font-size:24px}.toolbar{flex-wrap:wrap}.search{max-width:none}.timeline-item{grid-template-columns:65px 13px 1fr;gap:7px}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.panel{padding:16px}.event-head{display:block}.event-head .type{display:inline-block;margin-top:6px}}
+:root{--ink:#172236;--muted:#6c788c;--line:#e2e8f0;--paper:#fff;--bg:#f3f6fa;--blue:#3568f4;--blue-weak:#edf2ff;--green:#118461;--green-weak:#e6f7f0;--amber:#b96b08;--amber-weak:#fff5df;--red:#bd4b52;--red-weak:#fff0f0;--violet:#6941c6;--violet-weak:#f4f0ff;--shadow:0 12px 30px rgba(31,52,86,.06);--radius:16px}
+*{box-sizing:border-box}html{background:var(--bg)}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer;border:0}.app{display:flex;min-height:100vh}.sidebar{width:236px;background:linear-gradient(180deg,#15243d 0%,#172b49 100%);color:#dce6f7;padding:24px 16px;position:fixed;inset:0 auto 0 0;z-index:5}.brand{display:flex;gap:11px;align-items:center;margin:0 10px 32px}.brand-mark{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#7694ff,#2f5be7);display:grid;place-items:center;color:#fff;font-size:19px;font-weight:800;box-shadow:0 8px 18px rgba(39,82,214,.25)}.brand b{display:block;color:#fff;font-size:15px}.brand small{color:#9cafce;font-size:11px}.nav{display:grid;gap:6px}.nav button{background:transparent;color:#aebdd5;text-align:left;padding:12px 13px;border-radius:11px;display:flex;gap:11px;align-items:center}.nav button.active,.nav button:hover{background:#253b61;color:#fff}.nav i{font-style:normal;font-size:17px;width:20px;text-align:center}.side-note{position:absolute;bottom:26px;left:26px;right:24px;color:#8093b2;font-size:12px}.main{margin-left:236px;width:calc(100% - 236px);min-height:100vh;padding:28px 34px 48px}.section{max-width:1580px;margin:0 auto;display:none}.section.active{display:block}.topbar{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:23px}.eyebrow{color:var(--blue);font-weight:800;font-size:11px;letter-spacing:.1em}.page-title{font-size:27px;line-height:1.2;margin:6px 0 4px;letter-spacing:-.035em}.sub{color:var(--muted);margin:0}.actions,.toolbar,.button-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.btn{padding:10px 16px;border-radius:10px;font-weight:750;transition:.2s}.btn.primary{background:var(--blue);color:white;box-shadow:0 6px 15px rgba(56,103,244,.22)}.btn.primary:hover{background:#2c56db}.btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}.btn.danger{background:var(--red-weak);color:var(--red)}.btn.small{padding:7px 10px;font-size:12px}.card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}.dashboard{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:18px}.metric{padding:17px 19px;min-height:108px}.metric .label{color:var(--muted);font-size:12px}.metric strong{font-size:30px;line-height:1.1;display:block;margin:7px 0 4px}.metric .trend{color:var(--green);font-size:12px}.grid{display:grid;grid-template-columns:minmax(0,1.28fr) minmax(330px,.72fr);gap:18px}.panel{padding:20px}.panel-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}.panel h2{font-size:16px;margin:0}.panel h3{font-size:14px;margin:0}.muted{color:var(--muted)}.input,.select,textarea{width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;padding:10px 12px;color:var(--ink);outline:none}.input:focus,.select:focus,textarea:focus{border-color:#8fa7ff;box-shadow:0 0 0 3px #eef2ff}.search{max-width:300px}.empty{text-align:center;padding:38px 10px;color:var(--muted)}.notice{padding:11px 13px;border-radius:11px;background:var(--blue-weak);color:#445b9b;font-size:12px;margin-bottom:14px}.notice.warn{background:var(--amber-weak);color:#8a5b0a}.notice.success{background:var(--green-weak);color:#18664f}.profile-list{display:grid;gap:10px}.profile-row{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--line);border-radius:13px;transition:.2s}.profile-row:hover{border-color:#b9c8ff;background:#f8faff}.avatar{width:42px;height:42px;border-radius:14px;background:#e4e9ff;color:#3656ba;display:grid;place-items:center;font-weight:800;flex:0 0 auto}.profile-row .person{flex:1;min-width:0}.person b{display:block}.person small{color:var(--muted);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.count,.tag,.status{font-size:11px;color:#596579;background:#f2f4f8;padding:3px 8px;border-radius:20px;white-space:nowrap}.status.good{background:var(--green-weak);color:var(--green)}.status.vip{background:var(--violet-weak);color:var(--violet)}.status.warn{background:var(--amber-weak);color:var(--amber)}.link-btn{color:var(--blue);background:transparent;font-weight:700;font-size:12px}.link-btn.danger{color:var(--red)}.sort-badge{font-size:11px;color:var(--green);background:var(--green-weak);padding:3px 8px;border-radius:20px}.timeline{display:grid;gap:12px}.timeline-item{display:grid;grid-template-columns:82px 16px 1fr;gap:11px}.date{color:var(--muted);font-size:12px;padding-top:11px;text-align:right}.dotline{position:relative}.dotline:before{content:"";position:absolute;top:15px;left:4px;width:8px;height:8px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 4px #e9edff}.dotline:after{content:"";position:absolute;top:27px;bottom:-18px;left:7px;width:2px;background:#e5e9f1}.timeline-item:last-child .dotline:after{display:none}.event{border:1px solid var(--line);border-radius:13px;padding:12px 14px;background:#fff}.event-head{display:flex;justify-content:space-between;gap:10px;align-items:start}.event-title{font-weight:750}.type{font-size:11px;padding:3px 7px;border-radius:20px;background:var(--blue-weak);color:var(--blue);white-space:nowrap}.type.talk{background:var(--green-weak);color:var(--green)}.event p{margin:5px 0;color:#4f5b6d}.tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.novel-layout{display:grid;grid-template-columns:250px minmax(0,1fr);gap:18px}.doc-list{display:grid;gap:8px}.doc-item{padding:11px 12px;border:1px solid var(--line);border-radius:11px;background:#fff;text-align:left}.doc-item.active{border-color:#9eb1ff;background:var(--blue-weak)}.doc-item b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.doc-item small{color:var(--muted)}.editor-toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}.editor{min-height:420px;resize:vertical;line-height:1.8;font-size:15px}.shortcut{padding:10px 12px;border:1px dashed #b9c8ff;background:#f8faff;color:#4f65a5;border-radius:10px;font-size:12px;margin-top:10px}.check-box{padding:13px;border-radius:12px;border:1px solid var(--line);background:#fafbfe;margin-top:12px}.check-box h3{margin:0 0 4px;font-size:14px}.check-box ul{margin:6px 0 0 18px;padding:0}.check-box li{margin:3px 0}.modal-wrap{display:none;position:fixed;inset:0;background:rgba(12,21,39,.4);z-index:10;align-items:center;justify-content:center;padding:20px}.modal-wrap.show{display:flex}.modal{background:#fff;border-radius:18px;width:min(820px,100%);max-height:90vh;overflow:auto;padding:24px;box-shadow:0 22px 60px rgba(16,28,52,.25)}.modal h2{margin:0 0 18px;font-size:19px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}.field{display:grid;gap:6px}.field.full{grid-column:1/-1}.field label{font-size:12px;font-weight:700;color:#526078}.modal-foot{display:flex;justify-content:flex-end;gap:10px;margin-top:21px}.toast{position:fixed;right:22px;bottom:22px;background:#18212f;color:#fff;padding:11px 16px;border-radius:10px;opacity:0;transform:translateY(8px);pointer-events:none;transition:.25s;z-index:20}.toast.show{opacity:1;transform:none}.group-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.group-card{padding:16px;border:1px solid var(--line);border-radius:14px;background:#fff}.group-card button{background:transparent;color:inherit;text-align:left;width:100%;padding:0}.group-card strong{display:block;font-size:25px;margin:7px 0 2px}.group-card small{color:var(--muted)}.custom-groups{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.custom-group{padding:16px}.custom-group h3{margin:0 0 4px}.custom-group .leader{color:var(--muted);font-size:12px}.custom-group .members-preview{color:#4f5b6d;margin-top:10px;min-height:42px}.member-picker{border:1px solid var(--line);border-radius:12px;max-height:330px;overflow:auto;padding:8px}.member-option{display:flex;gap:9px;align-items:flex-start;padding:8px;border-radius:9px}.member-option:hover{background:#f6f8fc}.member-option input{margin-top:4px}.profile-detail{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0}.detail-box{background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:10px}.detail-box span{display:block;color:var(--muted);font-size:11px}.detail-box b{display:block;margin-top:2px}.section-label{grid-column:1/-1;margin-top:5px;font-weight:800;color:#41506a;border-bottom:1px solid var(--line);padding-bottom:5px}.table-wrap{overflow:auto}.mini-table{width:100%;border-collapse:collapse}.mini-table th,.mini-table td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap}.mini-table th{font-size:11px;color:var(--muted);font-weight:800}.toolbar .select{max-width:190px}
+@media(min-width:1500px){.main{padding-left:42px;padding-right:42px}.panel{padding:22px}}@media(max-width:1100px){.sidebar{width:74px;padding:20px 10px}.brand{margin:0 6px 28px}.brand>div:last-child,.nav span,.side-note{display:none}.brand-mark{width:42px}.main{margin-left:74px;width:calc(100% - 74px);padding:26px 22px 50px}.grid,.novel-layout{grid-template-columns:1fr}.group-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.custom-groups{grid-template-columns:1fr 1fr}.section{max-width:none}}@media(max-width:700px){.main{padding:20px 14px}.topbar{align-items:flex-start;gap:15px;flex-direction:column}.page-title{font-size:24px}.actions{width:100%}.actions .btn{flex:1}.dashboard,.group-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.custom-groups{grid-template-columns:1fr}.metric{padding:14px;min-height:96px}.metric strong{font-size:24px}.toolbar{align-items:stretch}.toolbar .input,.toolbar .select{max-width:none}.profile-row{align-items:flex-start;flex-wrap:wrap}.profile-row .person{min-width:calc(100% - 60px)}.timeline-item{grid-template-columns:65px 13px 1fr;gap:7px}.form-grid,.profile-detail{grid-template-columns:1fr}.field.full,.section-label{grid-column:auto}.panel{padding:16px}.event-head{display:block}.event-head .type{display:inline-block;margin-top:6px}}
 </style>
 </head>
 <body>
-<div class="app"><aside class="sidebar"><div class="brand"><div class="brand-mark">长</div><div><b>成长档案</b><small>人物与小说工作台</small></div></div><nav class="nav"><button class="active" data-page="overview"><i>⌂</i><span>总览</span></button><button data-page="people"><i>◎</i><span>人物库</span></button><button data-page="records"><i>▤</i><span>重要事件</span></button><button data-page="novel"><i>✎</i><span>小说文档</span></button><button data-page="topics"><i>◌</i><span>重复主题</span></button></nav><div class="side-note">数据仅保存在当前浏览器，不会在设备间共享<br>一致性检查是辅助，不替代人工判断</div></aside>
+<div class="app">
+<aside class="sidebar">
+  <div class="brand"><div class="brand-mark">投</div><div><b>投资者档案</b><small>人物与分组工作台</small></div></div>
+  <nav class="nav">
+    <button class="active" data-page="overview"><i>⌂</i><span>总览</span></button>
+    <button data-page="people"><i>◎</i><span>人物库</span></button>
+    <button data-page="groups"><i>◫</i><span>分组管理</span></button>
+    <button data-page="records"><i>▤</i><span>重要事件</span></button>
+    <button data-page="novel"><i>✎</i><span>小说文档</span></button>
+    <button data-page="topics"><i>◌</i><span>主题检查</span></button>
+  </nav>
+  <div class="side-note">70 位人物为全量虚构测试数据<br>修改内容保存在当前浏览器</div>
+</aside>
 <main class="main">
-<section id="overview" class="section active"><div class="topbar"><div><div class="eyebrow">STORY WORKSPACE</div><h1 class="page-title">人物与小说总览</h1><p class="sub">导入人物后，按出场热度管理角色，并把重要事实沉淀进小说文档。</p></div><div class="actions"><button class="btn ghost" id="exportBtn">导出全部数据</button><button class="btn primary" id="quickAdd">＋ 新增重要记录</button></div></div><div class="dashboard" id="metrics"></div><div class="grid"><div class="card panel"><div class="panel-head"><h2>最近重要事件 / 发言</h2><button class="link-btn" data-go="records">查看全部 →</button></div><div id="recentTimeline" class="timeline"></div></div><div class="card panel"><div class="panel-head"><h2>出场热度排行</h2><span class="muted">可排序 / 调用</span></div><div id="heatStats" class="topic-list"></div></div></div></section>
-<section id="people" class="section"><div class="topbar"><div><div class="eyebrow">CHARACTER DIRECTORY</div><h1 class="page-title">人物库</h1><p class="sub">没有预置人物。通过 CSV / JSON 导入，或逐条新增角色。</p></div><div class="actions"><button class="btn ghost" id="csvTemplate">下载 CSV 模板</button><button class="btn ghost" id="jsonTemplate">下载 JSON 模板</button><button class="btn ghost" id="importBtn">导入 CSV / JSON</button><input id="fileInput" type="file" accept=".csv,.json,application/json,text/csv" hidden><button class="btn primary" id="addPerson">＋ 新增人物</button></div></div><div class="notice">字段要求：<b>编号、性别/年龄标签、法国名字、出场热度、备注</b>。CSV 模板为纯文本格式；本版本不宣称支持 Excel。</div><div class="card panel"><div class="toolbar"><input class="input search" id="personSearch" placeholder="搜索编号、法国名字、标签或备注…" /><select class="select" id="personSort" style="max-width:180px"><option value="heat">按出场热度降序</option><option value="id">按编号升序</option><option value="name">按法国名字</option></select></div><div id="peopleList" class="profile-list"></div></div></section>
-<section id="records" class="section"><div class="topbar"><div><div class="eyebrow">FACTS & QUOTES</div><h1 class="page-title">重要事件</h1><p class="sub">记录人物事实 / 发言；保存前会做重复、高相似度和结构化状态冲突检查。</p></div><button class="btn primary" id="addRecord">＋ 新增重要记录</button></div><div class="notice warn">一致性辅助只覆盖可识别的文本模式与相似度，不承诺理解任意自然语言，也不能百分百消除所有逻辑矛盾。</div><div class="card panel"><div class="toolbar"><select class="select" id="recordPerson" style="max-width:220px"><option value="all">全部人物</option></select><select class="select" id="recordType" style="max-width:150px"><option value="all">全部类型</option><option value="重要事件">重要事件</option><option value="发言记录">发言记录</option></select><input class="input search" id="recordSearch" placeholder="搜索内容或标题…" /></div><div id="allTimeline" class="timeline"></div></div></section>
-<section id="novel" class="section"><div class="topbar"><div><div class="eyebrow">NOVEL DOCUMENTS</div><h1 class="page-title">小说文档</h1><p class="sub">在文档中输入“人物编号 + 空格 + 发言内容”并回车，自动插入人物署名。</p></div><button class="btn primary" id="newDoc">＋ 新建文档</button></div><div class="novel-layout"><div class="card panel"><div class="panel-head"><h2>文档列表</h2><button class="link-btn" id="renameDoc">重命名</button></div><div id="docList" class="doc-list"></div></div><div class="card panel"><div class="editor-toolbar"><input class="input" id="docTitle" placeholder="文档标题" style="max-width:360px"><div class="button-row"><button class="btn ghost small" id="saveDoc">保存文档</button><button class="btn ghost small" id="insertPerson">插入人物</button></div></div><textarea id="editor" class="editor" placeholder="开始写作…\n\n快捷方式：输入 21 发言内容 后按回车。若编号存在，会生成：21 · 新女 · 法国名字：发言内容"></textarea><div class="shortcut">快捷人物插入：输入 <b>人物编号 + 空格 + 发言内容</b> 后按回车。未导入的编号会显示清楚提示，并保留原文以便修改。</div><div id="docStatus" class="muted" style="font-size:12px;margin-top:8px"></div></div></div></section>
-<section id="topics" class="section"><div class="topbar"><div><div class="eyebrow">REPEATED TOPICS</div><h1 class="page-title">主题与检查说明</h1><p class="sub">记录中的主题标签会自动汇总，人物事实检查则在保存时执行。</p></div></div><div class="card panel"><h2>一致性辅助边界</h2><div class="check-box"><h3>会阻止保存</h3><ul><li>同一人物、完全相同的记录内容。</li></ul></div><div class="check-box"><h3>会显著警告并允许确认后保存</h3><ul><li>同一人物内容相似度较高。</li><li>同一人物出现可识别的结构化状态冲突，例如“有账户”与“没有账户”。</li></ul></div><div class="check-box"><h3>不会自动断言</h3><ul><li>复杂叙事、隐喻、时间线和所有自然语言逻辑；请人工复核冲突记录。</li></ul></div><div id="allTopics" style="margin-top:22px"></div></div></section>
+<section id="overview" class="section active">
+  <div class="topbar"><div><div class="eyebrow">INVESTOR WORKSPACE</div><h1 class="page-title">投资者人物总览</h1><p class="sub">70 人基础画像 + 动态系统分组 + 自定义小组规划。</p></div>
+  <div class="actions"><button class="btn ghost" id="exportBtn">导出全部数据</button><button class="btn primary" id="quickAdd">＋ 新增重要记录</button></div></div>
+  <div id="seedNotice" class="notice success">正在载入默认人物数据…</div>
+  <div class="dashboard" id="metrics"></div>
+  <div class="grid"><div class="card panel"><div class="panel-head"><h2>最近重要事件 / 发言</h2><button class="link-btn" data-go="records">查看全部 →</button></div><div id="recentTimeline" class="timeline"></div></div>
+  <div class="card panel"><div class="panel-head"><h2>系统分组概览</h2><button class="link-btn" data-go="groups">管理分组 →</button></div><div id="groupOverview"></div></div></div>
+</section>
+
+<section id="people" class="section">
+  <div class="topbar"><div><div class="eyebrow">INVESTOR DIRECTORY</div><h1 class="page-title">人物库</h1><p class="sub">查看、筛选、编辑、增加或删除人物。系统分组会随人物属性自动更新。</p></div>
+  <div class="actions"><button class="btn ghost" id="importBtn">导入 JSON / CSV</button><input id="fileInput" type="file" accept=".csv,.json,application/json,text/csv" hidden><button class="btn primary" id="addPerson">＋ 新增人物</button></div></div>
+  <div class="notice">支持完整画像 JSON（顶层含 <b>people</b>）和人物数组。修改人物的性别、新老客户、VIP、开户或入群状态后，系统分组立即重算。</div>
+  <div class="card panel"><div class="toolbar">
+    <input class="input search" id="personSearch" placeholder="搜索编号、姓名、城市、职业、标签…" />
+    <select class="select" id="systemGroupFilter"></select>
+    <select class="select" id="customGroupFilter"></select>
+    <select class="select" id="personSort"><option value="id">按编号升序</option><option value="name">按姓名</option><option value="enthusiasm">按股票热情降序</option><option value="assets">按可投资资产降序</option></select>
+  </div><div id="peopleCount" class="muted" style="margin:10px 0 12px"></div><div id="peopleList" class="profile-list"></div></div>
+</section>
+
+<section id="groups" class="section">
+  <div class="topbar"><div><div class="eyebrow">GROUP MANAGEMENT</div><h1 class="page-title">分组管理</h1><p class="sub">系统分组自动计算；自定义小组可自由命名、选择成员，并设置不在人物名单中的组长。</p></div><button class="btn primary" id="addGroup">＋ 新建自定义小组</button></div>
+  <div class="card panel"><div class="panel-head"><h2>系统定义分组</h2><span class="muted">点击分组可直接筛选人物</span></div><div id="systemGroups" class="group-grid"></div></div>
+  <div class="card panel" style="margin-top:18px"><div class="panel-head"><h2>自定义小组</h2><span id="customGroupCount" class="muted"></span></div><div id="customGroups" class="custom-groups"></div></div>
+</section>
+
+<section id="records" class="section">
+  <div class="topbar"><div><div class="eyebrow">FACTS & QUOTES</div><h1 class="page-title">重要事件</h1><p class="sub">记录人物事实 / 发言；保存前做重复与简单状态冲突检查。</p></div><button class="btn primary" id="addRecord">＋ 新增重要记录</button></div>
+  <div class="notice warn">一致性检查仅作辅助，不替代人工判断。</div>
+  <div class="card panel"><div class="toolbar"><select class="select" id="recordPerson"><option value="all">全部人物</option></select><select class="select" id="recordType"><option value="all">全部类型</option><option value="重要事件">重要事件</option><option value="发言记录">发言记录</option></select><input class="input search" id="recordSearch" placeholder="搜索内容或标题…" /></div><div id="allTimeline" class="timeline"></div></div>
+</section>
+
+<section id="novel" class="section">
+  <div class="topbar"><div><div class="eyebrow">NOVEL DOCUMENTS</div><h1 class="page-title">小说文档</h1><p class="sub">输入“人物编号 + 空格 + 发言内容”并回车，自动插入人物署名。</p></div><button class="btn primary" id="newDoc">＋ 新建文档</button></div>
+  <div class="novel-layout"><div class="card panel"><div class="panel-head"><h2>文档列表</h2><button class="link-btn" id="renameDoc">重命名</button></div><div id="docList" class="doc-list"></div></div><div class="card panel"><div class="editor-toolbar"><input class="input" id="docTitle" placeholder="文档标题" style="max-width:360px"><div class="button-row"><button class="btn ghost small" id="saveDoc">保存文档</button><button class="btn ghost small" id="insertPerson">插入人物</button></div></div><textarea id="editor" class="editor" placeholder="开始写作…"></textarea><div class="shortcut">快捷人物插入：输入 <b>人物编号 + 空格 + 发言内容</b> 后按回车。</div><div id="docStatus" class="muted" style="font-size:12px;margin-top:8px"></div></div></div>
+</section>
+
+<section id="topics" class="section">
+  <div class="topbar"><div><div class="eyebrow">DATA NOTES</div><h1 class="page-title">主题与检查说明</h1><p class="sub">记录主题自动汇总，人物数据保留原始完整画像结构。</p></div></div>
+  <div class="card panel"><h2>数据规则</h2><div class="check-box"><h3>系统分组</h3><ul><li>新男 / 新女 / 老男 / 老女由客户关系与性别动态计算。</li><li>VIP、男性、女性、已开户、未开户、已入群、未入群均由人物当前字段动态计算。</li></ul></div><div class="check-box"><h3>自定义小组</h3><ul><li>小组名称、组长姓名、成员列表独立保存；组长无需存在于 70 人名单。</li><li>删除人物时会同步从所有自定义小组中移除。</li></ul></div><div id="allTopics" style="margin-top:22px"></div></div>
+</section>
 </main></div>
-<div class="modal-wrap" id="modal"><div class="modal"><h2 id="modalTitle">新增</h2><form id="modalForm"></form></div></div><div class="toast" id="toast"></div>
+
+<div class="modal-wrap" id="modal"><div class="modal"><h2 id="modalTitle">新增</h2><form id="modalForm"></form></div></div>
+<div class="toast" id="toast"></div>
+
 <script>
-const emptyDB={people:[],records:[],docs:[]};let db=JSON.parse(localStorage.getItem('growth-workspace-db')||'null')||emptyDB;db.people=db.people||[];db.records=db.records||[];db.docs=db.docs||[];let selectedDocId=db.docs[0]?.id||null;
-const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-function save(){localStorage.setItem('growth-workspace-db',JSON.stringify(db))}function toast(t){let x=$('#toast');x.textContent=t;x.classList.add('show');setTimeout(()=>x.classList.remove('show'),2400)}function person(id){return db.people.find(p=>String(p.id)===String(id))||null}function today(){return new Date().toISOString().slice(0,10)}function initials(n){return String(n||'人').slice(0,2)}
-function heatStats(){return [...db.people].sort((a,b)=>(Number(b.heat)||0)-(Number(a.heat)||0)).slice(0,8)}function topicCounts(){let m={};db.records.forEach(r=>(r.topics||[]).forEach(t=>{if(t)m[t]=(m[t]||0)+1}));return Object.entries(m).sort((a,b)=>b[1]-a[1])}
-function eventHTML(r){let p=person(r.personId);return `<div class="timeline-item"><div class="date">${esc(r.date||'')}</div><div class="dotline"></div><div class="event"><div class="event-head"><div><span class="event-title">${esc(r.title)}</span><div class="muted" style="font-size:12px;margin-top:2px">${p?`#${esc(p.id)} · ${esc(p.genderAge||'未填写标签')} · ${esc(p.frenchName||'未填写法国名字')}`:'未知人物'}</div></div><span class="type ${r.type==='发言记录'?'talk':''}">${esc(r.type)}</span></div><p>${esc(r.content)}</p><div class="tags">${(r.topics||[]).map(t=>`<span class="tag"># ${esc(t)}</span>`).join('')}<button class="link-btn edit-record" data-id="${esc(r.id)}">编辑</button></div></div></div>`}
-function render(){let rs=[...db.records].sort((a,b)=>String(b.date).localeCompare(String(a.date)));$('#metrics').innerHTML=`<div class="card metric"><span class="label">已导入人物</span><strong>${db.people.length}</strong><span class="trend">不预置名单</span></div><div class="card metric"><span class="label">重要记录</span><strong>${db.records.length}</strong><span class="trend">事件与发言</span></div><div class="card metric"><span class="label">小说文档</span><strong>${db.docs.length}</strong><span class="trend">本地保存</span></div><div class="card metric"><span class="label">高热度人物</span><strong>${db.people.filter(p=>(Number(p.heat)||0)>=8).length}</strong><span class="trend">热度 ≥ 8</span></div>`;$('#recentTimeline').innerHTML=rs.slice(0,4).map(eventHTML).join('')||'<div class="empty">还没有记录，请先导入人物或新增重要记录</div>';$('#heatStats').innerHTML=heatStats().map(p=>`<div class="topic-item"><span class="topic-name" title="#${esc(p.id)} ${esc(p.frenchName)}">#${esc(p.id)} ${esc(p.frenchName||'未命名')}</span><div class="bar-bg"><div class="bar" style="width:${Math.min(100,(Number(p.heat)||0)*10)}%"></div></div><span class="topic-num">${Number(p.heat)||0}</span></div>`).join('')||'<div class="empty">导入人物后显示热度排行</div>';renderPeople();fillSelect();renderRecords();renderTopics();renderDocs();bindDynamic()}
-function renderPeople(){let q=($('#personSearch')?.value||'').toLowerCase(),sort=$('#personSort')?.value||'heat';let list=db.people.filter(p=>Object.values(p).join(' ').toLowerCase().includes(q));list.sort((a,b)=>sort==='id'?String(a.id).localeCompare(String(b.id),undefined,{numeric:true}):sort==='name'?String(a.frenchName).localeCompare(String(b.frenchName)):Number(b.heat||0)-Number(a.heat||0));$('#peopleList').innerHTML=list.map(p=>`<div class="profile-row"><div class="avatar">${esc(initials(p.frenchName||p.id))}</div><div class="person"><b>#${esc(p.id)} · ${esc(p.frenchName||'未填写法国名字')}</b><small>${esc(p.genderAge||'未填写性别/年龄标签')} · ${esc(p.note||'暂无备注')}</small></div><span class="sort-badge">热度 ${Number(p.heat)||0}</span><span class="count">${db.records.filter(r=>String(r.personId)===String(p.id)).length} 条</span><button class="link-btn edit-person" data-id="${esc(p.id)}">编辑</button></div>`).join('')||'<div class="empty">没有匹配人物；可下载模板开始导入</div>'}
-function fillSelect(){let s=$('#recordPerson'),old=s.value;s.innerHTML='<option value="all">全部人物</option>'+db.people.map(p=>`<option value="${esc(p.id)}">#${esc(p.id)} · ${esc(p.frenchName||'未命名')}</option>`).join('');s.value=old||'all'}function renderRecords(){let ps=$('#recordPerson').value||'all',ty=$('#recordType').value||'all',q=($('#recordSearch').value||'').toLowerCase();let rs=db.records.filter(r=>(ps==='all'||String(r.personId)===String(ps))&&(ty==='all'||r.type===ty)&&(`${r.title} ${r.content} ${(r.topics||[]).join(' ')}`).toLowerCase().includes(q)).sort((a,b)=>String(b.date).localeCompare(String(a.date)));$('#allTimeline').innerHTML=rs.map(eventHTML).join('')||'<div class="empty">没有匹配的记录</div>'}
-function renderTopics(){let ts=topicCounts();$('#allTopics').innerHTML=ts.length?`<h3>已使用主题</h3><div class="tags" style="margin-top:10px">${ts.map(([t,n])=>`<span class="tag"># ${esc(t)} · ${n}</span>`).join('')}</div>`:'<div class="empty">暂未填写主题标签</div>'}
-function bindDynamic(){$$('.edit-person').forEach(b=>b.onclick=()=>openPerson(b.dataset.id));$$('.edit-record').forEach(b=>b.onclick=()=>openRecord(b.dataset.id))}function go(page){$$('.section').forEach(s=>s.classList.toggle('active',s.id===page));$$('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));window.scrollTo(0,0)}$$('.nav button').forEach(b=>b.onclick=()=>go(b.dataset.page));$$('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));$('#personSearch').oninput=renderPeople;$('#personSort').onchange=renderPeople;['recordPerson','recordType','recordSearch'].forEach(id=>$('#'+id).addEventListener(id==='recordSearch'?'input':'change',renderRecords));
-function closeModal(){$('#modal').classList.remove('show')}function openModal(title,body,submit,foot='保存'){ $('#modalTitle').textContent=title;$('#modalForm').innerHTML=body+`<div class="modal-foot"><button type="button" class="btn ghost" id="cancelModal">取消</button><button class="btn primary">${foot}</button></div>`;$('#modal').classList.add('show');$('#cancelModal').onclick=closeModal;$('#modalForm').onsubmit=e=>{e.preventDefault();let result=submit(new FormData(e.target));if(result!==false){closeModal();save();render();toast('已保存')}}}
-function openPerson(id){let p=id?person(id):{};openModal(id?'编辑人物':'新增人物',`<div class="form-grid"><div class="field"><label>编号 *</label><input class="input" name="id" required value="${esc(p.id||'')}" placeholder="例如：21" ${id?'readonly':''}></div><div class="field"><label>性别/年龄标签 *</label><input class="input" name="genderAge" required value="${esc(p.genderAge||'')}" placeholder="例如：新女 / 25岁"></div><div class="field"><label>法国名字 *</label><input class="input" name="frenchName" required value="${esc(p.frenchName||'')}" placeholder="例如：Camille"></div><div class="field"><label>出场热度（0-10）</label><input class="input" type="number" min="0" max="10" name="heat" value="${Number(p.heat)||0}"></div><div class="field full"><label>备注</label><textarea name="note" rows="3" placeholder="背景、关系、待补充信息">${esc(p.note||'')}</textarea></div></div>`,f=>{let pid=String(f.get('id')).trim();if(!id&&person(pid)){toast('编号已存在，请修改后再保存');return false}let x={id:pid,genderAge:String(f.get('genderAge')).trim(),frenchName:String(f.get('frenchName')).trim(),heat:Math.max(0,Math.min(10,Number(f.get('heat'))||0)),note:String(f.get('note')).trim()};if(id)db.people=db.people.map(a=>String(a.id)===String(id)?x:a);else db.people.push(x)})}
-function normalize(s){return String(s).toLowerCase().replace(/[\s，。！？、,.!?"“”‘’'：:；;（）()\[\]{}]/g,'')}function similarity(a,b){let x=normalize(a),y=normalize(b);if(!x||!y)return 0;let longer=x.length>=y.length?x:y,shorter=x.length>=y.length?y:x;if(longer.includes(shorter))return shorter.length/longer.length;let prev=Array(y.length+1).fill(0).map((_,i)=>i);for(let i=1;i<=x.length;i++){let cur=[i];for(let j=1;j<=y.length;j++)cur[j]=Math.min(cur[j-1]+1,prev[j]+1,prev[j-1]+(x[i-1]===y[j-1]?0:1));prev=cur}return 1-prev[y.length]/longer.length}
-function stateKeys(s){let t=String(s).toLowerCase(),keys=[];let patterns=[['账户','有账户','没有账户'],['婚姻','已婚','未婚'],['工作','有工作','没有工作'],['记忆','记得','不记得'],['住处','住在','不住在']];patterns.forEach(([k,pos,neg])=>{if(t.includes(pos))keys.push({k,v:'正'});if(t.includes(neg))keys.push({k,v:'负'})});return keys}function checks(personId,content,ignoreId){let same=db.records.filter(r=>String(r.personId)===String(personId)&&r.id!==ignoreId);let exact=same.find(r=>normalize(r.content)===normalize(content));let near=same.filter(r=>similarity(r.content,content)>=.72);let states=stateKeys(content),conflicts=[];states.forEach(s=>same.filter(r=>stateKeys(r.content).some(old=>old.k===s.k&&old.v!==s.v)).forEach(r=>conflicts.push({kind:'状态冲突',r,now:s})));return {exact,near,conflicts}}
-function openRecord(id){let r=id?db.records.find(x=>x.id===id):{};openModal(id?'编辑重要记录':'新增重要记录',`<div class="form-grid"><div class="field"><label>人物 *</label><select class="select" name="personId" required>${db.people.map(p=>`<option value="${esc(p.id)}" ${String(p.id)===String(r.personId)?'selected':''}>#${esc(p.id)} · ${esc(p.frenchName||'未命名')}</option>`).join('')}</select></div><div class="field"><label>日期 *</label><input class="input" type="date" name="date" required value="${esc(r.date||today())}"></div><div class="field"><label>记录类型</label><select class="select" name="type"><option ${r.type==='重要事件'?'selected':''}>重要事件</option><option ${r.type==='发言记录'?'selected':''}>发言记录</option></select></div><div class="field"><label>主题标签</label><input class="input" name="topics" value="${esc((r.topics||[]).join('、'))}" placeholder="用顿号分隔，如：秘密、家庭"></div><div class="field full"><label>标题 *</label><input class="input" name="title" required value="${esc(r.title||'')}" placeholder="一句话概括"></div><div class="field full"><label>人物事实 / 发言内容 *</label><textarea name="content" rows="5" required placeholder="写下可回看的事实或原话">${esc(r.content||'')}</textarea></div></div>`,f=>{let personId=f.get('personId'),content=String(f.get('content')).trim(),c=checks(personId,content,id);if(c.exact){alert(`已阻止保存：该人物已有完全重复内容。\n\n冲突记录：${c.exact.title}\n${c.exact.content}`);return false}if(c.near.length||c.conflicts.length){let lines=[];if(c.near.length)lines.push(`发现 ${c.near.length} 条高相似度记录：\n`+c.near.map(x=>`- ${x.title}：${x.content}`).join('\n'));if(c.conflicts.length)lines.push(`发现结构化状态冲突：\n`+c.conflicts.map(x=>`- ${x.r.title}：${x.r.content}`).join('\n'));let ok=confirm('一致性辅助警告（不是自动裁决）：\n\n'+lines.join('\n\n')+'\n\n请确认你已复核冲突记录，仍要保存吗？');if(!ok)return false}let x={id:id||'r'+Date.now(),personId,date:f.get('date'),type:f.get('type'),title:String(f.get('title')).trim(),content,topics:String(f.get('topics')).split(/[、,，]/).map(s=>s.trim()).filter(Boolean)};if(id)db.records=db.records.map(a=>a.id===id?x:a);else db.records.push(x)})}
-function currentDoc(){return db.docs.find(d=>d.id===selectedDocId)||null}function renderDocs(){if(!db.docs.length){selectedDocId=null;$('#docList').innerHTML='<div class="empty">还没有文档</div>';$('#docTitle').value='';$('#editor').value='';$('#docStatus').textContent='点击“新建文档”开始写作';return}if(!selectedDocId||!currentDoc())selectedDocId=db.docs[0].id;let d=currentDoc();$('#docList').innerHTML=db.docs.map(x=>`<button class="doc-item ${x.id===selectedDocId?'active':''}" data-doc="${esc(x.id)}"><b>${esc(x.title)}</b><small>更新于 ${esc(x.updated||today())}</small></button>`).join('');$('#docTitle').value=d.title;$('#editor').value=d.content;$('#docStatus').textContent=`已在本地保存 · ${d.content.length} 字`;$$('.doc-item').forEach(b=>b.onclick=()=>{selectedDocId=b.dataset.doc;renderDocs()})}
-function saveDoc(){let d=currentDoc();if(!d)return;d.title=$('#docTitle').value.trim()||'未命名文档';d.content=$('#editor').value;d.updated=today();save();renderDocs();toast('文档已保存')}function createDoc(){let d={id:'d'+Date.now(),title:'新小说文档',content:'',updated:today()};db.docs.unshift(d);selectedDocId=d.id;save();renderDocs();$('#docTitle').focus()}function renameDoc(){let d=currentDoc();if(!d)return toast('请先新建文档');let name=prompt('输入新文档标题',d.title);if(name!==null){d.title=name.trim()||d.title;save();renderDocs()}}
-function insertPerson(){let d=currentDoc();if(!d)return toast('请先新建文档');if(!db.people.length)return toast('人物库为空，请先导入人物');let id=prompt('输入人物编号');if(id===null)return;let p=person(id.trim());if(!p)return alert(`未找到人物编号 ${id.trim()}。请先导入该人物，或检查编号。`);let text=$('#editor').value,add=`${p.id} · ${p.genderAge||'未填写标签'} · ${p.frenchName||'未填写法国名字'}：`;let pos=$('#editor').selectionStart;$('#editor').value=text.slice(0,pos)+add+text.slice(pos);$('#editor').focus()}
-$('#editor').addEventListener('keydown',e=>{if(e.key!=='Enter')return;let el=e.currentTarget,pos=el.selectionStart,lineStart=el.value.lastIndexOf('\n',pos-1)+1,raw=el.value.slice(lineStart,pos),m=raw.match(/^\s*([^\s]+)\s+(.+)$/);if(!m)return;let p=person(m[1]);if(!p){alert(`未找到人物编号 ${m[1]}。原文已保留，请先导入人物或修改编号。`);return}e.preventDefault();let formatted=`${p.id} · ${p.genderAge||'未填写标签'} · ${p.frenchName||'未填写法国名字'}：${m[2]}`;el.value=el.value.slice(0,lineStart)+formatted+'\n'+el.value.slice(pos);let np=lineStart+formatted.length+1;el.selectionStart=el.selectionEnd=np;$('#docStatus').textContent='已格式化人物发言，请点击“保存文档”'});
-function download(name,text,type){let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}$('#csvTemplate').onclick=()=>download('人物导入模板.csv','编号,性别/年龄标签,法国名字,出场热度,备注\n21,新女 / 25岁,Camille,8,备注内容\n','text/csv;charset=utf-8');$('#jsonTemplate').onclick=()=>download('人物导入模板.json',JSON.stringify([{id:'21',genderAge:'新女 / 25岁',frenchName:'Camille',heat:8,note:'备注内容'}],null,2),'application/json');$('#importBtn').onclick=()=>$('#fileInput').click();$('#fileInput').onchange=async e=>{let file=e.target.files[0];if(!file)return;try{let text=await file.text(),arr;if(file.name.toLowerCase().endsWith('.json'))arr=JSON.parse(text);else{let lines=text.split(/\r?\n/).filter(Boolean),head=lines.shift().split(',').map(x=>x.trim());arr=lines.map(line=>{let vals=line.split(',');let o={};head.forEach((h,i)=>o[h]=vals[i]||'');return o})}if(!Array.isArray(arr))throw Error('JSON 顶层应为数组');let added=0,updated=0;arr.forEach(raw=>{let x={id:String(raw.id??raw['编号']??'').trim(),genderAge:String(raw.genderAge??raw['性别/年龄标签']??'').trim(),frenchName:String(raw.frenchName??raw['法国名字']??'').trim(),heat:Number(raw.heat??raw['出场热度']??0)||0,note:String(raw.note??raw['备注']??'').trim()};if(!x.id)return;let old=person(x.id);if(old){Object.assign(old,x);updated++}else{db.people.push(x);added++}});save();render();toast(`导入完成：新增 ${added}，更新 ${updated}`)}catch(err){alert('导入失败：请检查 CSV / JSON 格式。\n'+err.message)}e.target.value=''};
-$('#addPerson').onclick=()=>openPerson();$('#addRecord').onclick=()=>{if(!db.people.length)return alert('人物库为空，请先导入人物信息。');openRecord()};$('#quickAdd').onclick=()=>{go('records');if(db.people.length)openRecord();else alert('人物库为空，请先导入人物信息。')};$('#newDoc').onclick=createDoc;$('#saveDoc').onclick=saveDoc;$('#renameDoc').onclick=renameDoc;$('#insertPerson').onclick=insertPerson;$('#docTitle').oninput=()=>{$('#docStatus').textContent='标题有未保存修改'};$('#editor').oninput=()=>{$('#docStatus').textContent='文档有未保存修改'};$('#modal').onclick=e=>{if(e.target.id==='modal')closeModal()};$('#exportBtn').onclick=()=>download('人物与小说工作台数据.json',JSON.stringify(db,null,2),'application/json');render();
-</script><script src="./enhancements.js"></script>
-</body></html>
+const STORAGE_KEY='growth-workspace-db';
+const DATA_URL='./data/people.json';
+const DEFAULT_DATASET_VERSION='3.0';
+const emptyDB={people:[],records:[],docs:[],customGroups:[],meta:{}};
+let db=loadLocal();
+let selectedDocId=db.docs[0]?.id||null;
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+
+function loadLocal(){
+  let raw=null;try{raw=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null')}catch(_){}
+  const out=raw&&typeof raw==='object'?raw:{...emptyDB};
+  out.people=Array.isArray(out.people)?out.people:[];
+  out.records=Array.isArray(out.records)?out.records:[];
+  out.docs=Array.isArray(out.docs)?out.docs:[];
+  out.customGroups=Array.isArray(out.customGroups)?out.customGroups:[];
+  out.meta=out.meta&&typeof out.meta==='object'?out.meta:{};
+  out.people=out.people.map(normalizePerson);
+  return out;
+}
+function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(db))}
+function toast(t){const x=$('#toast');x.textContent=t;x.classList.add('show');setTimeout(()=>x.classList.remove('show'),2400)}
+function today(){return new Date().toISOString().slice(0,10)}
+function person(id){return db.people.find(p=>String(p.id)===String(id))||null}
+function pName(p){return p?.name||p?.frenchName||'未命名'}
+function pGender(p){return p?.gender||((p?.genderAge||'').includes('女')?'女':(p?.genderAge||'').includes('男')?'男':'')}
+function pRelationCode(p){return p?.customer_relation?.type_code||((p?.genderAge||'').includes('老')?'OLD':(p?.genderAge||'').includes('新')?'NEW':'')}
+function pRelationName(p){return p?.customer_relation?.type||(pRelationCode(p)==='OLD'?'老客户':pRelationCode(p)==='NEW'?'新客户':'未分类')}
+function pVip(p){return !!(p?.vip?.is_vip)}
+function pOpened(p){return !!(p?.account?.opened)}
+function pJoined(p){return !!(p?.crm?.joined_group)}
+function pEnthusiasm(p){return Number(p?.investment_profile?.stock_enthusiasm_index??((Number(p?.heat)||0)*10))||0}
+function pAssets(p){return Number(p?.finance?.estimated_investable_assets_eur)||0}
+function initials(n){return String(n||'人').trim().split(/\s+/).map(x=>x[0]).join('').slice(0,2).toUpperCase()}
+function genderRelationLabel(p){const rel=pRelationCode(p)==='OLD'?'老':pRelationCode(p)==='NEW'?'新':'';return rel+(pGender(p)||'')}
+function normalizePerson(raw={}){
+  const p=JSON.parse(JSON.stringify(raw||{}));
+  p.id=String(p.id??p.legacy_id??'').trim();
+  p.legacy_id=String(p.legacy_id??p.id??'').trim();
+  p.name=p.name||p.frenchName||'';
+  p.gender=p.gender||((p.genderAge||'').includes('女')?'女':(p.genderAge||'').includes('男')?'男':'');
+  p.gender_code=p.gender_code||(p.gender==='女'?'F':p.gender==='男'?'M':'');
+  p.age=Number(p.age)||null;
+  p.age_group=p.age_group||'';
+  p.customer_relation=p.customer_relation&&typeof p.customer_relation==='object'?p.customer_relation:{type:(p.genderAge||'').includes('老')?'老客户':'新客户',type_code:(p.genderAge||'').includes('老')?'OLD':'NEW'};
+  p.vip=p.vip&&typeof p.vip==='object'?p.vip:{is_vip:false,level:null,reason:null};
+  p.account=p.account&&typeof p.account==='object'?p.account:{opened:false,status:'未开户',status_code:'NOT_OPENED',opened_date:null};
+  p.location=p.location&&typeof p.location==='object'?p.location:{country:'法国',country_code:'FR',city:'',region:''};
+  p.occupation=p.occupation&&typeof p.occupation==='object'?p.occupation:{title_fr:'',title_zh:'',industry_fr:'',industry_zh:'',employment_status:'',years_in_role:null,education:'',career_stage:''};
+  p.family=p.family&&typeof p.family==='object'?p.family:{};
+  p.finance=p.finance&&typeof p.finance==='object'?p.finance:{annual_income_eur:0,estimated_investable_assets_eur:0,estimated_liquid_assets_eur:0,available_investment_capital_eur:0};
+  p.investment_profile=p.investment_profile&&typeof p.investment_profile==='object'?p.investment_profile:{stock_enthusiasm_index:Number(p.heat||0)*10,stock_enthusiasm_level:'',risk_tolerance:'',preferred_sectors:[]};
+  p.personality=p.personality&&typeof p.personality==='object'?p.personality:{summary:'',traits:[]};
+  p.communication=p.communication&&typeof p.communication==='object'?p.communication:{};
+  p.lifestyle=p.lifestyle&&typeof p.lifestyle==='object'?p.lifestyle:{};
+  p.tags=Array.isArray(p.tags)?p.tags:[];
+  p.crm=p.crm&&typeof p.crm==='object'?p.crm:{joined_group:false,group_joined_date:null,notes:p.note||''};
+  if(typeof p.crm.joined_group!=='boolean')p.crm.joined_group=false;
+  return p;
+}
+async function seedDefaultPeople(){
+  try{
+    const res=await fetch(DATA_URL,{cache:'no-store'});
+    if(!res.ok)throw new Error(`HTTP ${res.status}`);
+    const dataset=await res.json();
+    const list=Array.isArray(dataset)?dataset:Array.isArray(dataset.people)?dataset.people:[];
+    if(!list.length)throw new Error('数据文件没有 people 数组');
+    if(db.meta.defaultDatasetVersion!==DEFAULT_DATASET_VERSION){
+      const existing=new Map(db.people.map(p=>[String(p.id),p]));
+      let added=0;
+      list.map(normalizePerson).forEach(p=>{if(!existing.has(String(p.id))){db.people.push(p);added++}});
+      db.meta.defaultDatasetVersion=DEFAULT_DATASET_VERSION;
+      db.meta.defaultDatasetName=dataset.dataset_name||'法国人物70位';
+      save();
+      $('#seedNotice').textContent=`默认人物数据已就绪：${list.length} 人；本次补充 ${added} 人。`;
+    }else{
+      $('#seedNotice').textContent=`默认人物数据已载入；当前人物库 ${db.people.length} 人。`;
+    }
+  }catch(err){
+    $('#seedNotice').className='notice warn';
+    $('#seedNotice').textContent=`默认数据载入失败：${err.message}。仍可使用“导入 JSON / CSV”手动导入。`;
+  }
+  render();
+}
+
+const SYSTEM_GROUPS=[
+  {id:'all',name:'全部人物',test:p=>true},
+  {id:'new_male',name:'新男',test:p=>pRelationCode(p)==='NEW'&&pGender(p)==='男'},
+  {id:'new_female',name:'新女',test:p=>pRelationCode(p)==='NEW'&&pGender(p)==='女'},
+  {id:'old_male',name:'老男',test:p=>pRelationCode(p)==='OLD'&&pGender(p)==='男'},
+  {id:'old_female',name:'老女',test:p=>pRelationCode(p)==='OLD'&&pGender(p)==='女'},
+  {id:'vip',name:'VIP',test:p=>pVip(p)},
+  {id:'male',name:'男性',test:p=>pGender(p)==='男'},
+  {id:'female',name:'女性',test:p=>pGender(p)==='女'},
+  {id:'opened',name:'已开户',test:p=>pOpened(p)},
+  {id:'not_opened',name:'未开户',test:p=>!pOpened(p)},
+  {id:'joined',name:'已入群',test:p=>pJoined(p)},
+  {id:'not_joined',name:'未入群',test:p=>!pJoined(p)}
+];
+function systemGroup(id){return SYSTEM_GROUPS.find(g=>g.id===id)||SYSTEM_GROUPS[0]}
+function customGroup(id){return db.customGroups.find(g=>g.id===id)||null}
+
+function eventHTML(r){
+  const p=person(r.personId);
+  return `<div class="timeline-item"><div class="date">${esc(r.date||'')}</div><div class="dotline"></div><div class="event"><div class="event-head"><div><span class="event-title">${esc(r.title)}</span><div class="muted" style="font-size:12px;margin-top:2px">${p?`#${esc(p.id)} · ${esc(genderRelationLabel(p)||'未分类')} · ${esc(pName(p))}`:'未知人物'}</div></div><span class="type ${r.type==='发言记录'?'talk':''}">${esc(r.type)}</span></div><p>${esc(r.content)}</p><div class="tags">${(r.topics||[]).map(t=>`<span class="tag"># ${esc(t)}</span>`).join('')}<button class="link-btn edit-record" data-id="${esc(r.id)}">编辑</button></div></div></div>`;
+}
+function render(){
+  renderOverview();renderPeopleFilters();renderPeople();renderGroups();fillSelect();renderRecords();renderTopics();renderDocs();bindDynamic();
+}
+function renderOverview(){
+  const rs=[...db.records].sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+  $('#metrics').innerHTML=[
+    ['人物总数',db.people.length,'完整画像'],
+    ['VIP',db.people.filter(pVip).length,'动态统计'],
+    ['已开户',db.people.filter(pOpened).length,'账户状态'],
+    ['已入群',db.people.filter(pJoined).length,'可手动更新']
+  ].map(([l,n,t])=>`<div class="card metric"><span class="label">${l}</span><strong>${n}</strong><span class="trend">${t}</span></div>`).join('');
+  $('#recentTimeline').innerHTML=rs.slice(0,4).map(eventHTML).join('')||'<div class="empty">还没有重要记录</div>';
+  const ids=['new_male','new_female','old_male','old_female','vip','opened','joined'];
+  $('#groupOverview').innerHTML=ids.map(id=>{const g=systemGroup(id),n=db.people.filter(g.test).length;return `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line)"><span>${esc(g.name)}</span><b>${n}</b></div>`}).join('');
+}
+function renderPeopleFilters(){
+  const s=$('#systemGroupFilter'),old=s.value||'all';
+  s.innerHTML=SYSTEM_GROUPS.map(g=>`<option value="${g.id}">${esc(g.name)} (${db.people.filter(g.test).length})</option>`).join('');
+  s.value=SYSTEM_GROUPS.some(g=>g.id===old)?old:'all';
+  const c=$('#customGroupFilter'),cold=c.value||'all';
+  c.innerHTML='<option value="all">全部自定义小组</option>'+db.customGroups.map(g=>`<option value="${esc(g.id)}">${esc(g.name)} (${g.members?.length||0})</option>`).join('');
+  c.value=db.customGroups.some(g=>g.id===cold)?cold:'all';
+}
+function personSearchBlob(p){
+  return [p.id,p.legacy_id,pName(p),pGender(p),p.age,pRelationName(p),p.location?.city,p.location?.region,p.occupation?.title_zh,p.occupation?.title_fr,p.occupation?.industry_zh,p.personality?.summary,p.crm?.notes,...(p.tags||[])].join(' ').toLowerCase();
+}
+function renderPeople(){
+  const q=($('#personSearch')?.value||'').trim().toLowerCase(),sort=$('#personSort')?.value||'id';
+  const sg=systemGroup($('#systemGroupFilter')?.value||'all'),cgid=$('#customGroupFilter')?.value||'all',cg=customGroup(cgid);
+  let list=db.people.filter(p=>sg.test(p)&&(!cg||cg.members.includes(String(p.id)))&&(!q||personSearchBlob(p).includes(q)));
+  list.sort((a,b)=>sort==='name'?pName(a).localeCompare(pName(b),'fr'):sort==='enthusiasm'?pEnthusiasm(b)-pEnthusiasm(a):sort==='assets'?pAssets(b)-pAssets(a):String(a.id).localeCompare(String(b.id),undefined,{numeric:true}));
+  $('#peopleCount').textContent=`当前显示 ${list.length} / ${db.people.length} 人`;
+  $('#peopleList').innerHTML=list.map(p=>`<div class="profile-row">
+    <div class="avatar">${esc(initials(pName(p)))}</div>
+    <div class="person"><b>#${esc(p.id)} · ${esc(pName(p))}</b><small>${esc(genderRelationLabel(p)||'未分类')} · ${esc(p.age||'--')}岁 · ${esc(p.location?.city||'城市未填')} · ${esc(p.occupation?.title_zh||p.occupation?.title_fr||'职业未填')}</small></div>
+    ${pVip(p)?'<span class="status vip">VIP</span>':''}
+    <span class="status ${pOpened(p)?'good':'warn'}">${pOpened(p)?'已开户':'未开户'}</span>
+    <span class="status ${pJoined(p)?'good':''}">${pJoined(p)?'已入群':'未入群'}</span>
+    <span class="sort-badge">股票热情 ${pEnthusiasm(p)}</span>
+    <button class="link-btn view-person" data-id="${esc(p.id)}">详情</button>
+    <button class="link-btn edit-person" data-id="${esc(p.id)}">编辑</button>
+    <button class="link-btn danger delete-person" data-id="${esc(p.id)}">删除</button>
+  </div>`).join('')||'<div class="empty">没有匹配人物</div>';
+}
+function renderGroups(){
+  $('#systemGroups').innerHTML=SYSTEM_GROUPS.filter(g=>g.id!=='all').map(g=>`<div class="group-card"><button class="system-group-open" data-group="${g.id}"><small>系统分组</small><strong>${db.people.filter(g.test).length}</strong><b>${esc(g.name)}</b></button></div>`).join('');
+  $('#customGroupCount').textContent=`共 ${db.customGroups.length} 个小组`;
+  $('#customGroups').innerHTML=db.customGroups.map(g=>{
+    const names=(g.members||[]).map(id=>person(id)).filter(Boolean).slice(0,5).map(pName);
+    return `<div class="card custom-group"><h3>${esc(g.name)}</h3><div class="leader">组长：${esc(g.leader||'未设置')}</div><div class="members-preview">${g.members?.length||0} 位成员${names.length?` · ${names.map(esc).join('、')}${(g.members?.length||0)>5?'…':''}`:''}</div><div class="button-row" style="margin-top:12px"><button class="btn ghost small open-custom-group" data-id="${esc(g.id)}">查看成员</button><button class="btn ghost small edit-group" data-id="${esc(g.id)}">编辑</button><button class="btn danger small delete-group" data-id="${esc(g.id)}">删除</button></div></div>`;
+  }).join('')||'<div class="empty">还没有自定义小组，点击“新建自定义小组”开始规划。</div>';
+}
+function fillSelect(){
+  const s=$('#recordPerson'),old=s.value;
+  s.innerHTML='<option value="all">全部人物</option>'+db.people.map(p=>`<option value="${esc(p.id)}">#${esc(p.id)} · ${esc(pName(p))}</option>`).join('');
+  s.value=[...s.options].some(o=>o.value===old)?old:'all';
+}
+function renderRecords(){
+  const ps=$('#recordPerson').value||'all',ty=$('#recordType').value||'all',q=($('#recordSearch').value||'').toLowerCase();
+  const rs=db.records.filter(r=>(ps==='all'||String(r.personId)===String(ps))&&(ty==='all'||r.type===ty)&&(`${r.title} ${r.content} ${(r.topics||[]).join(' ')}`).toLowerCase().includes(q)).sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+  $('#allTimeline').innerHTML=rs.map(eventHTML).join('')||'<div class="empty">没有匹配记录</div>';
+}
+function topicCounts(){const m={};db.records.forEach(r=>(r.topics||[]).forEach(t=>{if(t)m[t]=(m[t]||0)+1}));return Object.entries(m).sort((a,b)=>b[1]-a[1])}
+function renderTopics(){const ts=topicCounts();$('#allTopics').innerHTML=ts.length?`<h3>已使用主题</h3><div class="tags" style="margin-top:10px">${ts.map(([t,n])=>`<span class="tag"># ${esc(t)} · ${n}</span>`).join('')}</div>`:'<div class="empty">暂未填写主题标签</div>'}
+function bindDynamic(){
+  $$('.edit-person').forEach(b=>b.onclick=()=>openPerson(b.dataset.id));
+  $$('.view-person').forEach(b=>b.onclick=()=>viewPerson(b.dataset.id));
+  $$('.delete-person').forEach(b=>b.onclick=()=>deletePerson(b.dataset.id));
+  $$('.edit-record').forEach(b=>b.onclick=()=>openRecord(b.dataset.id));
+  $$('.system-group-open').forEach(b=>b.onclick=()=>openSystemGroup(b.dataset.group));
+  $$('.edit-group').forEach(b=>b.onclick=()=>openGroup(b.dataset.id));
+  $$('.open-custom-group').forEach(b=>b.onclick=()=>openCustomGroup(b.dataset.id));
+  $$('.delete-group').forEach(b=>b.onclick=()=>deleteGroup(b.dataset.id));
+}
+function go(page){$$('.section').forEach(s=>s.classList.toggle('active',s.id===page));$$('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));window.scrollTo(0,0)}
+$$('.nav button').forEach(b=>b.onclick=()=>go(b.dataset.page));$$('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));
+$('#personSearch').oninput=renderPeople;$('#personSort').onchange=renderPeople;$('#systemGroupFilter').onchange=renderPeople;$('#customGroupFilter').onchange=renderPeople;
+['recordPerson','recordType','recordSearch'].forEach(id=>$('#'+id).addEventListener(id==='recordSearch'?'input':'change',renderRecords));
+
+function closeModal(){$('#modal').classList.remove('show')}
+function openModal(title,body,submit,foot='保存'){
+  $('#modalTitle').textContent=title;$('#modalForm').innerHTML=body+`<div class="modal-foot"><button type="button" class="btn ghost" id="cancelModal">取消</button>${submit?`<button class="btn primary">${foot}</button>`:''}</div>`;$('#modal').classList.add('show');$('#cancelModal').onclick=closeModal;
+  $('#modalForm').onsubmit=e=>{e.preventDefault();if(!submit)return;const result=submit(new FormData(e.target));if(result!==false){closeModal();save();render();toast('已保存')}};
+}
+function viewPerson(id){
+  const p=person(id);if(!p)return;
+  const groups=db.customGroups.filter(g=>(g.members||[]).includes(String(p.id))).map(g=>g.name);
+  const sectors=p.investment_profile?.preferred_sectors||[];
+  openModal(`${pName(p)} · ${p.id}`,`<div class="profile-detail">
+    <div class="detail-box"><span>系统分类</span><b>${esc(genderRelationLabel(p)||'未分类')}</b></div>
+    <div class="detail-box"><span>年龄</span><b>${esc(p.age||'--')} 岁</b></div>
+    <div class="detail-box"><span>城市</span><b>${esc(p.location?.city||'--')}</b></div>
+    <div class="detail-box"><span>VIP</span><b>${pVip(p)?esc(p.vip?.level||'VIP'):'否'}</b></div>
+    <div class="detail-box"><span>开户状态</span><b>${esc(p.account?.status|| (pOpened(p)?'已开户':'未开户'))}</b></div>
+    <div class="detail-box"><span>入群状态</span><b>${pJoined(p)?`已入群${p.crm?.group_joined_date?' · '+esc(p.crm.group_joined_date):''}`:'未入群'}</b></div>
+    <div class="section-label">职业与家庭</div>
+    <div class="detail-box"><span>职业</span><b>${esc(p.occupation?.title_zh||p.occupation?.title_fr||'--')}</b></div>
+    <div class="detail-box"><span>行业</span><b>${esc(p.occupation?.industry_zh||p.occupation?.industry_fr||'--')}</b></div>
+    <div class="detail-box"><span>家庭</span><b>${esc(p.family?.summary||'--')}</b></div>
+    <div class="section-label">财务与投资</div>
+    <div class="detail-box"><span>年收入</span><b>€ ${Number(p.finance?.annual_income_eur||0).toLocaleString()}</b></div>
+    <div class="detail-box"><span>可投资资产</span><b>€ ${Number(p.finance?.estimated_investable_assets_eur||0).toLocaleString()}</b></div>
+    <div class="detail-box"><span>可用投资资金</span><b>€ ${Number(p.finance?.available_investment_capital_eur||0).toLocaleString()}</b></div>
+    <div class="detail-box"><span>股票热情指数</span><b>${pEnthusiasm(p)}</b></div>
+    <div class="detail-box"><span>风险偏好</span><b>${esc(p.investment_profile?.risk_tolerance||'--')}</b></div>
+    <div class="detail-box"><span>偏好行业</span><b>${esc(sectors.join('、')||'--')}</b></div>
+    <div class="section-label">性格与规划</div>
+    <div class="detail-box" style="grid-column:1/-1"><span>性格</span><b>${esc(p.personality?.summary||'--')}</b></div>
+    <div class="detail-box" style="grid-column:1/-1"><span>自定义小组</span><b>${esc(groups.join('、')||'未加入自定义小组')}</b></div>
+    <div class="detail-box" style="grid-column:1/-1"><span>内部备注</span><b>${esc(p.crm?.notes||'--')}</b></div>
+  </div>`,null);
+}
+function openPerson(id){
+  const p=id?person(id):normalizePerson({id:'',name:'',gender:'',age:null,customer_relation:{type:'新客户',type_code:'NEW'},vip:{is_vip:false,level:null},account:{opened:false,status:'未开户',status_code:'NOT_OPENED'},crm:{joined_group:false,group_joined_date:null,notes:''}});
+  if(!p)return;
+  openModal(id?'编辑人物':'新增人物',`<div class="form-grid">
+    <div class="field"><label>编号 *</label><input class="input" name="id" required value="${esc(p.id||nextPersonId())}" ${id?'readonly':''}></div>
+    <div class="field"><label>姓名 *</label><input class="input" name="name" required value="${esc(pName(p)==='未命名'?'':pName(p))}"></div>
+    <div class="field"><label>性别 *</label><select class="select" name="gender"><option value="女" ${pGender(p)==='女'?'selected':''}>女性</option><option value="男" ${pGender(p)==='男'?'selected':''}>男性</option></select></div>
+    <div class="field"><label>年龄</label><input class="input" type="number" min="18" max="100" name="age" value="${esc(p.age||'')}"></div>
+    <div class="field"><label>客户关系 *</label><select class="select" name="relation"><option value="NEW" ${pRelationCode(p)==='NEW'?'selected':''}>新客户</option><option value="OLD" ${pRelationCode(p)==='OLD'?'selected':''}>老客户</option></select></div>
+    <div class="field"><label>城市</label><input class="input" name="city" value="${esc(p.location?.city||'')}"></div>
+    <div class="field"><label>职业（中文）</label><input class="input" name="occupation" value="${esc(p.occupation?.title_zh||'')}"></div>
+    <div class="field"><label>行业（中文）</label><input class="input" name="industry" value="${esc(p.occupation?.industry_zh||'')}"></div>
+    <div class="field"><label>年收入 EUR</label><input class="input" type="number" min="0" name="income" value="${esc(p.finance?.annual_income_eur||0)}"></div>
+    <div class="field"><label>可投资资产 EUR</label><input class="input" type="number" min="0" name="assets" value="${esc(p.finance?.estimated_investable_assets_eur||0)}"></div>
+    <div class="field"><label>股票热情指数（0-100）</label><input class="input" type="number" min="0" max="100" name="enthusiasm" value="${esc(pEnthusiasm(p))}"></div>
+    <div class="field"><label>风险偏好</label><input class="input" name="risk" value="${esc(p.investment_profile?.risk_tolerance||'')}"></div>
+    <div class="field"><label>VIP</label><select class="select" name="vip"><option value="0" ${!pVip(p)?'selected':''}>否</option><option value="1" ${pVip(p)?'selected':''}>是</option></select></div>
+    <div class="field"><label>VIP 等级</label><input class="input" name="vipLevel" value="${esc(p.vip?.level||'')}" placeholder="例如 VIP1"></div>
+    <div class="field"><label>开户</label><select class="select" name="opened"><option value="0" ${!pOpened(p)?'selected':''}>未开户</option><option value="1" ${pOpened(p)?'selected':''}>已开户</option></select></div>
+    <div class="field"><label>账户状态</label><input class="input" name="accountStatus" value="${esc(p.account?.status||'')}"></div>
+    <div class="field"><label>入群</label><select class="select" name="joined"><option value="0" ${!pJoined(p)?'selected':''}>未入群</option><option value="1" ${pJoined(p)?'selected':''}>已入群</option></select></div>
+    <div class="field"><label>入群日期</label><input class="input" type="date" name="joinedDate" value="${esc(p.crm?.group_joined_date||'')}"></div>
+    <div class="field full"><label>内部备注</label><textarea name="notes" rows="3">${esc(p.crm?.notes||'')}</textarea></div>
+    <div class="field full"><label>性格描述</label><textarea name="personality" rows="3">${esc(p.personality?.summary||'')}</textarea></div>
+  </div>`,f=>{
+    const pid=String(f.get('id')).trim();if(!id&&person(pid)){toast('编号已存在');return false}
+    const x=id?p:normalizePerson({id:pid});
+    x.id=pid;x.name=String(f.get('name')).trim();x.frenchName=x.name;
+    x.gender=f.get('gender');x.gender_code=x.gender==='女'?'F':'M';x.age=Number(f.get('age'))||null;
+    x.customer_relation=x.customer_relation||{};x.customer_relation.type_code=f.get('relation');x.customer_relation.type=x.customer_relation.type_code==='OLD'?'老客户':'新客户';
+    x.location=x.location||{};x.location.country=x.location.country||'法国';x.location.country_code=x.location.country_code||'FR';x.location.city=String(f.get('city')).trim();
+    x.occupation=x.occupation||{};x.occupation.title_zh=String(f.get('occupation')).trim();x.occupation.industry_zh=String(f.get('industry')).trim();
+    x.finance=x.finance||{};x.finance.annual_income_eur=Number(f.get('income'))||0;x.finance.estimated_investable_assets_eur=Number(f.get('assets'))||0;
+    x.investment_profile=x.investment_profile||{};x.investment_profile.stock_enthusiasm_index=Math.max(0,Math.min(100,Number(f.get('enthusiasm'))||0));x.investment_profile.risk_tolerance=String(f.get('risk')).trim();
+    x.vip=x.vip||{};x.vip.is_vip=f.get('vip')==='1';x.vip.level=x.vip.is_vip?(String(f.get('vipLevel')).trim()||'VIP'):null;
+    x.account=x.account||{};x.account.opened=f.get('opened')==='1';x.account.status=String(f.get('accountStatus')).trim()||(x.account.opened?'已开户':'未开户');x.account.status_code=x.account.opened?(x.account.status_code==='NOT_OPENED'?'ACCOUNT_OPENED':x.account.status_code||'ACCOUNT_OPENED'):'NOT_OPENED';
+    x.crm=x.crm||{};x.crm.joined_group=f.get('joined')==='1';x.crm.group_joined_date=x.crm.joined_group?(f.get('joinedDate')||x.crm.group_joined_date||today()):null;x.crm.notes=String(f.get('notes')).trim();
+    x.personality=x.personality||{};x.personality.summary=String(f.get('personality')).trim();
+    x.tags=rebuildTags(x);
+    if(!id)db.people.push(x);
+  });
+}
+function rebuildTags(p){
+  const keep=(p.tags||[]).filter(t=>!['老客户','新客户','VIP','普通客户','已开户','未开户','已入群','未入群'].includes(t));
+  return [...new Set([pRelationName(p),pVip(p)?'VIP':'普通客户',pOpened(p)?'已开户':'未开户',pJoined(p)?'已入群':'未入群',...keep])];
+}
+function nextPersonId(){
+  const nums=db.people.map(p=>Number(String(p.id).match(/(\d+)$/)?.[1]||0));return 'FR'+String(Math.max(0,...nums)+1).padStart(4,'0');
+}
+function deletePerson(id){
+  const p=person(id);if(!p)return;if(!confirm(`确定删除 ${pName(p)}（${p.id}）吗？\n该人物会同时从所有自定义小组中移除。`))return;
+  db.people=db.people.filter(x=>String(x.id)!==String(id));db.customGroups.forEach(g=>g.members=(g.members||[]).filter(x=>String(x)!==String(id)));save();render();toast('人物已删除');
+}
+function openSystemGroup(id){go('people');$('#systemGroupFilter').value=id;$('#customGroupFilter').value='all';renderPeople()}
+function openCustomGroup(id){go('people');$('#systemGroupFilter').value='all';$('#customGroupFilter').value=id;renderPeople()}
+
+function openGroup(id){
+  const g=id?customGroup(id):{id:'g'+Date.now(),name:'',leader:'',members:[]};if(!g)return;
+  const memberRows=[...db.people].sort((a,b)=>String(a.id).localeCompare(String(b.id),undefined,{numeric:true})).map(p=>`<label class="member-option"><input type="checkbox" name="members" value="${esc(p.id)}" ${(g.members||[]).includes(String(p.id))?'checked':''}><span><b>#${esc(p.id)} · ${esc(pName(p))}</b><br><small class="muted">${esc(genderRelationLabel(p)||'未分类')} · ${esc(p.age||'--')}岁 · ${pVip(p)?'VIP · ':''}${pOpened(p)?'已开户':'未开户'} · ${pJoined(p)?'已入群':'未入群'}</small></span></label>`).join('');
+  openModal(id?'编辑自定义小组':'新建自定义小组',`<div class="form-grid"><div class="field"><label>小组名称 *</label><input class="input" name="name" required value="${esc(g.name||'')}" placeholder="例如：重点跟进A组"></div><div class="field"><label>组长姓名（可不在名单中）</label><input class="input" name="leader" value="${esc(g.leader||'')}" placeholder="直接填写组长名称"></div><div class="field full"><label>选择成员</label><div class="member-picker">${memberRows||'<div class="empty">人物库为空</div>'}</div></div></div>`,f=>{
+    const name=String(f.get('name')).trim();if(!name)return false;
+    const members=[...document.querySelectorAll('#modalForm input[name="members"]:checked')].map(x=>String(x.value));
+    const x={id:g.id,name,leader:String(f.get('leader')).trim(),members,updated:today()};
+    if(id)db.customGroups=db.customGroups.map(a=>a.id===id?x:a);else db.customGroups.push(x);
+  });
+}
+function deleteGroup(id){const g=customGroup(id);if(!g)return;if(!confirm(`确定删除自定义小组“${g.name}”吗？\n不会删除小组中的人物。`))return;db.customGroups=db.customGroups.filter(x=>x.id!==id);save();render();toast('小组已删除')}
+
+function normalize(s){return String(s).toLowerCase().replace(/[\s，。！？、,.!?"“”‘’'：:；;（）()\[\]{}]/g,'')}
+function similarity(a,b){const x=normalize(a),y=normalize(b);if(!x||!y)return 0;const longer=x.length>=y.length?x:y,shorter=x.length>=y.length?y:x;if(longer.includes(shorter))return shorter.length/longer.length;let prev=Array(y.length+1).fill(0).map((_,i)=>i);for(let i=1;i<=x.length;i++){let cur=[i];for(let j=1;j<=y.length;j++)cur[j]=Math.min(cur[j-1]+1,prev[j]+1,prev[j-1]+(x[i-1]===y[j-1]?0:1));prev=cur}return 1-prev[y.length]/longer.length}
+function stateKeys(s){const t=String(s).toLowerCase(),keys=[];[['账户','有账户','没有账户'],['婚姻','已婚','未婚'],['工作','有工作','没有工作'],['记忆','记得','不记得'],['住处','住在','不住在']].forEach(([k,pos,neg])=>{if(t.includes(pos))keys.push({k,v:'正'});if(t.includes(neg))keys.push({k,v:'负'})});return keys}
+function checks(personId,content,ignoreId){const same=db.records.filter(r=>String(r.personId)===String(personId)&&r.id!==ignoreId),exact=same.find(r=>normalize(r.content)===normalize(content)),near=same.filter(r=>similarity(r.content,content)>=.72),states=stateKeys(content),conflicts=[];states.forEach(s=>same.filter(r=>stateKeys(r.content).some(old=>old.k===s.k&&old.v!==s.v)).forEach(r=>conflicts.push({r,now:s})));return{exact,near,conflicts}}
+function openRecord(id){
+  const r=id?db.records.find(x=>x.id===id):{};openModal(id?'编辑重要记录':'新增重要记录',`<div class="form-grid"><div class="field"><label>人物 *</label><select class="select" name="personId" required>${db.people.map(p=>`<option value="${esc(p.id)}" ${String(p.id)===String(r.personId)?'selected':''}>#${esc(p.id)} · ${esc(pName(p))}</option>`).join('')}</select></div><div class="field"><label>日期 *</label><input class="input" type="date" name="date" required value="${esc(r.date||today())}"></div><div class="field"><label>记录类型</label><select class="select" name="type"><option ${r.type==='重要事件'?'selected':''}>重要事件</option><option ${r.type==='发言记录'?'selected':''}>发言记录</option></select></div><div class="field"><label>主题标签</label><input class="input" name="topics" value="${esc((r.topics||[]).join('、'))}" placeholder="用顿号分隔"></div><div class="field full"><label>标题 *</label><input class="input" name="title" required value="${esc(r.title||'')}"></div><div class="field full"><label>人物事实 / 发言内容 *</label><textarea name="content" rows="5" required>${esc(r.content||'')}</textarea></div></div>`,f=>{const personId=f.get('personId'),content=String(f.get('content')).trim(),c=checks(personId,content,id);if(c.exact){alert('已阻止保存：该人物已有完全重复内容。');return false}if(c.near.length||c.conflicts.length){if(!confirm('发现高相似度或状态冲突记录，确认复核后仍要保存吗？'))return false}const x={id:id||'r'+Date.now(),personId,date:f.get('date'),type:f.get('type'),title:String(f.get('title')).trim(),content,topics:String(f.get('topics')).split(/[、,，]/).map(s=>s.trim()).filter(Boolean)};if(id)db.records=db.records.map(a=>a.id===id?x:a);else db.records.push(x)});
+}
+function currentDoc(){return db.docs.find(d=>d.id===selectedDocId)||null}
+function renderDocs(){if(!db.docs.length){selectedDocId=null;$('#docList').innerHTML='<div class="empty">还没有文档</div>';$('#docTitle').value='';$('#editor').value='';$('#docStatus').textContent='点击“新建文档”开始写作';return}if(!selectedDocId||!currentDoc())selectedDocId=db.docs[0].id;const d=currentDoc();$('#docList').innerHTML=db.docs.map(x=>`<button class="doc-item ${x.id===selectedDocId?'active':''}" data-doc="${esc(x.id)}"><b>${esc(x.title)}</b><small>更新于 ${esc(x.updated||today())}</small></button>`).join('');$('#docTitle').value=d.title;$('#editor').value=d.content;$('#docStatus').textContent=`已在本地保存 · ${d.content.length} 字`;$$('.doc-item').forEach(b=>b.onclick=()=>{selectedDocId=b.dataset.doc;renderDocs()})}
+function saveDoc(){const d=currentDoc();if(!d)return;d.title=$('#docTitle').value.trim()||'未命名文档';d.content=$('#editor').value;d.updated=today();save();renderDocs();toast('文档已保存')}
+function createDoc(){const d={id:'d'+Date.now(),title:'新小说文档',content:'',updated:today()};db.docs.unshift(d);selectedDocId=d.id;save();renderDocs();$('#docTitle').focus()}
+function renameDoc(){const d=currentDoc();if(!d)return toast('请先新建文档');const name=prompt('输入新文档标题',d.title);if(name!==null){d.title=name.trim()||d.title;save();renderDocs()}}
+function insertPerson(){const d=currentDoc();if(!d)return toast('请先新建文档');if(!db.people.length)return toast('人物库为空');const id=prompt('输入人物编号');if(id===null)return;const p=person(id.trim());if(!p)return alert(`未找到人物编号 ${id.trim()}`);const text=$('#editor').value,add=`${p.id} · ${genderRelationLabel(p)||'未分类'} · ${pName(p)}：`,pos=$('#editor').selectionStart;$('#editor').value=text.slice(0,pos)+add+text.slice(pos);$('#editor').focus()}
+$('#editor').addEventListener('keydown',e=>{if(e.key!=='Enter')return;const el=e.currentTarget,pos=el.selectionStart,lineStart=el.value.lastIndexOf('\n',pos-1)+1,raw=el.value.slice(lineStart,pos),m=raw.match(/^\s*([^\s]+)\s+(.+)$/);if(!m)return;const p=person(m[1]);if(!p)return;e.preventDefault();const formatted=`${p.id} · ${genderRelationLabel(p)||'未分类'} · ${pName(p)}：${m[2]}`;el.value=el.value.slice(0,lineStart)+formatted+'\n'+el.value.slice(pos);const np=lineStart+formatted.length+1;el.selectionStart=el.selectionEnd=np;$('#docStatus').textContent='已格式化人物发言，请保存文档'});
+
+function download(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+$('#importBtn').onclick=()=>$('#fileInput').click();
+$('#fileInput').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{const text=await file.text();let arr;if(file.name.toLowerCase().endsWith('.json')){const parsed=JSON.parse(text);arr=Array.isArray(parsed)?parsed:parsed.people}else{const lines=text.split(/\r?\n/).filter(Boolean),head=lines.shift().split(',').map(x=>x.trim());arr=lines.map(line=>{const vals=line.split(','),o={};head.forEach((h,i)=>o[h]=vals[i]||'');return o})}if(!Array.isArray(arr))throw Error('JSON 应为人物数组，或顶层包含 people 数组');let added=0,updated=0;arr.map(normalizePerson).forEach(x=>{if(!x.id)return;const old=person(x.id);if(old){const crm=old.crm;Object.assign(old,x);old.crm=x.crm||crm;updated++}else{db.people.push(x);added++}});save();render();toast(`导入完成：新增 ${added}，更新 ${updated}`)}catch(err){alert('导入失败：'+err.message)}e.target.value=''};
+$('#addPerson').onclick=()=>openPerson();$('#addGroup').onclick=()=>openGroup();
+$('#addRecord').onclick=()=>{if(!db.people.length)return alert('人物库为空');openRecord()};$('#quickAdd').onclick=()=>{go('records');if(db.people.length)openRecord()};
+$('#newDoc').onclick=createDoc;$('#saveDoc').onclick=saveDoc;$('#renameDoc').onclick=renameDoc;$('#insertPerson').onclick=insertPerson;
+$('#docTitle').oninput=()=>$('#docStatus').textContent='标题有未保存修改';$('#editor').oninput=()=>$('#docStatus').textContent='文档有未保存修改';
+$('#modal').onclick=e=>{if(e.target.id==='modal')closeModal()};
+$('#exportBtn').onclick=()=>download('投资者人物工作台_全部数据.json',JSON.stringify(db,null,2),'application/json');
+
+render();
+seedDefaultPeople();
+</script>
+</body>
+</html>
