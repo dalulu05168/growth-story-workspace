@@ -47,6 +47,23 @@
 @media(max-width:600px){.auth-root .auth-card{padding:27px 24px}.auth-root .ink-brush{height:155px;transform:scale(.77) rotate(33deg);margin-bottom:0}.auth-root .splash-mark{font-size:68px}}
 @media(prefers-reduced-motion:reduce){.auth-root .ink-brush,.auth-root .splash-mark,.auth-root .splash-copy,.auth-root::after,.auth-root .auth-orb{animation:none}}
 </style>
+<style>
+/* Selected 16:9 ink composition: the form remains real HTML above the artwork. */
+body .auth-root{display:block;background:#f5f0e7 url('./chen-nan-ink.webp') center center / cover no-repeat;overflow:auto}
+body .auth-root::before,body .auth-root::after,body .auth-root .auth-lines,body .auth-root .auth-orb{display:none}
+body .auth-root #authStage{min-height:100vh;display:flex;align-items:center;justify-content:flex-end;padding:4vh clamp(24px,5vw,110px)}
+body .auth-root .ink-brush,body .auth-root .splash-mark,body .auth-root .splash-copy{display:none}
+body .auth-root .auth-card{width:min(430px,32vw);padding:24px 10px;background:#f7f3eb;border:0;border-radius:0;box-shadow:none;backdrop-filter:none}
+body .auth-root .auth-logo{font-size:39px;letter-spacing:.12em}
+body .auth-root .auth-title{font-size:18px;margin:8px 0 20px}
+body .auth-root .auth-sub{font-size:13px;color:#655e54}
+body .auth-root .auth-field{margin:14px 0;gap:8px}
+body .auth-root .auth-field input{height:51px;background:#faf7f1;border:1px solid #bdb5a8;border-radius:5px;color:#24221e}
+body .auth-root .auth-btn{height:54px;margin-top:20px;border-radius:5px;background:#191a19;color:#d7af64;font-size:16px;letter-spacing:.18em}
+body .auth-root .auth-btn:hover{background:#33332e}
+@media(max-width:900px){body .auth-root{background-size:auto 47vh;background-position:30% top}body .auth-root #authStage{align-items:flex-end;justify-content:center;padding:44vh 20px 25px}body .auth-root .auth-card{width:min(480px,100%);padding:20px 16px;background:#f7f3eb}}
+@media(prefers-reduced-motion:reduce){body .auth-root *{animation:none!important}}
+</style>
 </head>
 <body>
 <div class="app">
@@ -425,7 +442,7 @@ $('#exportBtn').onclick=()=>download('投资者人物工作台_全部数据.json
 render();
 seedDefaultPeople();
 </script>
-<script src="./trade-dashboard.js?v=20260928-3"></script>
+<script src="./trade-dashboard.js?v=20260928-4"></script>
 <script src="./people-detail.js"></script>
 <script src="./trading-simulator.js"></script>
 <script src="./document-workspace.js?v=20260928-2"></script>
