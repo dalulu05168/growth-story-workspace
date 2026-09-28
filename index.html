@@ -151,7 +151,7 @@ body .app.app-ready .input:focus,body .app.app-ready .select:focus,body .app.app
 const STORAGE_KEY='growth-workspace-db';
 const DATA_URL='./data/people.json';
 const DEFAULT_DATASET_VERSION='3.0';
-const emptyDB={people:[],records:[],docs:[],dailyDocs:[],customGroups:[],meta:{}};
+const emptyDB={people:[],records:[],docs:[],dailyDocs:{},customGroups:[],meta:{}};
 let db=loadLocal();
 let selectedDocId=db.docs[0]?.id||null;
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
@@ -163,7 +163,7 @@ function loadLocal(){
   out.people=Array.isArray(out.people)?out.people:[];
   out.records=Array.isArray(out.records)?out.records:[];
   out.docs=Array.isArray(out.docs)?out.docs:[];
-  out.dailyDocs=Array.isArray(out.dailyDocs)?out.dailyDocs:[];
+  out.dailyDocs=out.dailyDocs&&typeof out.dailyDocs==='object'&&!Array.isArray(out.dailyDocs)?out.dailyDocs:{};
   out.customGroups=Array.isArray(out.customGroups)?out.customGroups:[];
   out.meta=out.meta&&typeof out.meta==='object'?out.meta:{};
   out.people=out.people.map(normalizePerson);
@@ -467,12 +467,12 @@ $('#exportBtn').onclick=()=>download('投资者人物工作台_全部数据.json
 
 render();
 </script>
-<script src="./cloud-sync.js?v=20260928-cloud-1"></script>
+<script src="./cloud-sync.js?v=20260929-cloud-2"></script>
 <script src="./trade-dashboard.js?v=20260928-security-7"></script>
 <script src="./people-detail.js"></script>
-<script src="./trading-simulator.js?v=20260928-fixes-1"></script>
-<script src="./document-workspace.js?v=20260928-2"></script>
-<script src="./ui-shell.js?v=20260928-ui-1"></script>
+<script src="./trading-simulator.js?v=20260929-trade-2"></script>
+<script src="./document-workspace.js?v=20260929-daily-3"></script>
+<script src="./ui-shell.js?v=20260929-ui-2"></script>
 </body>
 </html>
 
