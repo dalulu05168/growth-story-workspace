@@ -6,10 +6,6 @@
 <title>辰南 · 人物与交易工作台</title>
 <style>
 .app:not(.app-ready){visibility:hidden}
-/* The login mark pairs a brush stroke with a small Bitcoin seal. */
-.auth-root .auth-logo,.auth-root .splash-mark{font-family:"STKaiti","KaiTi","Songti SC",serif;font-weight:700;background:linear-gradient(145deg,#f7e2a0,#aa7732 72%,#624019);color:#192238;position:relative;transform:rotate(-5deg)}
-.auth-root .auth-logo::after,.auth-root .splash-mark::after{content:"₿";position:absolute;right:-12px;bottom:-9px;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#cc963b;color:#172139;font:700 17px Arial,sans-serif;box-shadow:0 2px 10px #0005}
-.auth-root .auth-title{font-family:"STKaiti","KaiTi","Songti SC",serif;letter-spacing:.14em;font-size:34px}
 @media(prefers-reduced-motion:reduce){.auth-root .auth-orb,.auth-root .splash-mark{animation:none}}
 </style>
 <style>
@@ -134,7 +130,7 @@ body .app.app-ready .input:focus,body .app.app-ready .select:focus,body .app.app
 <section id="records" class="section">
   <div class="topbar"><div><div class="eyebrow">FACTS & QUOTES</div><h1 class="page-title">重要事件</h1><p class="sub">记录人物事实 / 发言；保存前做重复与简单状态冲突检查。</p></div><button class="btn primary" id="addRecord">＋ 新增重要记录</button></div>
   <div class="notice warn">一致性检查仅作辅助，不替代人工判断。</div>
-  <div class="card panel"><div class="toolbar"><select class="select" id="recordPerson"><option value="all">全部人物</option></select><select class="select" id="recordType"><option value="all">全部类型</option><option value="重要事件">重要事件</option><option value="发言记录">发言记录</option></select><input class="input search" id="recordSearch" placeholder="搜索内容或标题…" /></div><div id="allTimeline" class="timeline"></div></div>
+  <div class="card panel"><div class="toolbar"><select class="select" id="recordPerson"><option value="all">全部人物</option></select><select class="select" id="recordType"><option value="all">全部类型</option><option value="重要事件">重要事件</option><option value="发言记录">发言记录</option><option value="联系记录">联系记录</option></select><input class="input search" id="recordSearch" placeholder="搜索内容或标题…" /></div><div id="allTimeline" class="timeline"></div></div>
 </section>
 
 <section id="novel" class="section">
@@ -155,7 +151,7 @@ body .app.app-ready .input:focus,body .app.app-ready .select:focus,body .app.app
 const STORAGE_KEY='growth-workspace-db';
 const DATA_URL='./data/people.json';
 const DEFAULT_DATASET_VERSION='3.0';
-const emptyDB={people:[],records:[],docs:[],customGroups:[],meta:{}};
+const emptyDB={people:[],records:[],docs:[],dailyDocs:[],customGroups:[],meta:{}};
 let db=loadLocal();
 let selectedDocId=db.docs[0]?.id||null;
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
@@ -167,6 +163,7 @@ function loadLocal(){
   out.people=Array.isArray(out.people)?out.people:[];
   out.records=Array.isArray(out.records)?out.records:[];
   out.docs=Array.isArray(out.docs)?out.docs:[];
+  out.dailyDocs=Array.isArray(out.dailyDocs)?out.dailyDocs:[];
   out.customGroups=Array.isArray(out.customGroups)?out.customGroups:[];
   out.meta=out.meta&&typeof out.meta==='object'?out.meta:{};
   out.people=out.people.map(normalizePerson);
@@ -208,8 +205,9 @@ function normalizePerson(raw={}){
   p.communication=p.communication&&typeof p.communication==='object'?p.communication:{};
   p.lifestyle=p.lifestyle&&typeof p.lifestyle==='object'?p.lifestyle:{};
   p.tags=Array.isArray(p.tags)?p.tags:[];
-  p.crm=p.crm&&typeof p.crm==='object'?p.crm:{joined_group:false,group_joined_date:null,notes:p.note||''};
+  p.crm=p.crm&&typeof p.crm==='object'?p.crm:{joined_group:false,group_joined_date:null,notes:p.note||'',contact_count:0};
   if(typeof p.crm.joined_group!=='boolean')p.crm.joined_group=false;
+  p.crm.contact_count=Math.max(0,Number(p.crm.contact_count)||0);
   return p;
 }
 async function seedDefaultPeople(){
@@ -392,6 +390,7 @@ function openPerson(id){
     <div class="field"><label>账户状态</label><input class="input" name="accountStatus" value="${esc(p.account?.status||'')}"></div>
     <div class="field"><label>入群</label><select class="select" name="joined"><option value="0" ${!pJoined(p)?'selected':''}>未入群</option><option value="1" ${pJoined(p)?'selected':''}>已入群</option></select></div>
     <div class="field"><label>入群日期</label><input class="input" type="date" name="joinedDate" value="${esc(p.crm?.group_joined_date||'')}"></div>
+    <div class="field"><label>历史联系次数</label><input class="input" type="number" min="0" name="contactCount" value="${esc(p.crm?.contact_count||0)}"></div>
     <div class="field full"><label>内部备注</label><textarea name="notes" rows="3">${esc(p.crm?.notes||'')}</textarea></div>
     <div class="field full"><label>性格描述</label><textarea name="personality" rows="3">${esc(p.personality?.summary||'')}</textarea></div>
   </div>`,f=>{
@@ -406,7 +405,7 @@ function openPerson(id){
     x.investment_profile=x.investment_profile||{};x.investment_profile.stock_enthusiasm_index=Math.max(0,Math.min(100,Number(f.get('enthusiasm'))||0));x.investment_profile.risk_tolerance=String(f.get('risk')).trim();
     x.vip=x.vip||{};x.vip.is_vip=f.get('vip')==='1';x.vip.level=x.vip.is_vip?(String(f.get('vipLevel')).trim()||'VIP'):null;
     x.account=x.account||{};x.account.opened=f.get('opened')==='1';x.account.status=String(f.get('accountStatus')).trim()||(x.account.opened?'已开户':'未开户');x.account.status_code=x.account.opened?(x.account.status_code==='NOT_OPENED'?'ACCOUNT_OPENED':x.account.status_code||'ACCOUNT_OPENED'):'NOT_OPENED';
-    x.crm=x.crm||{};x.crm.joined_group=f.get('joined')==='1';x.crm.group_joined_date=x.crm.joined_group?(f.get('joinedDate')||x.crm.group_joined_date||today()):null;x.crm.notes=String(f.get('notes')).trim();
+    x.crm=x.crm||{};x.crm.joined_group=f.get('joined')==='1';x.crm.group_joined_date=x.crm.joined_group?(f.get('joinedDate')||x.crm.group_joined_date||today()):null;x.crm.contact_count=Math.max(0,Number(f.get('contactCount'))||0);x.crm.notes=String(f.get('notes')).trim();
     x.personality=x.personality||{};x.personality.summary=String(f.get('personality')).trim();
     x.tags=rebuildTags(x);
     if(!id)db.people.push(x);
@@ -421,7 +420,7 @@ function nextPersonId(){
 }
 function deletePerson(id){
   const p=person(id);if(!p)return;
-  const linked=[...(db.records||[]),...(db.portfolio?.holdings||[]),...(db.portfolio?.buyPlans||[])].some(x=>String(x.personId)===String(id))||(db.tradeSim?.recommendations||[]).some(r=>(r.candidates||[]).some(x=>String(x.personId)===String(id)))||(db.docs||[]).some(d=>String(d.html||'').includes('data-person="'+id+'"'));
+  const linked=[...(db.records||[]),...(db.portfolio?.holdings||[]),...(db.portfolio?.buyPlans||[])].some(x=>String(x.personId)===String(id))||(db.tradeSim?.recommendations||[]).some(r=>(r.candidates||[]).some(x=>String(x.personId)===String(id)))||(db.docs||[]).some(d=>String(d.html||'').includes('data-person="'+id+'"'))||(db.dailyDocs||[]).some(d=>String(d.html||'').includes('data-person="'+id+'"'));
   if(linked){toast('该人物有关联记录、交易或文档，请保留人物以维护历史完整性');return}
   if(!confirm(`确定删除 ${pName(p)}（${p.id}）吗？\n该人物会同时从所有自定义小组中移除。`))return;
   db.people=db.people.filter(x=>String(x.id)!==String(id));db.customGroups.forEach(g=>g.members=(g.members||[]).filter(x=>String(x)!==String(id)));save();render();toast('人物已删除');
@@ -446,7 +445,7 @@ function similarity(a,b){const x=normalize(a),y=normalize(b);if(!x||!y)return 0;
 function stateKeys(s){const t=String(s).toLowerCase(),keys=[];[['账户','有账户','没有账户'],['婚姻','已婚','未婚'],['工作','有工作','没有工作'],['记忆','记得','不记得'],['住处','住在','不住在']].forEach(([k,pos,neg])=>{const negative=t.includes(neg);if(negative)keys.push({k,v:'负'});if(t.replaceAll(neg,'').includes(pos))keys.push({k,v:'正'})});return keys}
 function checks(personId,content,ignoreId){const same=db.records.filter(r=>String(r.personId)===String(personId)&&r.id!==ignoreId),exact=same.find(r=>normalize(r.content)===normalize(content)),near=same.filter(r=>similarity(r.content,content)>=.72),states=stateKeys(content),conflicts=[];states.forEach(s=>same.filter(r=>stateKeys(r.content).some(old=>old.k===s.k&&old.v!==s.v)).forEach(r=>conflicts.push({r,now:s})));return{exact,near,conflicts}}
 function openRecord(id){
-  const r=id?db.records.find(x=>x.id===id):{};openModal(id?'编辑重要记录':'新增重要记录',`<div class="form-grid"><div class="field"><label>人物 *</label><select class="select" name="personId" required>${db.people.map(p=>`<option value="${esc(p.id)}" ${String(p.id)===String(r.personId)?'selected':''}>#${esc(p.id)} · ${esc(pName(p))}</option>`).join('')}</select></div><div class="field"><label>日期 *</label><input class="input" type="date" name="date" required value="${esc(r.date||today())}"></div><div class="field"><label>记录类型</label><select class="select" name="type"><option ${r.type==='重要事件'?'selected':''}>重要事件</option><option ${r.type==='发言记录'?'selected':''}>发言记录</option></select></div><div class="field"><label>主题标签</label><input class="input" name="topics" value="${esc((r.topics||[]).join('、'))}" placeholder="用顿号分隔"></div><div class="field full"><label>标题 *</label><input class="input" name="title" required value="${esc(r.title||'')}"></div><div class="field full"><label>人物事实 / 发言内容 *</label><textarea name="content" rows="5" required>${esc(r.content||'')}</textarea></div></div>`,f=>{const personId=f.get('personId'),content=String(f.get('content')).trim(),c=checks(personId,content,id);if(c.exact){alert('已阻止保存：该人物已有完全重复内容。');return false}if(c.near.length||c.conflicts.length){if(!confirm('发现高相似度或状态冲突记录，确认复核后仍要保存吗？'))return false}const x={id:id||'r'+Date.now(),personId,date:f.get('date'),type:f.get('type'),title:String(f.get('title')).trim(),content,topics:String(f.get('topics')).split(/[、,，]/).map(s=>s.trim()).filter(Boolean)};if(id)db.records=db.records.map(a=>a.id===id?x:a);else db.records.push(x)});
+  const r=id?db.records.find(x=>x.id===id):{};openModal(id?'编辑重要记录':'新增重要记录',`<div class="form-grid"><div class="field"><label>人物 *</label><select class="select" name="personId" required>${db.people.map(p=>`<option value="${esc(p.id)}" ${String(p.id)===String(r.personId)?'selected':''}>#${esc(p.id)} · ${esc(pName(p))}</option>`).join('')}</select></div><div class="field"><label>日期 *</label><input class="input" type="date" name="date" required value="${esc(r.date||today())}"></div><div class="field"><label>记录类型</label><select class="select" name="type"><option ${r.type==='重要事件'?'selected':''}>重要事件</option><option ${r.type==='发言记录'?'selected':''}>发言记录</option><option ${r.type==='联系记录'?'selected':''}>联系记录</option></select></div><div class="field"><label>主题标签</label><input class="input" name="topics" value="${esc((r.topics||[]).join('、'))}" placeholder="用顿号分隔"></div><div class="field full"><label>标题 *</label><input class="input" name="title" required value="${esc(r.title||'')}"></div><div class="field full"><label>人物事实 / 发言内容 *</label><textarea name="content" rows="5" required>${esc(r.content||'')}</textarea></div></div>`,f=>{const personId=f.get('personId'),content=String(f.get('content')).trim(),c=checks(personId,content,id);if(c.exact){alert('已阻止保存：该人物已有完全重复内容。');return false}if(c.near.length||c.conflicts.length){if(!confirm('发现高相似度或状态冲突记录，确认复核后仍要保存吗？'))return false}const x={id:id||'r'+Date.now(),personId,date:f.get('date'),type:f.get('type'),title:String(f.get('title')).trim(),content,topics:String(f.get('topics')).split(/[、,，]/).map(s=>s.trim()).filter(Boolean)};if(id)db.records=db.records.map(a=>a.id===id?x:a);else db.records.push(x)});
 }
 function currentDoc(){return db.docs.find(d=>d.id===selectedDocId)||null}
 function renderDocs(){if(!$('#docList'))return;if(!db.docs.length){selectedDocId=null;$('#docList').innerHTML='<div class="empty">还没有文档</div>';$('#docTitle').value='';$('#editor').value='';$('#docStatus').textContent='点击“新建文档”开始写作';return}if(!selectedDocId||!currentDoc())selectedDocId=db.docs[0].id;const d=currentDoc();$('#docList').innerHTML=db.docs.map(x=>`<button class="doc-item ${x.id===selectedDocId?'active':''}" data-doc="${esc(x.id)}"><b>${esc(x.title)}</b><small>更新于 ${esc(x.updated||today())}</small></button>`).join('');$('#docTitle').value=d.title;$('#editor').value=d.content;$('#docStatus').textContent=`已在本地保存 · ${d.content.length} 字`;$$('.doc-item').forEach(b=>b.onclick=()=>{selectedDocId=b.dataset.doc;renderDocs()})}
@@ -467,12 +466,13 @@ $('#modal').onclick=e=>{if(e.target.id==='modal')closeModal()};
 $('#exportBtn').onclick=()=>download('投资者人物工作台_全部数据.json',JSON.stringify(db,null,2),'application/json');
 
 render();
-seedDefaultPeople();
 </script>
+<script src="./cloud-sync.js?v=20260928-cloud-1"></script>
 <script src="./trade-dashboard.js?v=20260928-security-7"></script>
 <script src="./people-detail.js"></script>
 <script src="./trading-simulator.js?v=20260928-fixes-1"></script>
 <script src="./document-workspace.js?v=20260928-2"></script>
+<script src="./ui-shell.js?v=20260928-ui-1"></script>
 </body>
 </html>
 
