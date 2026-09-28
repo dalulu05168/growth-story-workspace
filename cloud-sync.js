@@ -30,7 +30,7 @@ function normalizePayload(raw){
   out.people=Array.isArray(out.people)?out.people.map(normalizePerson):[];
   out.records=Array.isArray(out.records)?out.records:[];
   out.docs=Array.isArray(out.docs)?out.docs:[];
-  out.dailyDocs=Array.isArray(out.dailyDocs)?out.dailyDocs:[];
+  out.dailyDocs=out.dailyDocs&&typeof out.dailyDocs==='object'&&!Array.isArray(out.dailyDocs)?out.dailyDocs:{};
   out.customGroups=Array.isArray(out.customGroups)?out.customGroups:[];
   out.meta=out.meta&&typeof out.meta==='object'?out.meta:{};
   out.portfolio=out.portfolio&&typeof out.portfolio==='object'?out.portfolio:{};
