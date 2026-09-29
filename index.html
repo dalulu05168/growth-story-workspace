@@ -200,6 +200,8 @@ function normalizePerson(raw={}){
   p.occupation=p.occupation&&typeof p.occupation==='object'?p.occupation:{title_fr:'',title_zh:'',industry_fr:'',industry_zh:'',employment_status:'',years_in_role:null,education:'',career_stage:''};
   p.family=p.family&&typeof p.family==='object'?p.family:{};
   p.finance=p.finance&&typeof p.finance==='object'?p.finance:{annual_income_eur:0,estimated_investable_assets_eur:0,estimated_liquid_assets_eur:0,available_investment_capital_eur:0};
+  p.finance.available_capital_by_currency=p.finance.available_capital_by_currency&&typeof p.finance.available_capital_by_currency==='object'&&!Array.isArray(p.finance.available_capital_by_currency)?p.finance.available_capital_by_currency:{};
+  [['EUR','available_investment_capital_eur'],['USD','available_investment_capital_usd'],['HKD','available_investment_capital_hkd'],['CNY','available_investment_capital_cny']].forEach(function(pair){const v=Number(p.finance[pair[1]]);if(Number.isFinite(v)&&v>0&&p.finance.available_capital_by_currency[pair[0]]==null)p.finance.available_capital_by_currency[pair[0]]=v});
   p.investment_profile=p.investment_profile&&typeof p.investment_profile==='object'?p.investment_profile:{stock_enthusiasm_index:Number(p.heat||0)*10,stock_enthusiasm_level:'',risk_tolerance:'',preferred_sectors:[]};
   p.personality=p.personality&&typeof p.personality==='object'?p.personality:{summary:'',traits:[]};
   p.communication=p.communication&&typeof p.communication==='object'?p.communication:{};
