@@ -25,7 +25,7 @@ jobs:
         run: sleep 20
       - name: Test live Pages
         run: |
-          cat > /tmp/live-smoke.cjs <<'NODE'
+          cat > live-smoke.cjs <<'NODE'
           const { chromium } = require('playwright');
           const assert = require('node:assert/strict');
           const URL = 'https://dalulu05168.github.io/growth-story-workspace/';
@@ -88,4 +88,4 @@ jobs:
             await browser.close();
           })().catch(e=>{console.error(e);process.exit(1)});
           NODE
-          node /tmp/live-smoke.cjs
+          node ./live-smoke.cjs
