@@ -270,9 +270,34 @@ async function showAuthCard(){
   byId('loginForm').onsubmit=async function(e){
     e.preventDefault();const f=new FormData(e.target),err=byId('authError'),btn=e.target.querySelector('button');
     err.textContent='正在验证并同步云端数据…';btn.disabled=true;
-    try{await window.ChenNanCloud.login(String(f.get('user')||'').trim(),String(f.get('password')||''));unlockApp()}
-    catch(ex){err.textContent=ex?.message||'登录失败';btn.disabled=false}
+    try{
+      const result=await window.ChenNanCloud.login(String(f.get('user')||'').trim(),String(f.get('password')||''));
+      if(result?.requires2fa||result?.requires2faEnrollment){showMfaCard(result);return}
+      unlockApp();
+    }catch(ex){err.textContent=ex?.message||'登录失败';btn.disabled=false}
   };
+}
+function showMfaCard(data){
+  const stage=byId('authStage');if(!stage)return;
+  const enrolling=!!data?.requires2faEnrollment;
+  const secret=enrolling?String(data?.secret||''):'';
+  const intro=enrolling
+    ? '<p class="auth-sub">首次登录需要绑定双重验证。请在 Google Authenticator、Microsoft Authenticator 或其他 TOTP 应用中手动添加下面的密钥，然后输入当前 6 位验证码。</p><div class="auth-secret">'+safe(secret)+'</div>'
+    : '<p class="auth-sub">请输入 Authenticator 应用中当前显示的 6 位验证码。</p>';
+  stage.innerHTML='<div class="auth-card"><div class="auth-logo">辰南</div><div class="auth-kicker">TWO-FACTOR AUTHENTICATION</div><h1 class="auth-title">'+(enrolling?'绑定 2FA':'双重验证')+'</h1>'+intro+'<form id="mfaForm"><div class="auth-field"><label>6 位验证码</label><input name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" placeholder="000000" required></div><button class="auth-btn">'+(enrolling?'验证并启用 2FA':'验证并登录')+'</button><div class="auth-error" id="authError"></div></form><button type="button" id="mfaBack" class="auth-btn" style="margin-top:8px;background:rgba(255,255,255,.08)">重新登录</button></div>';
+  const form=byId('mfaForm');
+  const codeInput=form?.querySelector('input[name="code"]');
+  if(codeInput)setTimeout(()=>codeInput.focus(),30);
+  if(form)form.onsubmit=async function(e){
+    e.preventDefault();
+    const f=new FormData(e.target),err=byId('authError'),btn=e.target.querySelector('button');
+    const code=String(f.get('code')||'').replace(/\s/g,'');
+    if(!/^\d{6}$/.test(code)){err.textContent='请输入 6 位验证码';return}
+    err.textContent='正在验证 2FA…';btn.disabled=true;
+    try{await window.ChenNanCloud.verify2fa(String(data?.challengeToken||''),code);unlockApp()}
+    catch(ex){err.textContent=ex?.message||'2FA 验证失败';btn.disabled=false}
+  };
+  const back=byId('mfaBack');if(back)back.onclick=function(){showAuthCard()};
 }
 function unlockApp(){
   const root=byId('authRoot');if(root)root.classList.add('hidden');
