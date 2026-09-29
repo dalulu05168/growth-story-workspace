@@ -60,7 +60,7 @@ function holdingStatus(hd){
   return{key:'holding',label:'持有中',left};
 }
 function stockKey(hd){return hd.batchId||hd.id||((hd.offerId||'legacy')+'|'+(hd.symbol||'')+'|'+String(hd.buyAt||''))}
-function personBudget(p,currency){if(currency==='USD')return Number(p?.finance?.available_investment_capital_usd)||null;if(currency==='EUR')return Number(p?.finance?.available_investment_capital_eur)||null;if(currency==='CNY')return Number(p?.finance?.available_investment_capital_cny)||null;if(currency==='HKD')return Number(p?.finance?.available_investment_capital_hkd)||null;return null}
+function personBudget(p,currency){const code=String(currency||'USD').toUpperCase(),map=p?.finance?.available_capital_by_currency;if(map&&map[code]!=null&&Number.isFinite(Number(map[code])))return Number(map[code]);const key={USD:'available_investment_capital_usd',EUR:'available_investment_capital_eur',CNY:'available_investment_capital_cny',HKD:'available_investment_capital_hkd'}[code];if(!key)return null;const raw=p?.finance?.[key];return raw===null||raw===undefined||raw===''?null:Number(raw)}
 function fundingState(p,o){const need=Number(o.minShares||0)*Number(o.unitPrice||0),budget=personBudget(p,o.currency||'USD');return{need,budget,ok:budget==null||budget>=need,known:budget!=null}}
 
 function setupUI(){
