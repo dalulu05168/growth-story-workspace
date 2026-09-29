@@ -38,8 +38,8 @@ function activeHoldings(){ensureTradeState();return db.portfolio.holdings.filter
 function holdingIds(){return new Set(activeHoldings().map(function(h){return String(h.personId)}))}
 function noHoldingPeople(){const set=holdingIds();return db.people.filter(function(p){return !set.has(String(p.id))})}
 function todaySell(){
-  const today=localDate();
-  return activeHoldings().filter(function(h){return h.plannedSellAt&&localDate(h.plannedSellAt)===today}).sort(function(a,b){return String(a.plannedSellAt).localeCompare(String(b.plannedSellAt))});
+  const end=new Date();end.setHours(23,59,59,999);
+  return activeHoldings().filter(function(h){return h.plannedSellAt&&new Date(h.plannedSellAt).getTime()<=end.getTime()}).sort(function(a,b){return String(a.plannedSellAt).localeCompare(String(b.plannedSellAt))});
 }
 function todayBuy(){const today=localDate();ensureTradeState();return db.portfolio.buyPlans.filter(function(x){return x.status==='planned'&&x.date===today})}
 function dueSoon(h){
@@ -250,6 +250,7 @@ function enhancePeopleRows(){
 function wrapRender(){
   const core=render;
   render=function(){ensureTradeState();core();ensureTradeUI();renderDashboard();renderTrades();enhancePeopleRows();bindTradeActions()};
+  const tradeSaveBase=save;save=function(){tradeSaveBase();renderDashboard();};
 }
 
 function injectAuth(){
