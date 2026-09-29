@@ -195,7 +195,7 @@ function bindTradeActions(){
   document.querySelectorAll('[data-buy-remove]').forEach(function(b){b.onclick=function(){db.portfolio.buyPlans=db.portfolio.buyPlans.filter(function(x){return x.id!==b.dataset.buyRemove});save();render()}});
   document.querySelectorAll('[data-edit-holding]').forEach(function(b){b.onclick=function(){openHolding(b.dataset.editHolding)}});
   document.querySelectorAll('[data-delete-holding]').forEach(function(b){b.onclick=function(){if(confirm('删除这笔持仓？')){db.portfolio.holdings=db.portfolio.holdings.filter(function(x){return x.id!==b.dataset.deleteHolding});save();render()}}});
-  document.querySelectorAll('[data-trade-pref]').forEach(function(b){b.onclick=function(){openTradePrefs(b.dataset.tradePref)}});
+  document.querySelectorAll('[data-trade-pref]').forEach(function(b){if(b.closest('#peopleList'))return;b.onclick=function(){openTradePrefs(b.dataset.tradePref)}});
   const add=byId('addHoldingInline');if(add)add.onclick=function(){openHolding()};
   const add2=byId('addHolding');if(add2)add2.onclick=function(){openHolding()};
   const gen=byId('generateBuyListInline');if(gen)gen.onclick=generateBuyList;
