@@ -35,7 +35,24 @@ function holdingCurrency(h){
 function holdingCostMap(p){
   const map={};personHoldings(p,false).forEach(h=>{const c=holdingCurrency(h);map[c]=(map[c]||0)+(Number(h.buyPrice)||0)*(Number(h.quantity)||0)});return map;
 }
-function mapMoney(map){const xs=Object.entries(map).filter(([,v])=>Math.abs(v)>1e-9);return xs.length?xs.map(([c,v])=>cash(v,c)).join(' / '):'—'}
+function mapMoney(map){const xs=Object.entries(map||{}).filter(([,v])=>Number.isFinite(Number(v))&&Math.abs(Number(v))>1e-9);return xs.length?xs.map(([c,v])=>cash(v,c)).join(' / '):'—'}
+function availableCapitalMap(p){
+  const out={},src=p?.finance?.available_capital_by_currency;
+  if(src&&typeof src==='object')Object.entries(src).forEach(([k,v])=>{if(Number.isFinite(Number(v)))out[String(k).toUpperCase()]=Number(v)});
+  [['EUR','available_investment_capital_eur'],['USD','available_investment_capital_usd'],['HKD','available_investment_capital_hkd'],['CNY','available_investment_capital_cny']].forEach(([code,key])=>{const raw=p?.finance?.[key];if(out[code]==null&&raw!==null&&raw!==undefined&&raw!==''&&Number.isFinite(Number(raw)))out[code]=Number(raw)});
+  return out;
+}
+function performanceText(pf){
+  if(!pf)return'未录入';
+  if(pf.multi){return Object.entries(pf.groups||{}).map(([code,g])=>{const r=g.cost?g.profit/g.cost*100:null;return code+' '+ratioText(r)}).join(' / ')||'未录入'}
+  return ratioText(pf.ratio);
+}
+function profitMoneyText(pf){
+  if(!pf)return'未录入';
+  if(pf.multi)return Object.entries(pf.groups||{}).map(([code,g])=>cash(g.profit,code)).join(' / ');
+  if(pf.profit==null)return'未录入';
+  return cash(pf.profit,pf.currency||'EUR');
+}
 function tradingPerformance(p){
   const groups={};let known=0;
   personHoldings(p,true).forEach(h=>{const buy=Number(h.buyPrice),qty=Number(h.quantity),ref=h.status==='sold'?Number(h.soldPrice):Number(h.currentPrice);if(!(buy>0&&qty>0&&ref>0))return;const c=holdingCurrency(h),cost=buy*qty,profit=(ref-buy)*qty;groups[c]=groups[c]||{cost:0,profit:0};groups[c].cost+=cost;groups[c].profit+=profit;known++});
@@ -118,7 +135,7 @@ function line(k,v){return '<div class="detail-line"><span>'+s(k)+'</span><b>'+s(
 function holdingTable(p){
   const rows=personHoldings(p,true);
   if(!rows.length)return'<div class="empty">暂无持仓记录</div>';
-  return'<div class="table-wrap"><table class="mini-table"><thead><tr><th>状态</th><th>股票</th><th>数量</th><th>买入价</th><th>买入时间</th><th>计划卖出</th></tr></thead><tbody>'+rows.map(function(h){return'<tr><td>'+(h.status==='sold'?'已售':'持仓')+'</td><td>'+s(h.symbol||'--')+' '+s(h.name||'')+'</td><td>'+s(h.quantity||0)+'</td><td>'+s(h.buyPrice||'--')+'</td><td>'+s(h.buyAt?new Date(h.buyAt).toLocaleString('zh-CN',{hour12:false}):'--')+'</td><td>'+s(h.plannedSellAt?new Date(h.plannedSellAt).toLocaleString('zh-CN',{hour12:false}):'--')+'</td></tr>'}).join('')+'</tbody></table></div>';
+  return'<div class="table-wrap"><table class="mini-table"><thead><tr><th>状态</th><th>股票</th><th>币种</th><th>数量</th><th>买入价</th><th>当前/卖出价</th><th>收益</th><th>买入时间</th><th>计划卖出</th></tr></thead><tbody>'+rows.map(function(h){const code=holdingCurrency(h),buy=Number(h.buyPrice)||0,ref=h.status==='sold'?Number(h.soldPrice):Number(h.currentPrice),qty=Number(h.quantity)||0,profit=buy>0&&ref>0?(ref-buy)*qty:null,ratio=buy>0&&ref>0?(ref-buy)/buy*100:null;return'<tr><td>'+(h.status==='sold'?'已售':'持仓')+'</td><td>'+s(h.symbol||'--')+' '+s(h.name||'')+'</td><td>'+s(code)+'</td><td>'+s(qty)+'</td><td>'+s(buy?cash(buy,code):'--')+'</td><td>'+s(ref?cash(ref,code):'未录入')+'</td><td class="'+(ratio==null?'':ratio>=0?'profit-pos':'profit-neg')+'">'+s(profit==null?'未录入':cash(profit,code)+' / '+ratioText(ratio))+'</td><td>'+s(h.buyAt?new Date(h.buyAt).toLocaleString('zh-CN',{hour12:false}):'--')+'</td><td>'+s(h.plannedSellAt?new Date(h.plannedSellAt).toLocaleString('zh-CN',{hour12:false}):'--')+'</td></tr>'}).join('')+'</tbody></table></div>';
 }
 function openDetail(id){
   const p=person(id);if(!p)return;
@@ -127,12 +144,12 @@ function openDetail(id){
   go('personDetailPage');
   const host=$id('personDetailContent');if(!host)return;
   host.innerHTML='<div class="detail-head"><div class="detail-identity"><div class="detail-avatar">'+s((label(p).split(' ').map(function(x){return x[0]}).join('')).slice(0,2))+'</div><div><div class="eyebrow">PERSON PROFILE</div><h1 class="page-title" style="margin-bottom:5px">'+s(label(p))+'</h1><p class="sub">'+s(p.id)+' · '+s(pGender(p)||'--')+' · '+s(p.age||'--')+'岁 · '+s(pRelationName(p)||'--')+' · '+s(p.location?.city||'--')+'</p></div></div><div class="actions"><button class="btn ghost" id="detailBack">← 返回人物列表</button><button class="btn ghost" id="editPerformance">资金/盈利维护</button><button class="btn primary" id="detailEdit">编辑人物</button></div></div>'+
-  '<div class="detail-kpis"><div class="card detail-kpi"><span>联系记录</span><strong>'+contacts+'</strong></div><div class="card detail-kpi"><span>参与次数</span><strong>'+parts+'</strong></div><div class="card detail-kpi"><span>当前持仓</span><strong>'+hs.length+' 笔</strong></div><div class="card detail-kpi"><span>持仓成本</span><strong>'+s(mapMoney(costMap))+'</strong></div><div class="card detail-kpi"><span>盈利占比</span><strong class="'+(pf.ratio==null?'':(pf.ratio>=0?'profit-pos':'profit-neg'))+'">'+s(pf.multi?'多币种':ratioText(pf.ratio))+'</strong></div><div class="card detail-kpi"><span>股票热情</span><strong>'+s(pEnthusiasm(p))+'</strong></div></div>'+
+  '<div class="detail-kpis"><div class="card detail-kpi"><span>联系记录</span><strong>'+contacts+'</strong></div><div class="card detail-kpi"><span>参与次数</span><strong>'+parts+'</strong></div><div class="card detail-kpi"><span>当前持仓</span><strong>'+hs.length+' 笔</strong></div><div class="card detail-kpi"><span>持仓成本</span><strong>'+s(mapMoney(costMap))+'</strong></div><div class="card detail-kpi"><span>盈利占比</span><strong class="'+(!pf?.multi&&pf?.ratio!=null?(pf.ratio>=0?'profit-pos':'profit-neg'):'')+'">'+s(performanceText(pf))+'</strong></div><div class="card detail-kpi"><span>股票热情</span><strong>'+s(pEnthusiasm(p))+'</strong></div></div>'+
   '<div class="detail-columns"><div class="card detail-card"><div class="panel-head"><h2>人物与资金详情</h2><span class="muted">画像 + 系统记录</span></div><div class="detail-list">'+
   line('系统分类',genderRelationLabel(p)||'--')+line('VIP',pVip(p)?(p.vip?.level||'VIP'):'否')+line('账户状态',p.account?.status||(isOpened(p)?'已开户':'未开户'))+line('群组状态',isJoined(p)?'已入群':'未入群')+
   line('职业',p.occupation?.title_zh||p.occupation?.title_fr||'--')+line('行业',p.occupation?.industry_zh||p.occupation?.industry_fr||'--')+
-  line('年收入',cash(p.finance?.annual_income_eur||0))+line('可投资资产',cash(p.finance?.estimated_investable_assets_eur||0))+line('流动资产',cash(p.finance?.estimated_liquid_assets_eur||0))+line('可用投资资金',cash(p.finance?.available_investment_capital_eur||0))+
-  line('档案累计投入',pf.manual&&pf.invested?cash(pf.invested,'EUR'):'—')+line('档案累计盈利',pf.manual&&pf.profit!=null?cash(pf.profit,'EUR'):'—')+
+  line('年收入',cash(p.finance?.annual_income_eur||0,'EUR'))+line('可投资资产',cash(p.finance?.estimated_investable_assets_eur||0,'EUR'))+line('流动资产',cash(p.finance?.estimated_liquid_assets_eur||0,'EUR'))+line('可用投资资金',mapMoney(availableCapitalMap(p)))+
+  line('交易/档案盈利',profitMoneyText(pf))+line('收益计算来源',pf?.manual?'手工档案（无可计算交易时）':'实际持仓/卖出价格')+
   line('当前持仓成本',mapMoney(costMap))+line('风险偏好',p.investment_profile?.risk_tolerance||'--')+line('参与频率',freq(p))+line('自定义小组',groups.join('、')||'无')+
   '<div class="detail-line" style="grid-column:1/-1"><span>家庭情况</span><b>'+s(p.family?.summary||'--')+'</b></div><div class="detail-line" style="grid-column:1/-1"><span>性格</span><b>'+s(p.personality?.summary||'--')+'</b></div><div class="detail-line" style="grid-column:1/-1"><span>内部备注</span><b>'+s(p.crm?.notes||'--')+'</b></div></div></div>'+
   '<div class="card detail-card"><div class="panel-head"><h2>人物发展历程</h2><span class="muted">'+tl.length+' 个节点</span></div><div class="journey">'+(tl.length?tl.map(function(x){return'<div class="journey-item"><div class="journey-date">'+s(x.date)+'</div><div class="journey-rail"></div><div class="journey-body"><b>'+s(x.title)+'</b><small>'+s(x.detail)+'</small></div></div>'}).join(''):'<div class="empty">暂无发展历程记录</div>')+'</div></div></div>'+
