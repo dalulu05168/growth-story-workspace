@@ -140,9 +140,9 @@ function openDash(type){
     return;
   }
   if(type==='groups'){go('groups');return}
-  go('trades');
-  tradeTab=type==='holding'?'holdings':type;
-  renderTrades();
+  const target=type==='buy'||type==='unholding'?'tradeRecommend':'holdingsV2';
+  const button=document.querySelector('.nav button[data-page="'+target+'"]');
+  if(button)button.click();
 }
 
 function renderTrades(){
