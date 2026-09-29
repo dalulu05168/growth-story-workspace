@@ -1,0 +1,42 @@
+name: Isolated acceptance
+on:
+  push:
+    branches: [fix/v23-acceptance]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run test:gate && npm test
+      - run: npx playwright install --with-deps chromium
+      - name: Prepare isolated account verifier
+        run: node tests/create-e2e-credentials.cjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: provision
+          path: /tmp/provision.json
+          retention-days: 1
+      - name: Allow database provisioning
+        run: sleep 150
+      - name: Candidate browser acceptance
+        env:
+          E2E_CREDENTIALS: /tmp/chennan-e2e.json
+          E2E_URL: http://127.0.0.1:18768/
+        run: |
+          python3 -m http.server 18768 --bind 127.0.0.1 > /tmp/http.log 2>&1 &
+          node tests/business-e2e.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: acceptance-evidence
+          path: evidence/
+          retention-days: 14

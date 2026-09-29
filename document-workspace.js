@@ -45,22 +45,24 @@ const has=(t,a)=>a.some(x=>t.includes(x));
 function detect(p,content){
   const now=norm(content), issues=[], past=db.records.filter(r=>String(r.personId)===String(p.id)&&!(r.source==='document'&&r.docDate===activeDate)).map(r=>norm(r.content));
   const opened=!!p.account?.opened,joined=!!p.crm?.joined_group,isVip=!!p.vip?.is_vip,activeHoldings=(db.portfolio?.holdings||[]).filter(x=>String(x.personId)===String(p.id)&&x.status!=='sold'),tradeHistory=(db.portfolio?.holdings||[]).filter(x=>String(x.personId)===String(p.id));
-  if(opened&&has(now,['未开户','没有开户','从未开户','没有账户']))issues.push('开户状态冲突：系统当前为已开户，文本却描述为未开户/没有账户。');
+  if(opened&&has(now,['未开户','没有开户','从未开户','没有账户','从来没有开过账户']))issues.push('开户状态冲突：系统当前为已开户，文本却描述为未开户/没有账户。');
   if(!opened&&has(now,['已开户','有账户','账户已开','已经开户']))issues.push('开户状态冲突：系统当前为未开户，文本却描述为已开户。');
-  if(joined&&has(now,['未入群','没有入群','从未入群','没进群']))issues.push('入群状态冲突：系统当前为已入群，文本却描述为未入群。');
+  if(joined&&has(now,['未入群','没有入群','从未入群','没进群','从来没有加入过群']))issues.push('入群状态冲突：系统当前为已入群，文本却描述为未入群。');
   if(!joined&&has(now,['已入群','已经入群','进群了','加入了群']))issues.push('入群状态冲突：系统当前为未入群，文本却描述为已入群。');
   if(isVip&&has(now,['不是vip','非vip','没有vip','不是会员']))issues.push('VIP状态冲突：系统当前为VIP，文本却描述为非VIP。');
   if(!isVip&&has(now,['是vip','已经是vip','vip客户','vip会员']))issues.push('VIP状态冲突：系统当前为非VIP，文本却描述为VIP。');
-  if(activeHoldings.length&&has(now,['没有持仓','无持仓','目前没股票','没有股票']))issues.push('持仓状态冲突：系统当前仍有 '+activeHoldings.length+' 笔未卖出持仓。');
+  if(activeHoldings.length&&has(now,['没有持仓','无持仓','目前没股票','没有股票','没有任何股票持仓']))issues.push('持仓状态冲突：系统当前仍有 '+activeHoldings.length+' 笔未卖出持仓。');
   if(!activeHoldings.length&&has(now,['目前持仓','现在持有股票','还有持仓']))issues.push('持仓状态提示：系统当前没有未卖出持仓，请确认文本是否描述历史情节。');
   if(tradeHistory.length&&has(now,['从未买过股票','没有买过股票','从没交易过股票']))issues.push('交易经历冲突：系统已有交易/持仓历史，但文本称从未买过或交易过股票。');
-  const noTrade=has(now,['从未参与大宗交易','从未参与过大宗交易','从来没有参与过大宗交易','从没参与过大宗交易','没有参与大宗交易','没参与过大宗交易','从未参与交易']);
-  const yesTrade=has(now,['参与过大宗交易','参加过大宗交易','参与大宗交易','参加大宗交易']);
-  if(noTrade&&past.some(x=>has(x,['参与过大宗交易','参加过大宗交易','大宗交易获利','大宗交易盈利'])))issues.push('经历冲突：历史中曾参与大宗交易，当前却称从未参与。');
-  if(yesTrade&&past.some(x=>has(x,['从未参与大宗交易','从未参与过大宗交易','从来没有参与过大宗交易','从没参与过大宗交易','没有参与大宗交易','没参与过大宗交易'])))issues.push('经历冲突：历史中曾称未参与大宗交易，当前文本与之相反。');
-  const trust=has(now,['信任助理','很信任助理','相信助理','完全相信助理']),opp=has(now,['不信任助理','怀疑助理','反驳助理','质疑助理']);
-  if(trust&&past.some(x=>has(x,['不信任助理','怀疑助理','反驳助理','质疑助理'])))issues.push('态度变化：历史存在怀疑/反驳，当前突然明显信任，请补充转变原因。');
-  if(opp&&past.some(x=>has(x,['信任助理','很信任助理','相信助理','完全相信助理'])))issues.push('态度变化：历史存在信任，当前突然怀疑/反驳，请补充触发原因。');
+  // Match denials first so the positive substring inside a denial is not treated as evidence.
+  const deniedTrade=t=>has(t,['从未参与大宗交易','从未参与过大宗交易','从来没有参与过大宗交易','从没参与过大宗交易','没有参与过大宗交易','没有参与大宗交易','没参与过大宗交易','从未参与交易']);
+  const affirmedTrade=t=>!deniedTrade(t)&&has(t,['参与过大宗交易','参加过大宗交易','参与大宗交易','参加大宗交易','大宗交易获利','大宗交易盈利']);
+  if(deniedTrade(now)&&(tradeHistory.length||past.some(affirmedTrade)))issues.push('经历冲突：历史中曾参与大宗交易，当前却称从未参与。');
+  if(affirmedTrade(now)&&past.some(deniedTrade))issues.push('经历冲突：历史中曾称未参与大宗交易，当前文本与之相反。');
+  const opposed=t=>has(t,['不信任助理','怀疑助理','反驳助理','质疑助理','不相信助理']);
+  const trusted=t=>!opposed(t)&&has(t,['信任助理','很信任助理','相信助理','完全相信助理']);
+  if(trusted(now)&&past.some(opposed))issues.push('态度变化：历史存在怀疑/反驳，当前突然明显信任，请补充转变原因。');
+  if(opposed(now)&&past.some(trusted))issues.push('态度变化：历史存在信任，当前突然怀疑/反驳，请补充触发原因。');
   const ps=norm((p.personality?.summary||'')+' '+(Array.isArray(p.personality?.traits)?p.personality.traits.join(' '):''));
   if(has(ps,['谨慎','审慎','风险敏感','慢热'])&&has(now,['毫不犹豫','完全相信','立刻决定','不考虑风险','马上全仓']))issues.push('性格差异：人物画像偏谨慎/风险敏感，但当前表现为无条件快速决策。');
   if(has(ps,['独立','自主','果断'])&&has(now,['完全依赖助理','没有主见','全部听助理']))issues.push('性格差异：人物画像偏独立自主，但当前表现为完全依赖他人。');
@@ -111,12 +113,13 @@ function loadEditor(){const d=cur();E('dailyTitle').value=d.title||'';E('dailyEd
 function schedule(){E('dailyStatus').textContent='正在编辑…';clearTimeout(autosaveTimer);autosaveTimer=setTimeout(()=>saveDaily(false,true),900)}
 function wordCount(){E('wordCount').textContent=E('dailyEditor').innerText.replace(/\s/g,'').length+' 字'}
 function saveDaily(showToast=false,silentWarnings=false){
+  clearTimeout(autosaveTimer);
   if(!E('dailyEditor'))return false;const d=cur(),text=E('dailyEditor').innerText,rows=statements(text),issues=allIssues(rows);
   if(!silentWarnings&&showToast&&issues.length&&!confirm('保存前发现人物逻辑/塑造风险：\n\n'+issueText(issues)+'\n\n仍要保存今日内容吗？'))return false;
   d.title=E('dailyTitle').value.trim();d.html=cleanHtml(E('dailyEditor').innerHTML);d.content=text;d.updatedAt=new Date().toISOString();
   db.records=db.records.filter(r=>!(r.source==='document'&&r.docDate===activeDate));
   rows.forEach(x=>db.records.push({id:'docmem-'+activeDate+'-'+x.p.id+'-'+h32(x.content),personId:x.p.id,date:activeDate,type:'发言记录',source:'document',docDate:activeDate,title:'每日文档 · '+(d.title||activeDate),content:x.content,topics:['文档记忆']}));
-  save();E('dailyStatus').textContent='已保存 '+new Date().toLocaleTimeString('zh-CN',{hour12:false});renderRank();renderWarnings();if(currentPersonId)renderMemory(currentPersonId);if(showToast)toast('今日文档已保存并同步云端');return true;
+  save();E('dailyStatus').textContent='本地已保存，等待云端 '+new Date().toLocaleTimeString('zh-CN',{hour12:false});renderRank();renderWarnings();if(currentPersonId)renderMemory(currentPersonId);if(showToast)toast('今日文档已保存到本地，正在同步云端');return true;
 }
 function currentBlock(){const s=window.getSelection();if(!s||!s.rangeCount)return null;let n=s.anchorNode;if(n?.nodeType===3)n=n.parentElement;while(n&&n!==E('dailyEditor')&&n.parentElement!==E('dailyEditor'))n=n.parentElement;return n&&n!==E('dailyEditor')?n:null}
 function suggest(){const b=currentBlock(),box=E('personSuggest');if(!b||!box)return;const m=b.innerText.trim().match(/^0*(\d{1,3})$/),p=m?byNumber(m[1]):null;if(p){box.className='doc-suggest show';box.innerHTML='Enter 插入：<b>'+esc(pnum(p).padStart(2,'0')+pcl(p)+' · '+pname(p))+'</b>　发言 '+speechCount(p)+'次';currentPersonId=p.id;renderRank();renderMemory(p.id)}else box.className='doc-suggest'}
@@ -139,7 +142,9 @@ function zip(files){const e=new TextEncoder(),ls=[],cs=[];let off=0;files.forEac
 function run(n,p={}){if(n.nodeType===Node.TEXT_NODE){if(!n.textContent)return'';const r=(p.b?'<w:b/>':'')+(p.i?'<w:i/>':'')+(p.u?'<w:u w:val="single"/>':'')+(p.s?'<w:strike/>':'');return'<w:r>'+(r?'<w:rPr>'+r+'</w:rPr>':'')+'<w:t xml:space="preserve">'+xml(n.textContent)+'</w:t></w:r>'}if(n.nodeType!==Node.ELEMENT_NODE)return'';const q={...p,b:p.b||['B','STRONG'].includes(n.tagName),i:p.i||['I','EM'].includes(n.tagName),u:p.u||n.tagName==='U',s:p.s||n.tagName==='S'};if(n.tagName==='BR')return'<w:r><w:br/></w:r>';return[...n.childNodes].map(x=>run(x,q)).join('')}
 function docXml(){const box=document.createElement('div');box.innerHTML=cleanHtml(E('dailyEditor').innerHTML);let body='';[...box.childNodes].forEach(n=>{const tag=n.tagName||'',al=n.style?.textAlign||'';let pr='';if(['center','right','justify'].includes(al))pr+='<w:jc w:val="'+al+'"/>';if(tag==='H1')pr+='<w:pStyle w:val="Heading1"/>';if(tag==='H2')pr+='<w:pStyle w:val="Heading2"/>';body+='<w:p>'+(pr?'<w:pPr>'+pr+'</w:pPr>':'')+(tag==='LI'?'<w:r><w:t>• </w:t></w:r>':'')+run(n)+'</w:p>'});return'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>'+body+'<w:sectPr/></w:body></w:document>'}
 function exportDocx(){if(saveDaily(true,false)===false)return;const d=cur(),files=[{name:'[Content_Types].xml',data:'<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>'},{name:'_rels/.rels',data:'<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>'},{name:'word/document.xml',data:docXml()}],blob=new Blob([zip(files)],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(activeDate+(d.title?'_'+d.title:'')+'.docx').replace(/[\\/:*?"<>|]/g,'_');a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast('DOCX 已离线导出')}
-window.ChenNanDocumentWorkspace={refresh:refreshWorkspace};
-const documentRenderBase=render;render=function(){documentRenderBase();refreshWorkspace();};
+window.ChenNanDocumentWorkspace={refresh:refreshWorkspace,saveDraft:()=>saveDaily(false,true)};
+document.addEventListener('chennan:cloud-saved',()=>{if(E('dailyStatus'))E('dailyStatus').textContent='云端已保存'});
+document.addEventListener('chennan:cloud-error',()=>{if(E('dailyStatus'))E('dailyStatus').textContent='云端未保存，请重试'});
+const documentRenderBase=render;render=function(){documentRenderBase();renderRank();if(currentPersonId)renderMemory(currentPersonId);};
 setup();
 })();

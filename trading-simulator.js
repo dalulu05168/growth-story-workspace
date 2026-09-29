@@ -60,7 +60,13 @@ function holdingStatus(hd){
   return{key:'holding',label:'持有中',left};
 }
 function stockKey(hd){return hd.batchId||hd.id||((hd.offerId||'legacy')+'|'+(hd.symbol||'')+'|'+String(hd.buyAt||''))}
-function personBudget(p,currency){const code=String(currency||'USD').toUpperCase(),map=p?.finance?.available_capital_by_currency;if(map&&map[code]!=null&&Number.isFinite(Number(map[code])))return Number(map[code]);const key={USD:'available_investment_capital_usd',EUR:'available_investment_capital_eur',CNY:'available_investment_capital_cny',HKD:'available_investment_capital_hkd'}[code];if(!key)return null;const raw=p?.finance?.[key];return raw===null||raw===undefined||raw===''?null:Number(raw)}
+// Currency values are independent; preference input takes precedence over imported finance.
+function personBudget(p,currency){
+  const code=String(currency||'USD').toUpperCase();
+  const raw=p?.trade_profile?.available_funds?.[code] ?? p?.finance?.available_capital_by_currency?.[code] ?? p?.finance?.[({USD:'available_investment_capital_usd',EUR:'available_investment_capital_eur',CNY:'available_investment_capital_cny',HKD:'available_investment_capital_hkd'})[code]];
+  return raw==null||raw===''||!Number.isFinite(Number(raw))?null:Number(raw);
+}
+
 function fundingState(p,o){const need=Number(o.minShares||0)*Number(o.unitPrice||0),budget=personBudget(p,o.currency||'USD');return{need,budget,ok:budget==null||budget>=need,known:budget!=null}}
 
 function setupUI(){
@@ -142,22 +148,13 @@ function executeBuy(offerId,pid,quantity){
   const o=offer(offerId),rec=recommendationFor(offerId),p=person(pid);if(!o||!rec||!p||!opened(p))return false;const c=rec.candidates.find(x=>String(x.personId)===String(pid));if(!c||c.status!=='invited')return false;
   const qty=Math.max(Number(o.minShares)||1,Math.floor(Number(quantity)||0)),fs=fundingState(p,o),amount=qty*Number(o.unitPrice||0);if(fs.known&&amount>fs.budget)return false;if(db.portfolio.holdings.some(x=>x.offerId===o.id&&String(x.personId)===String(pid)&&x.status!=='sold'))return false;
   const buyAt=new Date().toISOString(),plannedSellAt=sellAt(o.holdDays,buyAt),plan=db.portfolio.buyPlans.find(x=>x.offerId===o.id&&String(x.personId)===String(pid)&&x.status==='planned');
-  db.portfolio.holdings.push({id:'h'+Date.now()+pid,batchId:rec.id,offerId:o.id,buyPlanId:plan?.id||null,personId:String(pid),symbol:o.symbol,name:o.name,market:o.market,currency:o.currency||'USD',quantity:qty,buyPrice:o.unitPrice,buyAt,plannedSellAt,status:'holding',simulated:true});
+  db.portfolio.holdings.push({id:'h'+Date.now()+pid,batchId:crypto.randomUUID(),offerId:o.id,buyPlanId:plan?.id||null,personId:String(pid),symbol:o.symbol,name:o.name,market:o.market,currency:o.currency||'USD',quantity:qty,buyPrice:o.unitPrice,buyAt,plannedSellAt,status:'holding',simulated:true});
   if(plan){plan.status='done';plan.doneAt=buyAt;plan.quantity=qty;plan.unitPrice=o.unitPrice;plan.currency=o.currency||'USD'}c.status='bought';save();return true;
 }
 function confirmBuy(offerId,pid){
   const o=offer(offerId),rec=recommendationFor(offerId),p=person(pid);if(!o||!rec||!p)return;const c=rec.candidates.find(x=>String(x.personId)===String(pid));if(!c||c.status!=='invited'||!opened(p))return;
   const fs=fundingState(p,o),budget=fs.known?money(fs.budget,o.currency||'USD'):'未录入 '+(o.currency||'USD')+' 可用资金';
   openModal('确认买入 · '+nm(p),'<div class="notice">'+h(o.symbol)+' · '+h(o.name)+'　单价 '+h(money(o.unitPrice,o.currency||'USD'))+'　最低 '+h(o.minShares)+' 股<br>该人物可用资金：'+h(budget)+'</div><div class="form-grid"><div class="field"><label>实际购买股数 *</label><input class="input" type="number" min="'+h(o.minShares)+'" step="1" name="quantity" value="'+h(o.minShares)+'" required></div></div>',fd=>{const qty=Math.max(Number(o.minShares)||1,Math.floor(Number(fd.get('quantity'))||0));if(!executeBuy(offerId,pid,qty)){alert('买入失败：请检查邀请状态、开户状态、资金或重复持仓。');return false}setTimeout(renderRecommend,0);toast(nm(p)+' 已确认买入 '+qty+' 股并形成持仓')});
-}
-function confirmBuy(offerId,pid){
-  const o=offer(offerId),rec=recommendationFor(offerId);if(!o||!rec)return;
-  const c=rec.candidates.find(x=>String(x.personId)===String(pid));if(!c||c.status!=='invited')return;
-  if(!person(pid)||!opened(person(pid)))return;
-  const buyAt=new Date().toISOString(),plannedSellAt=sellAt(o.holdDays,buyAt);
-  db.portfolio.holdings.push({id:'h'+Date.now()+pid,offerId:o.id,personId:String(pid),symbol:o.symbol,name:o.name,quantity:o.minShares,buyPrice:o.unitPrice,buyAt,plannedSellAt,status:'holding',simulated:true});
-  db.portfolio.buyPlans.forEach(x=>{if(x.offerId===o.id&&String(x.personId)===String(pid)&&x.status==='planned'){x.status='done';x.doneAt=buyAt}});
-  c.status='bought';save();renderRecommend();toast(nm(person(pid))+' 已确认买入并形成持仓');
 }
 
 function batches(){

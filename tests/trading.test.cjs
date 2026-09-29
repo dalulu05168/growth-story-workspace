@@ -5,9 +5,9 @@ const vm=require('node:vm');
 const fs=require('node:fs');
 function fixture(){
  const db={people:[{id:'p1',name:'Test',account:{opened:true}}],records:[],customGroups:[],tradeSim:{offers:[{id:'o1',symbol:'TEST',minShares:10,unitPrice:20,holdDays:3,participantCount:1}],recommendations:[]},portfolio:{holdings:[],buyPlans:[]}};
- const ctx={db,save(){},toast(){},person:id=>db.people.find(p=>p.id===id),pEnthusiasm:()=>0};
+ const ctx={crypto:require("crypto").webcrypto,db,save(){},toast(){},person:id=>db.people.find(p=>p.id===id),pEnthusiasm:()=>0};
  vm.createContext(ctx);
- const source=fs.readFileSync('trading-simulator.js','utf8').replace('setupUI();bindNav();', 'renderRecommend=()=>{};globalThis.api={makeRecommendations,setCandidate,confirmBuy};');
+ const source=fs.readFileSync('trading-simulator.js','utf8').replace('setupUI();bindNav();', 'renderRecommend=()=>{};globalThis.api={makeRecommendations,setCandidate,confirmBuy:executeBuy};');
  vm.runInContext(source,ctx);ctx.api.makeRecommendations('o1');return {db,api:ctx.api};
 }
 test('buy requires an invitation',()=>{const {db,api}=fixture();api.confirmBuy('o1','p1');assert.equal(db.portfolio.holdings.length,0)});
