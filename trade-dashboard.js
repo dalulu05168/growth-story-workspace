@@ -280,7 +280,8 @@ function unlockApp(){
 }
 
 function boot(){
-  ensureTradeState();ensureTradeUI();wrapRender();render();injectAuth();
+  injectAuth();
+  try{ensureTradeState();ensureTradeUI();wrapRender();render()}catch(err){console.error('Workspace initial render failed',err)}
   setInterval(function(){if(byId('trades')&&byId('trades').classList.contains('active'))renderTrades();if(byId('overview')&&byId('overview').classList.contains('active'))renderDashboard()},60000);
 }
 boot();
