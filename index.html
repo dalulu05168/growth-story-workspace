@@ -248,22 +248,22 @@ function renderRecords(){
   const ps=$('#recordPerson').value||'all',ty=$('#recordType').value||'all',q=($('#recordSearch').value||'').toLowerCase();
   const rs=db.records.filter(r=>(ps==='all'||String(r.personId)===String(ps))&&(ty==='all'||r.type===ty)&&(`${r.title} ${r.content} ${(r.topics||[]).join(' ')}`).toLowerCase().includes(q)).sort((a,b)=>String(b.date).localeCompare(String(a.date)));
   $('#allTimeline').innerHTML=rs.map(eventHTML).join('')||'<div class="empty">没有匹配记录</div>';
-  $$('.edit-record').forEach(b=>b.onclick=()=>openRecord(b.dataset.id)); // record-edit-rebind
+  document.querySelectorAll('.edit-record').forEach(b=>b.onclick=()=>openRecord(b.dataset.id)); // record-edit-rebind
 }
 function topicCounts(){const m={};db.records.forEach(r=>(r.topics||[]).forEach(t=>{if(t)m[t]=(m[t]||0)+1}));return Object.entries(m).sort((a,b)=>b[1]-a[1])}
 function renderTopics(){const ts=topicCounts();$('#allTopics').innerHTML=ts.length?`<h3>已使用主题</h3><div class="tags" style="margin-top:10px">${ts.map(([t,n])=>`<span class="tag"># ${esc(t)} · ${n}</span>`).join('')}</div>`:'<div class="empty">暂未填写主题标签</div>'}
 function bindDynamic(){
-  $$('.edit-person').forEach(b=>b.onclick=()=>openPerson(b.dataset.id));
-  $$('.view-person').forEach(b=>b.onclick=()=>viewPerson(b.dataset.id));
-  $$('.delete-person').forEach(b=>b.onclick=()=>deletePerson(b.dataset.id));
-  $$('.edit-record').forEach(b=>b.onclick=()=>openRecord(b.dataset.id));
-  $$('.system-group-open').forEach(b=>b.onclick=()=>openSystemGroup(b.dataset.group));
-  $$('.edit-group').forEach(b=>b.onclick=()=>openGroup(b.dataset.id));
-  $$('.open-custom-group').forEach(b=>b.onclick=()=>openCustomGroup(b.dataset.id));
-  $$('.delete-group').forEach(b=>b.onclick=()=>deleteGroup(b.dataset.id));
+  document.querySelectorAll('.edit-person').forEach(b=>b.onclick=()=>openPerson(b.dataset.id));
+  document.querySelectorAll('.view-person').forEach(b=>b.onclick=()=>viewPerson(b.dataset.id));
+  document.querySelectorAll('.delete-person').forEach(b=>b.onclick=()=>deletePerson(b.dataset.id));
+  document.querySelectorAll('.edit-record').forEach(b=>b.onclick=()=>openRecord(b.dataset.id));
+  document.querySelectorAll('.system-group-open').forEach(b=>b.onclick=()=>openSystemGroup(b.dataset.group));
+  document.querySelectorAll('.edit-group').forEach(b=>b.onclick=()=>openGroup(b.dataset.id));
+  document.querySelectorAll('.open-custom-group').forEach(b=>b.onclick=()=>openCustomGroup(b.dataset.id));
+  document.querySelectorAll('.delete-group').forEach(b=>b.onclick=()=>deleteGroup(b.dataset.id));
 }
-function go(page){$$('.section').forEach(s=>s.classList.toggle('active',s.id===page));$$('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));window.scrollTo(0,0)}
-$$('.nav button').forEach(b=>b.onclick=()=>go(b.dataset.page));$$('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));document.addEventListener('click',e=>{const b=e.target.closest?.('.nav button[data-page]');if(b){e.preventDefault();go(b.dataset.page)}});
+function go(page){document.querySelectorAll('.section').forEach(s=>s.classList.toggle('active',s.id===page));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));window.scrollTo(0,0)}
+document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>go(b.dataset.page));document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));document.addEventListener('click',e=>{const b=e.target.closest?.('.nav button[data-page]');if(b){e.preventDefault();go(b.dataset.page)}});
 $('#personSearch').oninput=renderPeople;$('#personSort').onchange=renderPeople;$('#systemGroupFilter').onchange=renderPeople;$('#customGroupFilter').onchange=renderPeople;
 ['recordPerson','recordType','recordSearch'].forEach(id=>$('#'+id).addEventListener(id==='recordSearch'?'input':'change',renderRecords));
 
@@ -380,7 +380,7 @@ function openRecord(id){
   const r=id?db.records.find(x=>x.id===id):{};openModal(id?'编辑重要记录':'新增重要记录',`<div class="form-grid"><div class="field"><label>人物 *</label><select class="select" name="personId" required>${db.people.map(p=>`<option value="${esc(p.id)}" ${String(p.id)===String(r.personId)?'selected':''}>#${esc(p.id)} · ${esc(pName(p))}</option>`).join('')}</select></div><div class="field"><label>日期 *</label><input class="input" type="date" name="date" required value="${esc(r.date||today())}"></div><div class="field"><label>记录类型</label><select class="select" name="type"><option ${r.type==='重要事件'?'selected':''}>重要事件</option><option ${r.type==='发言记录'?'selected':''}>发言记录</option><option ${r.type==='联系记录'?'selected':''}>联系记录</option></select></div><div class="field"><label>主题标签</label><input class="input" name="topics" value="${esc((r.topics||[]).join('、'))}" placeholder="用顿号分隔"></div><div class="field full"><label>标题 *</label><input class="input" name="title" required value="${esc(r.title||'')}"></div><div class="field full"><label>人物事实 / 发言内容 *</label><textarea name="content" rows="5" required>${esc(r.content||'')}</textarea></div></div>`,f=>{const personId=f.get('personId'),content=String(f.get('content')).trim(),c=checks(personId,content,id);if(c.exact){alert('已阻止保存：该人物已有完全重复内容。');return false}if(c.near.length||c.conflicts.length){if(!confirm('发现高相似度或状态冲突记录，确认复核后仍要保存吗？'))return false}const x={id:id||'r'+Date.now(),personId,date:f.get('date'),type:f.get('type'),title:String(f.get('title')).trim(),content,topics:String(f.get('topics')).split(/[、,，]/).map(s=>s.trim()).filter(Boolean)};if(id)db.records=db.records.map(a=>a.id===id?x:a);else db.records.push(x)});
 }
 function currentDoc(){return db.docs.find(d=>d.id===selectedDocId)||null}
-function renderDocs(){if(!$('#docList'))return;if(!db.docs.length){selectedDocId=null;$('#docList').innerHTML='<div class="empty">还没有文档</div>';$('#docTitle').value='';$('#editor').value='';$('#docStatus').textContent='点击“新建文档”开始写作';return}if(!selectedDocId||!currentDoc())selectedDocId=db.docs[0].id;const d=currentDoc();$('#docList').innerHTML=db.docs.map(x=>`<button class="doc-item ${x.id===selectedDocId?'active':''}" data-doc="${esc(x.id)}"><b>${esc(x.title)}</b><small>更新于 ${esc(x.updated||today())}</small></button>`).join('');$('#docTitle').value=d.title;$('#editor').value=d.content;$('#docStatus').textContent=`已在本地保存 · ${d.content.length} 字`;$$('.doc-item').forEach(b=>b.onclick=()=>{selectedDocId=b.dataset.doc;renderDocs()})}
+function renderDocs(){if(!$('#docList'))return;if(!db.docs.length){selectedDocId=null;$('#docList').innerHTML='<div class="empty">还没有文档</div>';$('#docTitle').value='';$('#editor').value='';$('#docStatus').textContent='点击“新建文档”开始写作';return}if(!selectedDocId||!currentDoc())selectedDocId=db.docs[0].id;const d=currentDoc();$('#docList').innerHTML=db.docs.map(x=>`<button class="doc-item ${x.id===selectedDocId?'active':''}" data-doc="${esc(x.id)}"><b>${esc(x.title)}</b><small>更新于 ${esc(x.updated||today())}</small></button>`).join('');$('#docTitle').value=d.title;$('#editor').value=d.content;$('#docStatus').textContent=`已在本地保存 · ${d.content.length} 字`;document.querySelectorAll('.doc-item').forEach(b=>b.onclick=()=>{selectedDocId=b.dataset.doc;renderDocs()})}
 function saveDoc(){const d=currentDoc();if(!d)return;d.title=$('#docTitle').value.trim()||'未命名文档';d.content=$('#editor').value;d.updated=today();save();renderDocs();toast('文档已保存')}
 function createDoc(){const d={id:'d'+Date.now(),title:'新小说文档',content:'',updated:today()};db.docs.unshift(d);selectedDocId=d.id;save();renderDocs();$('#docTitle').focus()}
 function renameDoc(){const d=currentDoc();if(!d)return toast('请先新建文档');const name=prompt('输入新文档标题',d.title);if(name!==null){d.title=name.trim()||d.title;save();renderDocs()}}
