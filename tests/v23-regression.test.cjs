@@ -16,3 +16,9 @@ test('dashboard binding preserves people-table trade preference controls',()=>{
  function walk(n){if(!n||typeof n!=='object')return;if(n.type==='FunctionDeclaration'&&n.id.name==='bindTradeActions')fn=src.slice(n.start,n.end);for(const v of Object.values(n)){if(Array.isArray(v))v.forEach(walk);else if(v&&typeof v==='object')walk(v)}}walk(acorn.parse(src,{ecmaVersion:'latest'}));
  const original=()=>{},button={onclick:original,closest:()=>({}),dataset:{tradePref:'p1'}};const ctx={document:{querySelectorAll:s=>s==='[data-trade-pref]'?[button]:[]},byId:()=>null};vm.createContext(ctx);vm.runInContext(fn+';bindTradeActions()',ctx);assert.equal(button.onclick,original);
 });
+test('creating offers with identical clock timestamps still creates unique IDs',()=>{
+ let submit;const db={people:[],tradeSim:{offers:[],recommendations:[]},portfolio:{holdings:[],buyPlans:[]}};
+ class FixedDate extends Date{static now(){return 123456789}}
+ const ctx={db,Date:FixedDate,crypto:require('crypto').webcrypto,setTimeout(){},openModal:(t,b,fn)=>{submit=fn}};vm.createContext(ctx);vm.runInContext(fs.readFileSync('trading-simulator.js','utf8').replace('setupUI();bindNav();','globalThis.api={editOffer};'),ctx);
+ const data={symbol:'DDD',name:'DDD',currency:'USD',shares:'100',price:'65',days:'3',count:'10'};for(let i=0;i<2;i++){ctx.api.editOffer();submit({get:k=>data[k]||''})}assert.equal(db.tradeSim.offers.length,2);assert.notEqual(db.tradeSim.offers[0].id,db.tradeSim.offers[1].id);
+});
