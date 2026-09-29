@@ -46,7 +46,7 @@ jobs:
             await page.fill('input[name="user"]','__live_smoke_invalid__');
             await page.fill('input[type="password"]','not-the-password');
             await page.click('#loginForm button');
-            await page.waitForFunction(()=>document.querySelector('#authError')?.textContent?.trim().length>0,{timeout:15000});
+            await page.waitForFunction(()=>{const t=document.querySelector('#authError')?.textContent?.trim()||'';return t.length>0&&!t.includes('正在验证')},{timeout:15000});
             const errText=(await page.locator('#authError').textContent()||'').trim();
             assert.ok(!errText.includes('正在验证'), 'invalid login must finish with an error');
 
