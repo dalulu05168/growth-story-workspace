@@ -10,8 +10,8 @@ function fixture(){
  const source=fs.readFileSync('trading-simulator.js','utf8').replace('setupUI();bindNav();', 'renderRecommend=()=>{};globalThis.api={makeRecommendations,setCandidate,confirmBuy:executeBuy};');
  vm.runInContext(source,ctx);ctx.api.makeRecommendations('o1');return {db,api:ctx.api};
 }
-test('buy requires an invitation',()=>{const {db,api}=fixture();api.confirmBuy('o1','p1');assert.equal(db.portfolio.holdings.length,0)});
-test('repeat buy is idempotent',()=>{const {db,api}=fixture();api.setCandidate('o1','p1','invited');api.confirmBuy('o1','p1');api.confirmBuy('o1','p1');assert.equal(db.portfolio.holdings.length,1)});
-test('regeneration preserves completed candidate state',()=>{const {db,api}=fixture();api.setCandidate('o1','p1','invited');api.confirmBuy('o1','p1');api.makeRecommendations('o1');assert.equal(db.tradeSim.recommendations[0].candidates[0].status,'bought')});
-test('bought candidate cannot be rejected',()=>{const {db,api}=fixture();api.setCandidate('o1','p1','invited');api.confirmBuy('o1','p1');api.setCandidate('o1','p1','rejected');assert.equal(db.tradeSim.recommendations[0].candidates[0].status,'bought')});
+test('buy requires an invitation',()=>{const {db,api}=fixture();api.confirmBuy('o1','p1',10);assert.equal(db.portfolio.holdings.length,0)});
+test('repeat buy is idempotent',()=>{const {db,api}=fixture();api.setCandidate('o1','p1','invited');api.confirmBuy('o1','p1',10);api.confirmBuy('o1','p1',10);assert.equal(db.portfolio.holdings.length,1)});
+test('regeneration preserves completed candidate state',()=>{const {db,api}=fixture();api.setCandidate('o1','p1','invited');api.confirmBuy('o1','p1',10);api.makeRecommendations('o1');assert.equal(db.tradeSim.recommendations[0].candidates[0].status,'bought')});
+test('bought candidate cannot be rejected',()=>{const {db,api}=fixture();api.setCandidate('o1','p1','invited');api.confirmBuy('o1','p1',10);api.setCandidate('o1','p1','rejected');assert.equal(db.tradeSim.recommendations[0].candidates[0].status,'bought')});
 test('same symbol across offers creates separate plans',()=>{const {db,api}=fixture();db.tradeSim.offers.push({...db.tradeSim.offers[0],id:'o2'});api.makeRecommendations('o2');api.setCandidate('o1','p1','invited');api.setCandidate('o2','p1','invited');assert.equal(db.portfolio.buyPlans.length,2)});
