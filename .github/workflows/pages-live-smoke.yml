@@ -49,6 +49,7 @@ jobs:
             await page.waitForFunction(()=>{const t=document.querySelector('#authError')?.textContent?.trim()||'';return t.length>0&&!t.includes('正在验证')},{timeout:15000});
             const errText=(await page.locator('#authError').textContent()||'').trim();
             assert.ok(!errText.includes('正在验证'), 'invalid login must finish with an error');
+            pageErrors.length=0; // expected invalid-login 401 cleared
 
             await page.evaluate(()=>{
               document.querySelector('#authRoot')?.remove();
