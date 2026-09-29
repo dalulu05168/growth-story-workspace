@@ -85,10 +85,21 @@ function scheduleSave(delay=450){
   if(!getToken()||!hydrated)return;
   clearTimeout(saveTimer);saveTimer=setTimeout(()=>flush(false),delay);
 }
+async function finishLogin(data){
+  if(!data?.token)throw new Error('登录响应缺少会话令牌');
+  setToken(data.token);
+  sessionStorage.setItem(ACCOUNT_KEY,JSON.stringify(data.account||{}));
+  await hydrate();
+  return data;
+}
 async function login(username,password){
   const data=await call('login',{username,password},false);
-  setToken(data.token);sessionStorage.setItem(ACCOUNT_KEY,JSON.stringify(data.account||{}));
-  await hydrate();return data;
+  if(data?.requires2fa||data?.requires2faEnrollment)return data;
+  return finishLogin(data);
+}
+async function verify2fa(challengeToken,code){
+  const data=await call('verify2fa',{challengeToken,code},false);
+  return finishLogin(data);
 }
 async function resume(){
   if(!getToken())return false;
@@ -103,5 +114,5 @@ function account(){try{return JSON.parse(sessionStorage.getItem(ACCOUNT_KEY)||'{
 const localSave=save;
 save=function(){localSave();scheduleSave()};
 
-window.ChenNanCloud={login,resume,logout,hydrate,flush,hasSession:()=>!!getToken(),account,get version(){return cloudVersion},get hydrated(){return hydrated}};
+window.ChenNanCloud={login,verify2fa,resume,logout,hydrate,flush,hasSession:()=>!!getToken(),account,get version(){return cloudVersion},get hydrated(){return hydrated}};
 })();
