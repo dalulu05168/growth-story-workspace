@@ -116,7 +116,9 @@ function saveDaily(showToast=false,silentWarnings=false){
   clearTimeout(autosaveTimer);
   if(!E('dailyEditor'))return false;const d=cur(),text=E('dailyEditor').innerText,rows=statements(text),issues=allIssues(rows);
   if(!silentWarnings&&showToast&&issues.length&&!confirm('保存前发现人物逻辑/塑造风险：\n\n'+issueText(issues)+'\n\n仍要保存今日内容吗？'))return false;
-  d.title=E('dailyTitle').value.trim();d.html=cleanHtml(E('dailyEditor').innerHTML);d.content=text;d.updatedAt=new Date().toISOString();
+  const title=E('dailyTitle').value.trim(),html=cleanHtml(E('dailyEditor').innerHTML);
+  if((!d.updatedAt&&!title&&!text.trim())||(d.title===title&&d.html===html&&d.content===text)){renderWarnings();return true;}
+  d.title=title;d.html=html;d.content=text;d.updatedAt=new Date().toISOString();
   db.records=db.records.filter(r=>!(r.source==='document'&&r.docDate===activeDate));
   rows.forEach(x=>db.records.push({id:'docmem-'+activeDate+'-'+x.p.id+'-'+h32(x.content),personId:x.p.id,date:activeDate,type:'发言记录',source:'document',docDate:activeDate,title:'每日文档 · '+(d.title||activeDate),content:x.content,topics:['文档记忆']}));
   save();E('dailyStatus').textContent='本地已保存，等待云端 '+new Date().toLocaleTimeString('zh-CN',{hour12:false});renderRank();renderWarnings();if(currentPersonId)renderMemory(currentPersonId);if(showToast)toast('今日文档已保存到本地，正在同步云端');return true;

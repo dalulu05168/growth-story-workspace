@@ -21,6 +21,8 @@ if(!document.querySelector('.app-global-header')){
   const input=header.querySelector('#globalPersonSearch');input.addEventListener('keydown',e=>{if(e.key!=='Enter')return;const q=input.value.trim();go('people');const ps=document.getElementById('personSearch');if(ps){ps.value=q;ps.dispatchEvent(new Event('input',{bubbles:true}))}});
   document.addEventListener('chennan:cloud-ready',()=>{const c=document.getElementById('cloudChip');if(c){c.classList.add('ok');c.lastChild.textContent=' 已同步'}});
   document.addEventListener('chennan:cloud-saved',()=>{const c=document.getElementById('cloudChip');if(c){c.classList.add('ok');c.lastChild.textContent=' 已保存'}});
+  document.addEventListener('chennan:cloud-saving',()=>{const c=document.getElementById('cloudChip');if(c){c.classList.remove('ok');c.lastChild.textContent=' 保存中…'}});
+  document.addEventListener('chennan:cloud-error',()=>{const c=document.getElementById('cloudChip');if(c){c.classList.remove('ok');c.lastChild.textContent=' 尚未同步'}});
 }
 
 const st=document.createElement('style');st.id='chennanUnifiedTheme';st.textContent=`

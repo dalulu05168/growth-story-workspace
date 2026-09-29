@@ -7,5 +7,8 @@
     "test:gate": "node tests/static-gate.cjs",
     "test:e2e": "node tests/business-e2e.cjs"
   },
-  "devDependencies": { "acorn": "8.15.0", "playwright": "1.55.0" }
+  "devDependencies": {
+    "acorn": "8.15.0",
+    "playwright": "1.55.1"
+  }
 }

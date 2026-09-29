@@ -11,6 +11,7 @@ let hydrated=false;
 let saveTimer=null;
 let saving=null;
 let queued=false;
+let editGeneration=0, savedGeneration=0;
 
 function getToken(){return sessionStorage.getItem(SESSION_KEY)||''}
 function setToken(token){if(token)sessionStorage.setItem(SESSION_KEY,token);else sessionStorage.removeItem(SESSION_KEY)}
@@ -51,11 +52,11 @@ async function hydrate(){
   }else{
     await ensureDefaultPeople();
   }
-  hydrated=true;
+  hydrated=true;editGeneration=0;savedGeneration=0;
   localStorage.setItem(STORAGE_KEY,JSON.stringify(db));
   render();
   window.ChenNanDocumentWorkspace?.refresh?.();
-  if(!result.payload)await flush(true);
+  if(!result.payload){editGeneration++;await flush(true);}
   document.dispatchEvent(new CustomEvent('chennan:cloud-ready',{detail:{version:cloudVersion,updatedAt:result.updatedAt||null}}));
   return result;
 }
@@ -64,11 +65,13 @@ async function flush(force=false){
   clearTimeout(saveTimer);
   if(!getToken()||!hydrated)return;
   if(saving){queued=true;await saving;if(queued){queued=false;return flush(force)}return}
+  if(editGeneration===savedGeneration)return;
+  const generation=editGeneration;
   const snapshot=JSON.parse(JSON.stringify(db));
   saving=(async()=>{
     try{
       const result=await call('save',{payload:snapshot,expectedVersion:cloudVersion});
-      cloudVersion=Number(result.version);
+      cloudVersion=Number(result.version);savedGeneration=generation;
       sessionStorage.setItem('chennan-cloud-version',String(cloudVersion));
       document.dispatchEvent(new CustomEvent('chennan:cloud-saved',{detail:{version:cloudVersion,updatedAt:result.updatedAt}}));
     }catch(err){
@@ -84,6 +87,7 @@ async function flush(force=false){
 
 function scheduleSave(delay=450){
   if(!getToken()||!hydrated)return;
+  document.dispatchEvent(new CustomEvent('chennan:cloud-saving'));
   clearTimeout(saveTimer);saveTimer=setTimeout(()=>flush(false).catch(()=>{}),delay);
 }
 async function login(username,password){
@@ -109,7 +113,7 @@ async function logout(){
 function account(){try{return JSON.parse(sessionStorage.getItem(ACCOUNT_KEY)||'{}')}catch(_){return{}}}
 
 const localSave=save;
-save=function(){localSave();scheduleSave()};
+save=function(){localSave();editGeneration++;scheduleSave()};
 
 window.ChenNanCloud={login,resume,logout,hydrate,flush,hasSession:()=>!!getToken(),account,get version(){return cloudVersion},get hydrated(){return hydrated}};
 })();
