@@ -5,6 +5,15 @@
 const byId=id=>document.getElementById(id);
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const INTRO_FALLBACK_MS=7600;
+const CLOUD_RUNTIME_WAIT_MS=3000;
+
+async function waitForCloudRuntime(){
+  const deadline=performance.now()+CLOUD_RUNTIME_WAIT_MS;
+  while(!window.ChenNanCloud&&performance.now()<deadline){
+    await wait(25);
+  }
+  return window.ChenNanCloud||null;
+}
 
 function emitIntro(type,detail={}){
   document.dispatchEvent(new CustomEvent(type,{
@@ -102,6 +111,11 @@ async function runIntro(root){
     root.dataset.introPhase='resume';
     root.classList.add('auth-intro-finish');
     emitIntro('chennan:intro-skip',{reason:'session-resume'});
+
+    const cloud=await waitForCloudRuntime();
+    if(!cloud){
+      console.warn('CHENNAN_CLOUD_RUNTIME_TIMEOUT');
+    }
     await showAuthCard();
     return;
   }
@@ -159,11 +173,13 @@ async function showAuthCard(){
   if(!stage)return;
   const root=byId('authRoot');
 
-  if(window.ChenNanCloud?.hasSession?.()){
+  const cloud=window.ChenNanCloud||await waitForCloudRuntime();
+
+  if(cloud?.hasSession?.()){
     stage.innerHTML='<div class="auth-card auth-card-resume"><div class="auth-logo">'+brushLogo('brand-brush-small')+'</div><h1 class="auth-title">正在连接云端</h1><p class="auth-sub">正在同步工作区…</p><div class="auth-error" id="authError"></div></div>';
     stage.classList.remove('auth-stage-pending');
     stage.classList.add('auth-stage-visible');
-    if(await window.ChenNanCloud.resume()){unlockApp();return}
+    if(await cloud.resume()){unlockApp();return}
 
     stage.classList.remove('auth-stage-visible');
     stage.classList.add('auth-stage-pending');

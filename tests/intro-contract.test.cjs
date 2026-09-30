@@ -13,6 +13,7 @@ test('cinematic intro has a critical pre-auth stylesheet and external scene asse
   assert.match(auth,/animationend/,'intro completion must be driven by the real animation end');
   assert.match(auth,/auth-intro-active/,'intro must have an explicit start gate');
   assert.match(auth,/prepareIntroAssets/,'critical visual assets must be prepared before starting');
+  assert.match(auth,/waitForCloudRuntime/,'session resume must wait for cloud-sync runtime instead of racing script load order');
   assert.match(auth,/data\.introPhase|dataset\.introPhase/,'intro must expose a testable lifecycle state');
 
   const ui=fs.readFileSync('theme-ui.js','utf8');
