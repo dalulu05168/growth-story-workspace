@@ -105,7 +105,7 @@ function setup(){
 }
 function bind(){
   E('saveDaily').onclick=()=>saveDaily(true,false);E('docxExport').onclick=exportDocx;E('openDate').onclick=()=>setDate(E('dailyDatePicker').value);
-  E('dailyTitle').oninput=schedule;E('dailyEditor').addEventListener('input',()=>{schedule();suggest();wordCount()});E('dailyEditor').addEventListener('keyup',suggest);E('dailyEditor').addEventListener('keydown',keyDown);E('dailyEditor').addEventListener('click',()=>{const p=selectionPerson();if(p){currentPersonId=p.id;renderRank();renderMemory(p.id)}});
+  E('dailyTitle').oninput=schedule;E('dailyEditor').addEventListener('input',()=>{schedule();suggest();wordCount();renderWarnings()});E('dailyEditor').addEventListener('keyup',suggest);E('dailyEditor').addEventListener('keydown',keyDown);E('dailyEditor').addEventListener('click',()=>{const p=selectionPerson();if(p){currentPersonId=p.id;renderRank();renderMemory(p.id)}});
   QA('#wordToolbar [data-cmd]').forEach(b=>b.onclick=()=>{document.execCommand(b.dataset.cmd,false,null);E('dailyEditor').focus();schedule()});
   QA('#wordToolbar [data-block]').forEach(b=>b.onclick=()=>{document.execCommand('formatBlock',false,b.dataset.block);E('dailyEditor').focus();schedule()});
 }
