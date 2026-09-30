@@ -115,10 +115,12 @@ function render(){
 function renderOverview(){
   const rs=[...db.records].sort((a,b)=>String(b.date).localeCompare(String(a.date)));
   $('#metrics').innerHTML=[
-    ['人物总数',db.people.length,'完整画像'],
-    ['VIP',db.people.filter(pVip).length,'动态统计'],
+    ['总人物',db.people.length,'完整画像'],
+    ['老客户',db.people.filter(p=>pRelationCode(p)==='OLD').length,'关系分层'],
+    ['新客户',db.people.filter(p=>pRelationCode(p)==='NEW').length,'关系分层'],
+    ['VIP 用户',db.people.filter(pVip).length,'金色标识'],
     ['已开户',db.people.filter(pOpened).length,'账户状态'],
-    ['已入群',db.people.filter(pJoined).length,'可手动更新']
+    ['群组数量',db.customGroups.length,'自定义小组']
   ].map(([l,n,t])=>`<div class="card metric"><span class="label">${l}</span><strong>${n}</strong><span class="trend">${t}</span></div>`).join('');
   $('#recentTimeline').innerHTML=rs.slice(0,4).map(eventHTML).join('')||'<div class="empty">还没有重要记录</div>';
   const ids=['new_male','new_female','old_male','old_female','vip','opened','joined'];
