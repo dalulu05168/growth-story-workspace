@@ -186,7 +186,31 @@ function bindDynamic(){
   document.querySelectorAll('.open-custom-group').forEach(b=>b.onclick=()=>openCustomGroup(b.dataset.id));
   document.querySelectorAll('.delete-group').forEach(b=>b.onclick=()=>deleteGroup(b.dataset.id));
 }
-function go(page){document.querySelectorAll('.section').forEach(s=>s.classList.toggle('active',s.id===page));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));window.scrollTo(0,0)}
+let pageTransitionToken=0;
+function go(page){
+  const target=document.getElementById(page);
+  if(!target)return;
+  const token=++pageTransitionToken;
+  const current=document.querySelector('.section.active');
+
+  const activate=()=>{
+    if(token!==pageTransitionToken)return;
+    document.querySelectorAll('.section').forEach(s=>{
+      s.classList.remove('active','section-leaving','section-entering');
+    });
+    target.classList.add('active','section-entering');
+    document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));
+    window.scrollTo({top:0,left:0,behavior:'auto'});
+    requestAnimationFrame(()=>requestAnimationFrame(()=>target.classList.remove('section-entering')));
+  };
+
+  if(current&&current!==target){
+    current.classList.add('section-leaving');
+    setTimeout(activate,230);
+  }else{
+    activate();
+  }
+}
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>go(b.dataset.page));document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));document.addEventListener('click',e=>{const b=e.target.closest?.('.nav button[data-page]');if(b){e.preventDefault();go(b.dataset.page)}});
 $('#personSearch').oninput=renderPeople;$('#personSort').onchange=renderPeople;$('#systemGroupFilter').onchange=renderPeople;$('#customGroupFilter').onchange=renderPeople;
 ['recordPerson','recordType','recordSearch'].forEach(id=>$('#'+id).addEventListener(id==='recordSearch'?'input':'change',renderRecords));
