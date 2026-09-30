@@ -32,14 +32,61 @@ jobs:
       - run: npm ci
       - run: npm test
 
-  browser-current:
+  deployment-hash:
     needs: [static-gate, unit-regression]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        file:
+          - theme-system.js
+          - auth.js
+          - workspace-core.js
+          - cloud-sync.js
+          - trade-dashboard.js
+          - people-detail.js
+          - trading-simulator.js
+          - document-workspace.js
+          - ui-shell.js
+          - theme-ui.js
+    name: hash-${{ matrix.file }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Wait for Vercel propagation
+        run: sleep 25
+      - name: Compare live file with repository
+        env:
+          FILE: ${{ matrix.file }}
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const crypto=require('crypto');
+          const file=process.env.FILE;
+          const url='https://growth-story-workspace.vercel.app/'+file+'?hashcheck='+Date.now();
+          const hash=x=>crypto.createHash('sha256').update(x).digest('hex');
+          (async()=>{
+            const r=await fetch(url);
+            if(r.status!==200)throw new Error(file+' HTTP '+r.status);
+            const live=await r.text();
+            const local=fs.readFileSync(file,'utf8');
+            const a=hash(live),b=hash(local);
+            console.log(JSON.stringify({file,url,liveBytes:live.length,repoBytes:local.length,liveHash:a,repoHash:b,contentType:r.headers.get('content-type')}));
+            if(a!==b)throw new Error('HASH_MISMATCH '+file+' live='+a+' repo='+b);
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+
+  browser-current:
+    needs: [static-gate, unit-regression, deployment-hash]
     runs-on: ubuntu-latest
     timeout-minutes: 18
     strategy:
       fail-fast: false
       matrix:
-        stage: [hash, prelogin, login, memory, navigation]
+        stage: [prelogin, login, memory, navigation]
     name: browser-${{ matrix.stage }}
     steps:
       - uses: actions/checkout@v4
@@ -51,17 +98,12 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - name: Provision isolated account via GitHub identity
         run: node tests/create-e2e-credentials.cjs
-      - name: Wait for Vercel propagation
-        if: github.ref == 'refs/heads/main'
-        run: sleep 25
       - name: Run current acceptance stage
         env:
           E2E_STAGE: ${{ matrix.stage }}
           E2E_CREDENTIALS: /tmp/chennan-e2e.json
-          E2E_URL: ${{ github.ref == 'refs/heads/main' && 'https://growth-story-workspace.vercel.app/' || 'http://127.0.0.1:18768/' }}
-        run: |
-          python3 -m http.server 18768 --bind 127.0.0.1 > /tmp/http.log 2>&1 &
-          node tests/current-e2e.cjs
+          E2E_URL: https://growth-story-workspace.vercel.app/
+        run: node tests/current-e2e.cjs
       - name: Revoke test account and delete synthetic data
         if: always()
         run: node tests/create-e2e-credentials.cjs cleanup
