@@ -132,14 +132,18 @@ async function intro(page){
 
 async function prelogin(page){
   await page.goto(URL,{waitUntil:'networkidle'});
-  await page.locator('#loginForm').waitFor({state:'visible',timeout:20000});
+  await page.waitForFunction(
+    ()=>document.querySelector('#authRoot')?.dataset.introPhase==='login-ready',
+    {timeout:20000}
+  );
+  await page.locator('#loginForm').waitFor({state:'attached',timeout:2000});
   assert.equal(await page.locator('.auth-theme-control [data-theme-button]').count(),3);
   for(const [theme,accent] of [['night','#d7a33e'],['warm','#9a6428'],['blue','#2289ef']]){
     await page.locator('.auth-theme-control [data-theme-button="'+theme+'"]').click();
     await page.waitForFunction(t=>document.documentElement.dataset.theme===t,theme);
     assert.equal(await page.evaluate(()=>getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()),accent);
   }
-  assert.equal((await page.locator('.brand-calligraphy').first().innerText()).trim(),'辰南撰写');
+  assert.equal((await page.locator('#authRoot .brand-calligraphy').first().innerText()).trim(),'辰南撰写');
   assert.equal(await page.locator('.cinematic-brush').count(),1);
   assert.equal(await page.locator('.cinematic-btc').count(),1);
 }
