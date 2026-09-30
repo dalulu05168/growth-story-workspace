@@ -29,11 +29,11 @@ const syncMobileGeometry=()=>{
  if(window.innerWidth<=900){
   app.style.setProperty('display','block','important');app.style.setProperty('width','100vw','important');
   sidebar.style.setProperty('position','fixed','important');sidebar.style.setProperty('left','0','important');sidebar.style.setProperty('width','72px','important');
-  main.style.setProperty('position','relative','important');main.style.setProperty('left','72px','important');main.style.setProperty('display','block','important');main.style.setProperty('flex','none','important');main.style.setProperty('box-sizing','border-box','important');main.style.setProperty('margin-left','0','important');main.style.setProperty('margin-right','0','important');main.style.setProperty('width','calc(100vw - 72px)','important');main.style.setProperty('min-width','0','important');main.style.setProperty('max-width','none','important');main.style.setProperty('padding-left',window.innerWidth<=380?'10px':'14px','important');main.style.setProperty('padding-right',window.innerWidth<=380?'10px':'14px','important');
+  main.style.setProperty('position','relative','important');main.style.setProperty('transition','none','important');main.style.setProperty('left','72px','important');main.style.setProperty('display','block','important');main.style.setProperty('flex','none','important');main.style.setProperty('box-sizing','border-box','important');main.style.setProperty('margin-left','0','important');main.style.setProperty('margin-right','0','important');main.style.setProperty('width','calc(100vw - 72px)','important');main.style.setProperty('min-width','0','important');main.style.setProperty('max-width','none','important');main.style.setProperty('padding-left',window.innerWidth<=380?'10px':'14px','important');main.style.setProperty('padding-right',window.innerWidth<=380?'10px':'14px','important');
  }else{
   for(const property of ['display','width'])app.style.removeProperty(property);
   for(const property of ['position','left','width'])sidebar.style.removeProperty(property);
-  for(const property of ['position','left','display','flex','box-sizing','margin-left','margin-right','width','min-width','max-width','padding-left','padding-right'])main.style.removeProperty(property);
+  for(const property of ['position','left','display','flex','box-sizing','transition','margin-left','margin-right','width','min-width','max-width','padding-left','padding-right'])main.style.removeProperty(property);
  }
 };
 window.addEventListener('resize',syncMobileGeometry,{passive:true});syncMobileGeometry();
