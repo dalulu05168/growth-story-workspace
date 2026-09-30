@@ -56,7 +56,7 @@ test('login theme switcher covers ink/modern/dark, honors reduced motion, and pe
       assert.equal(style.accent,accent,theme+' must apply its own design tokens');
       assert.notEqual(style.bg,'rgba(0, 0, 0, 0)',theme+' must set a page background');
     }
-    assert.equal(await page.locator('.brand-brush .brush-stroke').count(),16,'辰南 brand must render individual animated strokes');
+    assert.equal(await page.locator('.brand-brush-hero .brush-stroke').count(),16,'辰南 brand must render individual animated strokes');
     await loginPicker.selectOption('dark');
     await page.reload({waitUntil:'networkidle'});
     await page.locator('#loginForm').waitFor({state:'visible'});
