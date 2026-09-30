@@ -1,4 +1,4 @@
-/* 辰南三主题状态：每次进入网址按 星空金黑 → 暖光书卷 → 通透蓝白 轮换；页面内可手动切换。 */
+/* 辰南三主题：每次进入按 星空金黑 → 暖光书卷 → 通透蓝白 轮换；页面内可随时手动切换。 */
 (function(){
   'use strict';
   const sequence=['night','warm','blue'];
@@ -19,21 +19,26 @@
     current=sequence[next];
   }
 
+  const optionMarkup=()=>sequence.map(id=>`<option value="${id}">${labels[id]}</option>`).join('');
+  const buttonMarkup=()=>sequence.map(id=>`<button type="button" class="theme-chip ${id===current?'active':''}" data-theme-button="${id}" aria-pressed="${id===current?'true':'false'}"><span class="theme-swatch"></span><b>${labels[id]}</b></button>`).join('');
+
+  function syncControls(){
+    document.querySelectorAll('[data-theme-switcher]').forEach(el=>{el.value=current});
+    document.querySelectorAll('[data-theme-button]').forEach(btn=>{
+      const active=btn.dataset.themeButton===current;
+      btn.classList.toggle('active',active);
+      btn.setAttribute('aria-pressed',active?'true':'false');
+    });
+  }
+
   function apply(theme,{persist=false}={}){
     theme=normalize(theme);
     if(!allowed.has(theme))return current;
     current=theme;
     document.documentElement.dataset.theme=theme;
     document.body?.setAttribute?.('data-theme',theme);
-    document.querySelectorAll('[data-theme-switcher]').forEach(el=>{el.value=theme});
-    if(persist){
-      localStorage.setItem('chennan-theme-manual',theme);
-      const url=new URL(location.href);
-      if(url.searchParams.has('theme')){
-        url.searchParams.delete('theme');
-        history.replaceState(null,'',url.pathname+url.search+url.hash);
-      }
-    }
+    syncControls();
+    if(persist)localStorage.setItem('chennan-theme-manual',theme);
     document.dispatchEvent(new CustomEvent('chennan:theme-change',{detail:{theme,label:labels[theme]}}));
     return current;
   }
@@ -41,12 +46,18 @@
   document.addEventListener('change',event=>{
     if(event.target.matches('[data-theme-switcher]'))apply(event.target.value,{persist:true});
   });
+  document.addEventListener('click',event=>{
+    const button=event.target.closest?.('[data-theme-button]');
+    if(button)apply(button.dataset.themeButton,{persist:true});
+  });
 
   window.ChenNanTheme={
     apply,
     get:()=>current,
     labels:Object.freeze({...labels}),
-    options:()=>sequence.map(id=>`<option value="${id}">${labels[id]}</option>`).join('')
+    options:optionMarkup,
+    buttons:buttonMarkup
   };
+
   apply(current);
 })();
