@@ -6,8 +6,34 @@ on:
 permissions:
   contents: read
   id-token: write
+
 jobs:
-  acceptance:
+  static-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run test:gate
+
+  unit-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm test
+
+  browser-memory:
+    needs: [static-gate, unit-regression]
     runs-on: ubuntu-latest
     timeout-minutes: 18
     steps:
@@ -17,14 +43,13 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci
-      - run: npm run test:gate && npm test
       - run: npx playwright install --with-deps chromium
       - name: Provision isolated account via GitHub identity
         run: node tests/create-e2e-credentials.cjs
       - name: Wait for Pages propagation
         if: github.ref == 'refs/heads/main'
         run: sleep 45
-      - name: Browser and cloud acceptance
+      - name: Current browser and cloud memory acceptance
         env:
           E2E_CREDENTIALS: /tmp/chennan-e2e.json
           E2E_URL: ${{ github.ref == 'refs/heads/main' && 'https://dalulu05168.github.io/growth-story-workspace/' || 'http://127.0.0.1:18768/' }}
@@ -34,9 +59,3 @@ jobs:
       - name: Revoke test account and delete synthetic data
         if: always()
         run: node tests/create-e2e-credentials.cjs cleanup
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: acceptance-evidence
-          path: evidence/
-          retention-days: 14
