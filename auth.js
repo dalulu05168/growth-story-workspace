@@ -8,8 +8,8 @@ function brushLogo(extraClass=''){
 }
 window.ChenNanBrandMarkup=brushLogo;
 function themeSelect(className=''){
-  const current=window.ChenNanTheme?.get?.()||'ink';
-  const options=(window.ChenNanTheme?.options?.()||'<option value="ink">水墨雅致</option><option value="modern">现代白灰</option><option value="dark">金黑夜色</option>').replace('value="'+current+'"','value="'+current+'" selected');
+  const current=window.ChenNanTheme?.get?.()||'blue';
+  const options=(window.ChenNanTheme?.options?.()||'<option value="night">星空金黑</option><option value="warm">暖光书卷</option><option value="blue">通透蓝白</option>').replace('value="'+current+'"','value="'+current+'" selected');
   return '<label class="theme-control '+className+'"><span>主题</span><select data-theme-switcher aria-label="切换主题">'+options+'</select></label>';
 }
 function injectAuth(){
@@ -25,7 +25,7 @@ async function showAuthCard(){
     stage.innerHTML='<div class="auth-card"><div class="auth-logo">'+brushLogo('brand-brush-small')+'</div><h1 class="auth-title">正在连接云端</h1><p class="auth-sub">正在同步工作区…</p><div class="auth-error" id="authError"></div></div>';
     if(await window.ChenNanCloud.resume()){unlockApp();return}
   }
-  stage.innerHTML='<div class="login-shell">'+themeSelect('auth-theme-control')+'<div class="login-hero"><div class="hero-wordmark">'+brushLogo('brand-brush-hero')+'</div><div class="hero-tagline">笔尖上的比特币</div><div class="hero-en">CHENNAN · A WRITER’S WORKSPACE</div><h2>让每一个人物<br>都有自己的故事</h2><p>每日撰写 · 人物记忆 · 文档整理</p><div class="hero-pills"><span>人物档案</span><span>每日撰写</span><span>故事记忆</span></div></div><div class="auth-card"><div class="auth-logo">'+brushLogo('brand-brush-small')+'</div><div class="auth-tagline">笔尖上的比特币</div><div class="auth-kicker">CHENNAN WRITING WORKSPACE</div><h1 class="auth-title">辰南工作台</h1><p class="auth-sub">登录后继续你的创作</p><form id="loginForm"><div class="auth-field"><label>账户</label><input name="user" autocomplete="username" required></div><div class="auth-field"><label>密码</label><input type="password" name="password" autocomplete="current-password" required></div><button class="auth-btn">入卷 · 辰南</button><div class="auth-error" id="authError"></div></form><div class="auth-note"><span class="cloud-dot"></span> 云端数据同步 · 安全登录</div></div></div>';
+  stage.innerHTML='<div class="login-shell">'+themeSelect('auth-theme-control')+'<div class="login-hero"><div class="hero-wordmark">'+brushLogo('brand-brush-hero')+'</div><div class="hero-tagline">笔尖上的比特币</div><div class="hero-en">CHEN NAN · WRITE A BIGGER WORLD</div><h2>让人物拥有灵魂</h2><p>从角色出发，构建更真实的故事世界</p><div class="hero-pills"><span>人物档案</span><span>每日撰写</span><span>故事记忆</span></div></div><div class="auth-card"><div class="auth-logo">'+brushLogo('brand-brush-small')+'</div><div class="auth-tagline">笔尖上的比特币</div><div class="auth-kicker">CHENNAN WRITING WORKSPACE</div><h1 class="auth-title">欢迎回来，辰南撰写</h1><p class="auth-sub">从角色出发，继续构建你的故事世界</p><form id="loginForm"><div class="auth-field"><label>账户</label><input name="user" autocomplete="username" required></div><div class="auth-field"><label>密码</label><input type="password" name="password" autocomplete="current-password" required></div><button class="auth-btn">进入工作台 →</button><div class="auth-error" id="authError"></div></form><div class="auth-note"><span class="cloud-dot"></span> 云端数据同步 · 安全登录</div></div></div>';
   byId('loginForm').onsubmit=async function(e){
     e.preventDefault();const f=new FormData(e.target),err=byId('authError'),btn=e.target.querySelector('button');
     err.textContent='正在验证并同步云端数据…';btn.disabled=true;
