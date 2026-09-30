@@ -104,9 +104,15 @@ async function intro(page){
   assert.notEqual(JSON.stringify(later),JSON.stringify(early),'brush visual state must advance while intro is playing');
 
   await page.waitForFunction(()=>document.querySelector('#authRoot')?.dataset.introPhase==='complete',{timeout:12000});
-  await page.waitForSelector('#loginForm',{state:'visible',timeout:6000});
+  await page.waitForFunction(()=>document.querySelector('#authRoot')?.dataset.introPhase==='login-ready',{timeout:6000});
+  await page.waitForSelector('#loginForm',{state:'attached',timeout:2000});
+  assert.ok(
+    await page.locator('#authStage').evaluate(el=>el.classList.contains('auth-stage-visible')),
+    'login stage must be visibly released only after the intro completes'
+  );
 
   const events=await page.evaluate(()=>window.__chennanIntroEvents||[]);
+  console.log(JSON.stringify({introEvents:events}));
   const start=events.find(x=>x.type==='chennan:intro-start');
   const complete=events.find(x=>x.type==='chennan:intro-complete');
   const ready=events.find(x=>x.type==='chennan:login-ready');
