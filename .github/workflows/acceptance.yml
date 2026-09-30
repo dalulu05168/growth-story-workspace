@@ -51,14 +51,14 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - name: Provision isolated account via GitHub identity
         run: node tests/create-e2e-credentials.cjs
-      - name: Wait for Pages propagation
+      - name: Wait for Vercel propagation
         if: github.ref == 'refs/heads/main'
-        run: sleep 45
+        run: sleep 25
       - name: Run current acceptance stage
         env:
           E2E_STAGE: ${{ matrix.stage }}
           E2E_CREDENTIALS: /tmp/chennan-e2e.json
-          E2E_URL: ${{ github.ref == 'refs/heads/main' && 'https://dalulu05168.github.io/growth-story-workspace/' || 'http://127.0.0.1:18768/' }}
+          E2E_URL: ${{ github.ref == 'refs/heads/main' && 'https://growth-story-workspace.vercel.app/' || 'http://127.0.0.1:18768/' }}
         run: |
           python3 -m http.server 18768 --bind 127.0.0.1 > /tmp/http.log 2>&1 &
           node tests/current-e2e.cjs
