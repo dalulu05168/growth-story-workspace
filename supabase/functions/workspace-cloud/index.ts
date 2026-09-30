@@ -34,24 +34,20 @@ function b64ToBytes(value: string) {
   const bin = atob(value);
   return Uint8Array.from(bin, (c) => c.charCodeAt(0));
 }
-
 function bytesToB64(bytes: Uint8Array) {
   let s = "";
   bytes.forEach((b) => (s += String.fromCharCode(b)));
   return btoa(s);
 }
-
 function bytesToB64Url(bytes: Uint8Array) {
   return bytesToB64(bytes).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
 }
-
 async function sha256Hex(value: string) {
   const digest = new Uint8Array(
     await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value)),
   );
   return [...digest].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
-
 async function pbkdf2(password: string, saltB64: string, iterations: number) {
   const material = await crypto.subtle.importKey(
     "raw",
@@ -72,7 +68,6 @@ async function pbkdf2(password: string, saltB64: string, iterations: number) {
   );
   return bytesToB64(new Uint8Array(bits));
 }
-
 function constantTimeEqual(a: string, b: string) {
   const aa = new TextEncoder().encode(a);
   const bb = new TextEncoder().encode(b);
@@ -81,13 +76,11 @@ function constantTimeEqual(a: string, b: string) {
   for (let i = 0; i < aa.length; i++) diff |= aa[i] ^ bb[i];
   return diff === 0;
 }
-
 function randomToken() {
   const bytes = new Uint8Array(32);
   crypto.getRandomValues(bytes);
   return bytesToB64Url(bytes);
 }
-
 function requestIp(req: Request) {
   return (
     req.headers.get("cf-connecting-ip") ||
@@ -96,82 +89,6 @@ function requestIp(req: Request) {
     "unknown"
   );
 }
-
-const BASE32_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
-
-function bytesToBase32(bytes: Uint8Array) {
-  let bits = 0;
-  let value = 0;
-  let out = "";
-  for (const byte of bytes) {
-    value = (value << 8) | byte;
-    bits += 8;
-    while (bits >= 5) {
-      out += BASE32_ALPHABET[(value >>> (bits - 5)) & 31];
-      bits -= 5;
-    }
-  }
-  if (bits > 0) out += BASE32_ALPHABET[(value << (5 - bits)) & 31];
-  return out;
-}
-
-function base32ToBytes(input: string) {
-  const clean = input.toUpperCase().replace(/[^A-Z2-7]/g, "");
-  let bits = 0;
-  let value = 0;
-  const out: number[] = [];
-  for (const ch of clean) {
-    const idx = BASE32_ALPHABET.indexOf(ch);
-    if (idx < 0) throw new Error("Invalid base32 secret");
-    value = (value << 5) | idx;
-    bits += 5;
-    if (bits >= 8) {
-      out.push((value >>> (bits - 8)) & 255);
-      bits -= 8;
-    }
-  }
-  return new Uint8Array(out);
-}
-
-function generateTotpSecret() {
-  const bytes = new Uint8Array(20);
-  crypto.getRandomValues(bytes);
-  return bytesToBase32(bytes);
-}
-
-async function totpAt(secret: string, step: number) {
-  const key = await crypto.subtle.importKey(
-    "raw",
-    base32ToBytes(secret),
-    { name: "HMAC", hash: "SHA-1" },
-    false,
-    ["sign"],
-  );
-  const counter = new Uint8Array(8);
-  let n = BigInt(step);
-  for (let i = 7; i >= 0; i--) {
-    counter[i] = Number(n & 255n);
-    n >>= 8n;
-  }
-  const mac = new Uint8Array(await crypto.subtle.sign("HMAC", key, counter));
-  const offset = mac[mac.length - 1] & 15;
-  const bin =
-    ((mac[offset] & 127) << 24) |
-    ((mac[offset + 1] & 255) << 16) |
-    ((mac[offset + 2] & 255) << 8) |
-    (mac[offset + 3] & 255);
-  return String(bin % 1_000_000).padStart(6, "0");
-}
-
-async function verifyTotp(secret: string, code: string) {
-  if (!/^\d{6}$/.test(code)) return false;
-  const step = Math.floor(Date.now() / 30_000);
-  for (const drift of [-1, 0, 1]) {
-    if (constantTimeEqual(await totpAt(secret, step + drift), code)) return true;
-  }
-  return false;
-}
-
 async function recordFailure(username: string, ipHash: string, currentCount = 0) {
   const failedCount = currentCount + 1;
   const lockedUntil =
@@ -188,85 +105,6 @@ async function recordFailure(username: string, ipHash: string, currentCount = 0)
   );
   return lockedUntil;
 }
-
-async function createSession(account: any) {
-  await admin
-    .from("workspace_sessions")
-    .delete()
-    .eq("account_id", account.id)
-    .lt("expires_at", new Date().toISOString());
-
-  const token = randomToken();
-  const tokenHash = await sha256Hex(token);
-  const expiresAt = new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString();
-  const { error: sessionError } = await admin.from("workspace_sessions").insert({
-    account_id: account.id,
-    token_hash: tokenHash,
-    expires_at: expiresAt,
-  });
-  if (sessionError) throw new Error("创建登录会话失败");
-
-  return {
-    token,
-    expiresAt,
-    account: {
-      username: account.username,
-      displayName: account.display_name || "辰南",
-    },
-  };
-}
-
-async function issueMfaChallenge(account: any, purpose: "enroll" | "verify") {
-  await admin
-    .from("workspace_login_challenges")
-    .delete()
-    .eq("account_id", account.id);
-
-  let secret = account.totp_secret as string | null;
-  if (purpose === "enroll" && !secret) {
-    secret = generateTotpSecret();
-    const { error } = await admin
-      .from("workspace_accounts")
-      .update({ totp_secret: secret, updated_at: new Date().toISOString() })
-      .eq("id", account.id);
-    if (error) throw new Error("创建 2FA 密钥失败");
-  }
-
-  if (!secret) throw new Error("2FA 密钥不存在");
-
-  const challengeToken = randomToken();
-  const challengeHash = await sha256Hex(challengeToken);
-  const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
-  const { error } = await admin.from("workspace_login_challenges").insert({
-    account_id: account.id,
-    challenge_hash: challengeHash,
-    purpose,
-    expires_at: expiresAt,
-  });
-  if (error) throw new Error("创建 2FA 验证请求失败");
-
-  const result: Record<string, unknown> = {
-    ok: true,
-    challengeToken,
-    expiresAt,
-  };
-
-  if (purpose === "enroll") {
-    const issuer = "ChenNan";
-    const label = issuer + ":" + account.username;
-    result.requires2faEnrollment = true;
-    result.secret = secret;
-    result.otpauthUri =
-      "otpauth://totp/" + encodeURIComponent(label) +
-      "?secret=" + encodeURIComponent(secret) +
-      "&issuer=" + encodeURIComponent(issuer) +
-      "&algorithm=SHA1&digits=6&period=30";
-  } else {
-    result.requires2fa = true;
-  }
-  return result;
-}
-
 async function bootstrapWorkspacePayload() {
   const dataUrl = "https://dalulu05168.github.io/growth-story-workspace/data/people.json";
   const res = await fetch(dataUrl, { headers: { "User-Agent": "ChenNan-Workspace-Cloud" } });
@@ -330,7 +168,7 @@ Deno.serve(async (req) => {
   const action = String(body?.action ?? "");
 
   if (action === "health") {
-    return json({ ok: true, service: "workspace-cloud", mfa: "totp", now: new Date().toISOString() });
+    return json({ ok: true, service: "workspace-cloud", now: new Date().toISOString() });
   }
 
   if (action === "login") {
@@ -354,7 +192,7 @@ Deno.serve(async (req) => {
 
     const { data: account, error: accountError } = await admin
       .from("workspace_accounts")
-      .select("id,username,display_name,password_salt,password_hash,password_iterations,disabled,totp_secret,totp_enabled")
+      .select("id,username,display_name,password_salt,password_hash,password_iterations,disabled")
       .eq("username", username)
       .maybeSingle();
 
@@ -387,87 +225,31 @@ Deno.serve(async (req) => {
       .eq("username", username)
       .eq("ip_hash", ipHash);
 
-    try {
-      if (account.totp_enabled) {
-        return json(await issueMfaChallenge(account, "verify"));
-      }
-      return json(await issueMfaChallenge(account, "enroll"));
-    } catch (error) {
-      console.error("2FA challenge creation failed", error);
-      return json({ ok: false, error: error instanceof Error ? error.message : "创建 2FA 验证失败" }, 500);
-    }
-  }
+    await admin
+      .from("workspace_sessions")
+      .delete()
+      .eq("account_id", account.id)
+      .lt("expires_at", new Date().toISOString());
 
-  if (action === "verify2fa") {
-    const challengeToken = String(body?.challengeToken ?? "").trim();
-    const code = String(body?.code ?? "").trim();
-    if (!challengeToken || !/^\d{6}$/.test(code)) {
-      return json({ ok: false, error: "请输入 6 位验证码" }, 400);
-    }
+    const token = randomToken();
+    const tokenHash = await sha256Hex(token);
+    const expiresAt = new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString();
+    const { error: sessionError } = await admin.from("workspace_sessions").insert({
+      account_id: account.id,
+      token_hash: tokenHash,
+      expires_at: expiresAt,
+    });
+    if (sessionError) return json({ ok: false, error: "创建登录会话失败" }, 500);
 
-    const challengeHash = await sha256Hex(challengeToken);
-    const { data: challenge, error: challengeError } = await admin
-      .from("workspace_login_challenges")
-      .select("id,account_id,purpose,failed_count,expires_at")
-      .eq("challenge_hash", challengeHash)
-      .maybeSingle();
-
-    if (challengeError || !challenge) {
-      return json({ ok: false, error: "2FA 验证请求无效，请重新登录" }, 401);
-    }
-    if (new Date(challenge.expires_at).getTime() <= Date.now()) {
-      await admin.from("workspace_login_challenges").delete().eq("id", challenge.id);
-      return json({ ok: false, error: "2FA 验证已过期，请重新登录" }, 401);
-    }
-
-    const { data: account, error: accountError } = await admin
-      .from("workspace_accounts")
-      .select("id,username,display_name,disabled,totp_secret,totp_enabled")
-      .eq("id", challenge.account_id)
-      .maybeSingle();
-
-    if (accountError || !account || account.disabled || !account.totp_secret) {
-      return json({ ok: false, error: "2FA 账户状态异常" }, 401);
-    }
-
-    const valid = await verifyTotp(account.totp_secret, code);
-    if (!valid) {
-      const failedCount = Number(challenge.failed_count ?? 0) + 1;
-      if (failedCount >= 5) {
-        await admin.from("workspace_login_challenges").delete().eq("id", challenge.id);
-        return json({ ok: false, error: "验证码错误次数过多，请重新登录" }, 429);
-      }
-      await admin
-        .from("workspace_login_challenges")
-        .update({ failed_count: failedCount })
-        .eq("id", challenge.id);
-      return json({ ok: false, error: "验证码错误" }, 401);
-    }
-
-    if (challenge.purpose === "enroll") {
-      const { error } = await admin
-        .from("workspace_accounts")
-        .update({
-          totp_enabled: true,
-          totp_enrolled_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", account.id);
-      if (error) return json({ ok: false, error: "启用 2FA 失败" }, 500);
-    } else if (!account.totp_enabled) {
-      return json({ ok: false, error: "2FA 尚未启用，请重新登录完成绑定" }, 409);
-    }
-
-    await admin.from("workspace_login_challenges").delete().eq("account_id", account.id);
-    await admin.from("workspace_sessions").delete().eq("account_id", account.id);
-
-    try {
-      const session = await createSession(account);
-      return json({ ok: true, ...session });
-    } catch (error) {
-      console.error("Session creation after 2FA failed", error);
-      return json({ ok: false, error: "创建登录会话失败" }, 500);
-    }
+    return json({
+      ok: true,
+      token,
+      expiresAt,
+      account: {
+        username: account.username,
+        displayName: account.display_name || "辰南",
+      },
+    });
   }
 
   const auth = await requireSession(req);
@@ -602,3 +384,4 @@ Deno.serve(async (req) => {
 
   return json({ ok: false, error: "未知操作" }, 400);
 });
+

@@ -74,7 +74,7 @@ function ensureTradeUI(){
     if(groups&&groups.nextSibling)nav.insertBefore(b,groups.nextSibling);else nav.appendChild(b);
     b.onclick=function(){go('trades');tradeTab='sell';renderTrades()};
   }
-  if(nav&&!byId('logoutBtn')){const out=document.createElement('button');out.id='logoutBtn';out.innerHTML='<i>↪</i><span>退出登录</span>';out.onclick=async function(){await window.ChenNanCloud?.logout?.();location.reload()};nav.appendChild(out)}
+  if(nav&&!byId('logoutBtn')){const out=document.createElement('button');out.id='logoutBtn';out.innerHTML='<i>↪</i><span>退出登录</span>';out.onclick=async function(){try{await window.ChenNanCloud.logout();location.reload()}catch(err){console.error('Logout failed',err);toast('退出未完成：请先确认云端保存成功')}};nav.appendChild(out)}
   if(!byId('trades')){
     const s=document.createElement('section');s.id='trades';s.className='section';
     s.innerHTML='<div class="topbar"><div><div class="eyebrow">TRADE OPERATIONS</div><h1 class="page-title">持仓与交易计划</h1><p class="sub">按持仓、计划卖出时间和参与频率生成今日操作名单。</p></div><div class="actions"><button class="btn ghost" id="generateBuyList">生成 / 重算今日买入名单</button><button class="btn primary" id="addHolding">＋ 新增持仓</button></div></div><div class="trade-tabs" id="tradeTabs"></div><div id="tradePanel"></div>';
@@ -87,7 +87,7 @@ function ensureTradeUI(){
   }
   if(!byId('tradeExtraStyles')){
     const st=document.createElement('style');st.id='tradeExtraStyles';
-    st.textContent='.app-lock{visibility:hidden}.trade-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}.trade-tab{padding:9px 13px;border-radius:10px;background:#fff;border:1px solid var(--line);font-weight:750;color:var(--muted)}.trade-tab.active{background:var(--blue);border-color:var(--blue);color:#fff}.click-card{cursor:pointer;transition:.2s}.click-card:hover{transform:translateY(-2px);box-shadow:0 14px 32px rgba(31,52,86,.11)}.trade-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.trade-list{display:grid;gap:10px}.trade-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;padding:13px;border:1px solid var(--line);border-radius:13px;background:#fff}.trade-item.due{border-color:#f1c27b;background:#fffaf0}.trade-item.overdue{border-color:#e7a8ac;background:#fff5f5}.trade-meta{color:var(--muted);font-size:12px;margin-top:4px}.trade-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.pill{font-size:11px;padding:4px 8px;border-radius:999px;background:#f2f4f8;color:#5b6678}.pill.hot{background:var(--amber-weak);color:var(--amber)}.pill.good{background:var(--green-weak);color:var(--green)}.auth-root{position:fixed;z-index:9999;inset:0;background:radial-gradient(circle at 20% 10%,#243a68 0,#101a31 35%,#08101f 75%);color:#fff;display:grid;place-items:center;overflow:hidden}.auth-root.hidden{display:none}.auth-orb{position:absolute;border-radius:50%;filter:blur(2px);opacity:.38;animation:floatOrb 8s ease-in-out infinite}.auth-orb.a{width:340px;height:340px;background:#526eff;left:-90px;top:-80px}.auth-orb.b{width:280px;height:280px;background:#47d7bb;right:-80px;bottom:-60px;animation-delay:-3s}.auth-lines{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:42px 42px;mask-image:linear-gradient(to bottom,black,transparent 90%)}.auth-card{position:relative;width:min(460px,calc(100vw - 32px));padding:30px;border:1px solid rgba(255,255,255,.12);border-radius:22px;background:rgba(13,24,45,.82);box-shadow:0 28px 90px rgba(0,0,0,.38);backdrop-filter:blur(18px)}.auth-logo{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;background:linear-gradient(135deg,#7394ff,#3b63ec);font-weight:900;font-size:20px;box-shadow:0 12px 30px rgba(72,101,244,.35)}.auth-title{font-size:26px;margin:18px 0 5px}.auth-sub{color:#9fb0cf;margin:0 0 22px}.auth-field{display:grid;gap:6px;margin:12px 0}.auth-field label{font-size:12px;color:#b8c5db}.auth-field input{width:100%;border:1px solid rgba(255,255,255,.13);border-radius:11px;background:rgba(255,255,255,.06);padding:12px;color:#fff;outline:none}.auth-field input:focus{border-color:#7893ff;box-shadow:0 0 0 3px rgba(120,147,255,.12)}.auth-btn{width:100%;margin-top:15px;padding:12px;border-radius:11px;background:linear-gradient(135deg,#5c7bff,#3659d9);color:#fff;font-weight:800}.auth-note{font-size:11px;color:#8294b4;margin-top:15px;line-height:1.6}.auth-error{min-height:20px;color:#ffaaaa;font-size:12px;margin-top:10px}.auth-secret{word-break:break-all;background:rgba(255,255,255,.06);border-radius:10px;padding:10px;font-family:ui-monospace,monospace;color:#bfe6dc}.splash-mark{position:relative;width:88px;height:88px;border-radius:26px;display:grid;place-items:center;background:linear-gradient(135deg,#6889ff,#3d5fd8);font-size:32px;font-weight:900;box-shadow:0 0 0 14px rgba(96,129,255,.08),0 0 0 28px rgba(96,129,255,.04);animation:pulseMark 1.4s ease-in-out infinite}.splash-copy{margin-top:26px;text-align:center;color:#b7c4db;letter-spacing:.12em;font-size:12px}@keyframes floatOrb{50%{transform:translateY(30px) translateX(15px) scale(1.08)}}@keyframes pulseMark{50%{transform:scale(1.06);box-shadow:0 0 0 18px rgba(96,129,255,.06),0 0 0 36px rgba(96,129,255,.02)}}@media(max-width:900px){.trade-grid{grid-template-columns:1fr}}';
+    st.textContent='.app-lock{visibility:hidden}.trade-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}.trade-tab{padding:9px 13px;border-radius:10px;background:#fff;border:1px solid var(--line);font-weight:750;color:var(--muted)}.trade-tab.active{background:var(--blue);border-color:var(--blue);color:#fff}.click-card{cursor:pointer;transition:.2s}.click-card:hover{transform:translateY(-2px);box-shadow:0 14px 32px rgba(31,52,86,.11)}.trade-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.trade-list{display:grid;gap:10px}.trade-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;padding:13px;border:1px solid var(--line);border-radius:13px;background:#fff}.trade-item.due{border-color:#f1c27b;background:#fffaf0}.trade-item.overdue{border-color:#e7a8ac;background:#fff5f5}.trade-meta{color:var(--muted);font-size:12px;margin-top:4px}.trade-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.pill{font-size:11px;padding:4px 8px;border-radius:999px;background:#f2f4f8;color:#5b6678}.pill.hot{background:var(--amber-weak);color:var(--amber)}.pill.good{background:var(--green-weak);color:var(--green)}.auth-root{position:fixed;z-index:9999;inset:0;background:radial-gradient(circle at 20% 10%,#243a68 0,#101a31 35%,#08101f 75%);color:#fff;display:grid;place-items:center;overflow:hidden}.auth-root.hidden{display:none}.auth-orb{position:absolute;border-radius:50%;filter:blur(2px);opacity:.38;animation:floatOrb 8s ease-in-out infinite}.auth-orb.a{width:340px;height:340px;background:#526eff;left:-90px;top:-80px}.auth-orb.b{width:280px;height:280px;background:#47d7bb;right:-80px;bottom:-60px;animation-delay:-3s}.auth-lines{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:42px 42px;mask-image:linear-gradient(to bottom,black,transparent 90%)}.auth-card{position:relative;width:min(460px,calc(100vw - 32px));padding:30px;border:1px solid rgba(255,255,255,.12);border-radius:22px;background:rgba(13,24,45,.82);box-shadow:0 28px 90px rgba(0,0,0,.38);backdrop-filter:blur(18px)}.auth-logo{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;background:linear-gradient(135deg,#7394ff,#3b63ec);font-weight:900;font-size:20px;box-shadow:0 12px 30px rgba(72,101,244,.35)}.auth-title{font-size:26px;margin:18px 0 5px}.auth-sub{color:#9fb0cf;margin:0 0 22px}.auth-field{display:grid;gap:6px;margin:12px 0}.auth-field label{font-size:12px;color:#b8c5db}.auth-field input{width:100%;border:1px solid rgba(255,255,255,.13);border-radius:11px;background:rgba(255,255,255,.06);padding:12px;color:#fff;outline:none}.auth-field input:focus{border-color:#7893ff;box-shadow:0 0 0 3px rgba(120,147,255,.12)}.auth-btn{width:100%;margin-top:15px;padding:12px;border-radius:11px;background:linear-gradient(135deg,#5c7bff,#3659d9);color:#fff;font-weight:800}.auth-note{font-size:11px;color:#8294b4;margin-top:15px;line-height:1.6}.auth-error{min-height:20px;color:#ffaaaa;font-size:12px;margin-top:10px}.auth-secret{word-break:break-all;background:rgba(255,255,255,.06);border-radius:10px;padding:10px;font-family:ui-monospace,monospace;color:#bfe6dc}.splash-mark{position:relative;width:88px;height:88px;border-radius:26px;display:grid;place-items:center;background:linear-gradient(135deg,#6889ff,#3d5fd8);font-size:32px;font-weight:900;box-shadow:0 0 0 14px rgba(96,129,255,.08),0 0 0 28px rgba(96,129,255,.04);animation:pulseMark 1.4s ease-in-out infinite}.splash-copy{margin-top:26px;text-align:center;color:#b7c4db;letter-spacing:.12em;font-size:12px}@keyframes floatOrb{50%{transform:translateY(30px) translateX(15px) scale(1.08)}}@keyframes pulseMark{50%{transform:scale(1.06);box-shadow:0 0 0 18px rgba(96,129,255,.06),0 0 0 36px rgba(96,129,255,.02)}}@media(max-width:900px){.trade-grid{grid-template-columns:minmax(0,1fr)!important;width:100%}.trade-grid>*{min-width:0;max-width:100%}}';
     document.head.appendChild(st);
   }
 }
@@ -140,9 +140,9 @@ function openDash(type){
     return;
   }
   if(type==='groups'){go('groups');return}
-  go('trades');
-  tradeTab=type==='holding'?'holdings':type;
-  renderTrades();
+  const target=type==='buy'||type==='unholding'?'tradeRecommend':'holdingsV2';
+  const button=document.querySelector('.nav button[data-page="'+target+'"]');
+  if(button)button.click();
 }
 
 function renderTrades(){
@@ -195,7 +195,7 @@ function bindTradeActions(){
   document.querySelectorAll('[data-buy-remove]').forEach(function(b){b.onclick=function(){db.portfolio.buyPlans=db.portfolio.buyPlans.filter(function(x){return x.id!==b.dataset.buyRemove});save();render()}});
   document.querySelectorAll('[data-edit-holding]').forEach(function(b){b.onclick=function(){openHolding(b.dataset.editHolding)}});
   document.querySelectorAll('[data-delete-holding]').forEach(function(b){b.onclick=function(){if(confirm('删除这笔持仓？')){db.portfolio.holdings=db.portfolio.holdings.filter(function(x){return x.id!==b.dataset.deleteHolding});save();render()}}});
-  document.querySelectorAll('[data-trade-pref]').forEach(function(b){b.onclick=function(){openTradePrefs(b.dataset.tradePref)}});
+  document.querySelectorAll('[data-trade-pref]').forEach(function(b){if(b.closest('#peopleList'))return;b.onclick=function(){openTradePrefs(b.dataset.tradePref)}});
   const add=byId('addHoldingInline');if(add)add.onclick=function(){openHolding()};
   const add2=byId('addHolding');if(add2)add2.onclick=function(){openHolding()};
   const gen=byId('generateBuyListInline');if(gen)gen.onclick=generateBuyList;
@@ -253,59 +253,8 @@ function wrapRender(){
   const tradeSaveBase=save;save=function(){tradeSaveBase();renderDashboard();};
 }
 
-function injectAuth(){
-  document.querySelector('.app').classList.add('app-lock');
-  const root=document.createElement('div');root.id='authRoot';root.className='auth-root';
-  root.innerHTML='<div class="auth-lines"></div><div class="auth-orb a"></div><div class="auth-orb b"></div><div id="authStage"><div class="splash-mark">辰南</div><div class="splash-copy">CHENNAN · INVESTOR WORKSPACE</div></div>';
-  document.body.appendChild(root);
-  setTimeout(showAuthCard,650);
-}
-async function showAuthCard(){
-  const stage=byId('authStage');if(!stage)return;
-  if(window.ChenNanCloud?.hasSession?.()){
-    stage.innerHTML='<div class="auth-card"><div class="auth-logo">辰南</div><h1 class="auth-title">正在连接云端</h1><p class="auth-sub">正在同步人物、交易、持仓与文档数据…</p><div class="auth-error" id="authError"></div></div>';
-    if(await window.ChenNanCloud.resume()){unlockApp();return}
-  }
-  stage.innerHTML='<div class="login-shell"><div class="login-hero"><div class="hero-wordmark">辰南</div><div class="hero-en">CHENNAN · INVESTOR MANAGEMENT SYSTEM</div><h2>让人物、交易与记忆<br>保持在同一条时间线上</h2><p>人物档案 · 推荐交易 · 持仓管理 · 每日文档 · 云端同步</p><div class="hero-pills"><span>人物画像</span><span>交易计划</span><span>云端数据</span></div></div><div class="auth-card"><div class="auth-logo">辰南</div><div class="auth-kicker">CHENNAN INVESTOR MANAGEMENT</div><h1 class="auth-title">辰南工作台</h1><p class="auth-sub">使用管理员账号进入云端工作区</p><form id="loginForm"><div class="auth-field"><label>账户</label><input name="user" autocomplete="username" value="chennan118" required></div><div class="auth-field"><label>密码</label><input type="password" name="password" autocomplete="current-password" required></div><button class="auth-btn">登录辰南</button><div class="auth-error" id="authError"></div></form><div class="auth-note"><span class="cloud-dot"></span> Supabase 云端数据 · 账号密码验证</div></div></div>';
-  byId('loginForm').onsubmit=async function(e){
-    e.preventDefault();const f=new FormData(e.target),err=byId('authError'),btn=e.target.querySelector('button');
-    err.textContent='正在验证并同步云端数据…';btn.disabled=true;
-    try{
-      const result=await window.ChenNanCloud.login(String(f.get('user')||'').trim(),String(f.get('password')||''));
-      if(result?.requires2fa||result?.requires2faEnrollment){showMfaCard(result);return}
-      unlockApp();
-    }catch(ex){err.textContent=ex?.message||'登录失败';btn.disabled=false}
-  };
-}
-function showMfaCard(data){
-  const stage=byId('authStage');if(!stage)return;
-  const enrolling=!!data?.requires2faEnrollment;
-  const secret=enrolling?String(data?.secret||''):'';
-  const intro=enrolling
-    ? '<p class="auth-sub">首次登录需要绑定双重验证。请在 Google Authenticator、Microsoft Authenticator 或其他 TOTP 应用中手动添加下面的密钥，然后输入当前 6 位验证码。</p><div class="auth-secret">'+safe(secret)+'</div>'
-    : '<p class="auth-sub">请输入 Authenticator 应用中当前显示的 6 位验证码。</p>';
-  stage.innerHTML='<div class="auth-card"><div class="auth-logo">辰南</div><div class="auth-kicker">TWO-FACTOR AUTHENTICATION</div><h1 class="auth-title">'+(enrolling?'绑定 2FA':'双重验证')+'</h1>'+intro+'<form id="mfaForm"><div class="auth-field"><label>6 位验证码</label><input name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" placeholder="000000" required></div><button class="auth-btn">'+(enrolling?'验证并启用 2FA':'验证并登录')+'</button><div class="auth-error" id="authError"></div></form><button type="button" id="mfaBack" class="auth-btn" style="margin-top:8px;background:rgba(255,255,255,.08)">重新登录</button></div>';
-  const form=byId('mfaForm');
-  const codeInput=form?.querySelector('input[name="code"]');
-  if(codeInput)setTimeout(()=>codeInput.focus(),30);
-  if(form)form.onsubmit=async function(e){
-    e.preventDefault();
-    const f=new FormData(e.target),err=byId('authError'),btn=e.target.querySelector('button');
-    const code=String(f.get('code')||'').replace(/\s/g,'');
-    if(!/^\d{6}$/.test(code)){err.textContent='请输入 6 位验证码';return}
-    err.textContent='正在验证 2FA…';btn.disabled=true;
-    try{await window.ChenNanCloud.verify2fa(String(data?.challengeToken||''),code);unlockApp()}
-    catch(ex){err.textContent=ex?.message||'2FA 验证失败';btn.disabled=false}
-  };
-  const back=byId('mfaBack');if(back)back.onclick=function(){showAuthCard()};
-}
-function unlockApp(){
-  const root=byId('authRoot');if(root)root.classList.add('hidden');
-  document.querySelector('.app').classList.remove('app-lock');document.querySelector('.app').classList.add('app-ready');
-}
 
 function boot(){
-  injectAuth();
   try{ensureTradeState();ensureTradeUI();wrapRender();render()}catch(err){console.error('Workspace initial render failed',err)}
   setInterval(function(){if(byId('trades')&&byId('trades').classList.contains('active'))renderTrades();if(byId('overview')&&byId('overview').classList.contains('active'))renderDashboard()},60000);
 }
