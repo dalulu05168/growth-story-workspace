@@ -40,6 +40,8 @@ jobs:
       fail-fast: false
       matrix:
         file:
+          - index.html
+          - intro.css
           - theme-system.js
           - auth.js
           - workspace-core.js
@@ -50,6 +52,10 @@ jobs:
           - document-workspace.js
           - ui-shell.js
           - theme-ui.js
+          - chen-nan-ink.webp
+          - scene-night.webp
+          - scene-warm.webp
+          - scene-blue.webp
     name: hash-${{ matrix.file }}
     steps:
       - uses: actions/checkout@v4
@@ -71,8 +77,8 @@ jobs:
           (async()=>{
             const r=await fetch(url);
             if(r.status!==200)throw new Error(file+' HTTP '+r.status);
-            const live=await r.text();
-            const local=fs.readFileSync(file,'utf8');
+            const live=Buffer.from(await r.arrayBuffer());
+            const local=fs.readFileSync(file);
             const a=hash(live),b=hash(local);
             console.log(JSON.stringify({file,url,liveBytes:live.length,repoBytes:local.length,liveHash:a,repoHash:b,contentType:r.headers.get('content-type')}));
             if(a!==b)throw new Error('HASH_MISMATCH '+file+' live='+a+' repo='+b);
@@ -86,7 +92,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        stage: [prelogin, login, memory, navigation]
+        stage: [intro, prelogin, login, memory, navigation]
+      max-parallel: 1
     name: browser-${{ matrix.stage }}
     steps:
       - uses: actions/checkout@v4
@@ -97,6 +104,7 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - name: Provision isolated account via GitHub identity
+        if: ${{ matrix.stage != 'intro' && matrix.stage != 'prelogin' }}
         run: node tests/create-e2e-credentials.cjs
       - name: Run current acceptance stage
         env:
@@ -105,5 +113,5 @@ jobs:
           E2E_URL: https://growth-story-workspace.vercel.app/
         run: node tests/current-e2e.cjs
       - name: Revoke test account and delete synthetic data
-        if: always()
+        if: ${{ always() && matrix.stage != 'intro' && matrix.stage != 'prelogin' }}
         run: node tests/create-e2e-credentials.cjs cleanup

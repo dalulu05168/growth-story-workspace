@@ -6,22 +6,32 @@ const crypto=require('node:crypto');
 
 const URL=process.env.E2E_URL||'https://dalulu05168.github.io/growth-story-workspace/';
 const STAGE=process.env.E2E_STAGE||'memory';
-const creds=JSON.parse(fs.readFileSync(process.env.E2E_CREDENTIALS||'/tmp/chennan-e2e.json'));
-assert.match(creds.username,/^e2e_/,'Disposable E2E account required');
+let creds=null;
+function requireCreds(){
+  if(creds)return creds;
+  creds=JSON.parse(fs.readFileSync(process.env.E2E_CREDENTIALS||'/tmp/chennan-e2e.json'));
+  assert.match(creds.username,/^e2e_/,'Disposable E2E account required');
+  return creds;
+}
 
 const endpoint='https://afelbznpwltuebmqmqbh.supabase.co/functions/v1/workspace-cloud';
 const key='sb_publishable_J548-tZcZAxnUF4HD-VPEA_Gepy26Ec';
 let token='';
 
 async function deploymentHash(){
-  const files=['theme-system.js','auth.js','workspace-core.js','cloud-sync.js','trade-dashboard.js','people-detail.js','trading-simulator.js','document-workspace.js','ui-shell.js','theme-ui.js'];
+  const files=[
+    'index.html','intro.css','theme-system.js','auth.js','workspace-core.js','cloud-sync.js',
+    'trade-dashboard.js','people-detail.js','trading-simulator.js','document-workspace.js',
+    'ui-shell.js','theme-ui.js','chen-nan-ink.webp','scene-night.webp','scene-warm.webp','scene-blue.webp'
+  ];
   const mismatches=[];
   for(const file of files){
     const r=await fetch(URL.replace(/\/$/,'')+'/'+file+'?hashcheck='+Date.now());
     assert.equal(r.status,200,file+' HTTP '+r.status);
-    const live=await r.text();
+    const live=Buffer.from(await r.arrayBuffer());
+    const local=fs.readFileSync(file);
     const liveHash=crypto.createHash('sha256').update(live).digest('hex');
-    const repoHash=crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+    const repoHash=crypto.createHash('sha256').update(local).digest('hex');
     if(liveHash!==repoHash)mismatches.push({file,liveHash,repoHash});
   }
   assert.deepEqual(mismatches,[]);
@@ -50,16 +60,68 @@ async function nav(page,id){
   await page.locator('#'+id+'.active').waitFor({state:'visible',timeout:10000});
 }
 async function login(page){
+  const loginCreds=requireCreds();
   await page.goto(URL,{waitUntil:'networkidle'});
   await page.locator('#loginForm').waitFor({state:'visible',timeout:20000});
-  await page.locator('#loginForm input[name=user]').fill(creds.username);
-  await page.locator('#loginForm input[name=password]').fill(creds.password);
+  await page.locator('#loginForm input[name=user]').fill(loginCreds.username);
+  await page.locator('#loginForm input[name=password]').fill(loginCreds.password);
   const response=page.waitForResponse(r=>r.url()===endpoint&&r.request().postData()?.includes('"action":"login"'));
   await page.locator('#loginForm button').click();
   const res=await response;const body=await res.json();
   assert.equal(res.status(),200);assert.equal(body.ok,true);assert.ok(body.token);
   token=body.token;
   await page.locator('#authRoot').waitFor({state:'hidden',timeout:15000});
+}
+
+async function intro(page){
+  await page.emulateMedia({reducedMotion:'no-preference'});
+  await page.addInitScript(()=>{
+    window.__chennanIntroEvents=[];
+    for(const type of ['chennan:intro-preparing','chennan:intro-start','chennan:intro-complete','chennan:login-ready']){
+      document.addEventListener(type,event=>{
+        window.__chennanIntroEvents.push({type,at:event.detail?.at??performance.now(),source:event.detail?.source??null});
+      });
+    }
+  });
+
+  await page.goto(URL+'?theme=night&intro-e2e='+Date.now(),{waitUntil:'domcontentloaded'});
+  await page.waitForSelector('#authRoot',{state:'visible',timeout:10000});
+  await page.waitForFunction(()=>document.querySelector('#authRoot')?.dataset.introPhase==='playing',{timeout:7000});
+
+  assert.equal(await page.locator('#loginForm').count(),0,'login form must not appear before cinematic intro completes');
+
+  const early=await page.locator('.cinematic-brush').evaluate(el=>{
+    const s=getComputedStyle(el);
+    return {animationName:s.animationName,opacity:Number.parseFloat(s.opacity||'0'),transform:s.transform,left:s.left};
+  });
+  assert.match(early.animationName,/brushFlyIn/,'brush animation must actually be running');
+
+  await page.waitForTimeout(1200);
+  const later=await page.locator('.cinematic-brush').evaluate(el=>{
+    const s=getComputedStyle(el);
+    return {opacity:Number.parseFloat(s.opacity||'0'),transform:s.transform,left:s.left};
+  });
+  assert.notEqual(JSON.stringify(later),JSON.stringify(early),'brush visual state must advance while intro is playing');
+
+  await page.waitForFunction(()=>document.querySelector('#authRoot')?.dataset.introPhase==='complete',{timeout:12000});
+  await page.waitForSelector('#loginForm',{state:'visible',timeout:6000});
+
+  const events=await page.evaluate(()=>window.__chennanIntroEvents||[]);
+  const start=events.find(x=>x.type==='chennan:intro-start');
+  const complete=events.find(x=>x.type==='chennan:intro-complete');
+  const ready=events.find(x=>x.type==='chennan:login-ready');
+  assert.ok(start&&complete&&ready,'intro lifecycle events must reach start -> complete -> login-ready');
+  const duration=complete.at-start.at;
+  assert.ok(duration>=5600&&duration<=8200,'cinematic duration out of bounds: '+duration);
+  assert.ok(ready.at>complete.at,'login must reveal only after the cinematic sequence completes');
+
+  const resource=await page.evaluate(()=>performance.getEntriesByType('resource')
+    .filter(x=>/scene-night\.webp|chen-nan-ink\.webp/.test(x.name))
+    .map(x=>({name:x.name,duration:x.duration,transferSize:x.transferSize})));
+  assert.ok(resource.some(x=>x.name.includes('scene-night.webp')),'night scene must load as an external image asset');
+  assert.ok(resource.some(x=>x.name.includes('chen-nan-ink.webp')),'brush image must load before/for intro');
+
+  console.log(JSON.stringify({intro:'PASS',duration,events,resource}));
 }
 
 async function prelogin(page){
@@ -144,7 +206,8 @@ async function navigation(page){
   const page=await browser.newPage({viewport:{width:1440,height:900}});
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
   try{
-    if(STAGE==='prelogin')await prelogin(page);
+    if(STAGE==='intro')await intro(page);
+    else if(STAGE==='prelogin')await prelogin(page);
     else if(STAGE==='login')await loginOnly(page);
     else if(STAGE==='navigation')await navigation(page);
     else await memory(page);

@@ -1,7 +1,16 @@
 /* Authentication boots independently of the business render pipeline. */
 (function(){
 'use strict';
+
 const byId=id=>document.getElementById(id);
+const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+const INTRO_FALLBACK_MS=7600;
+
+function emitIntro(type,detail={}){
+  document.dispatchEvent(new CustomEvent(type,{
+    detail:{...detail,at:performance.now()}
+  }));
+}
 
 // 品牌字只负责清晰显示名称；毛笔动画使用独立视觉元素，避免笔画和文字重复叠加。
 function brushLogo(extraClass=''){
@@ -28,26 +37,136 @@ function cinematicIntro(){
     +'</div>';
 }
 
+function nextPaint(){
+  return new Promise(resolve=>{
+    requestAnimationFrame(()=>requestAnimationFrame(resolve));
+  });
+}
+
+function imageReady(src){
+  return new Promise(resolve=>{
+    if(!src){resolve();return}
+    const img=new Image();
+    let settled=false;
+    const done=()=>{if(settled)return;settled=true;resolve()};
+    img.onload=done;
+    img.onerror=done;
+    img.src=src;
+    if(img.decode)img.decode().then(done,done);
+  });
+}
+
+function backgroundUrls(element){
+  const css=getComputedStyle(element).backgroundImage||'';
+  return [...css.matchAll(/url\((?:["'])?([^"')]+)(?:["'])?\)/g)].map(match=>match[1]);
+}
+
+async function prepareIntroAssets(root){
+  const jobs=[
+    imageReady('./chen-nan-ink.webp'),
+    ...backgroundUrls(root).map(imageReady)
+  ];
+  if(document.fonts?.ready)jobs.push(document.fonts.ready.catch(()=>{}));
+  await Promise.race([
+    Promise.allSettled(jobs),
+    wait(1800)
+  ]);
+}
+
+function waitForAnimation(element,animationName,timeoutMs){
+  return new Promise(resolve=>{
+    let settled=false;
+    const finish=source=>{
+      if(settled)return;
+      settled=true;
+      clearTimeout(timer);
+      element?.removeEventListener('animationend',onEnd);
+      resolve(source);
+    };
+    const onEnd=event=>{
+      if(event.target===element&&event.animationName===animationName)finish('animationend');
+    };
+    const timer=setTimeout(()=>finish('fallback'),timeoutMs);
+    element?.addEventListener('animationend',onEnd);
+  });
+}
+
+function storedSessionExists(){
+  try{return Boolean(sessionStorage.getItem('chennan-cloud-session-v1'))}
+  catch{return false}
+}
+
+async function runIntro(root){
+  // 已登录会话只做快速恢复，避免每次刷新都强制播放完整电影开场。
+  if(storedSessionExists()){
+    root.dataset.introPhase='resume';
+    root.classList.add('auth-intro-finish');
+    emitIntro('chennan:intro-skip',{reason:'session-resume'});
+    await showAuthCard();
+    return;
+  }
+
+  root.dataset.introPhase='preparing';
+  emitIntro('chennan:intro-preparing');
+
+  await prepareIntroAssets(root);
+  await nextPaint();
+
+  root.dataset.introPhase='playing';
+  root.classList.add('auth-intro-active');
+  emitIntro('chennan:intro-start');
+
+  const reduced=matchMedia?.('(prefers-reduced-motion: reduce)')?.matches===true;
+  const source=reduced
+    ? (await wait(40),'reduced-motion')
+    : await waitForAnimation(root.querySelector('.cinematic-brand'),'introBrand',INTRO_FALLBACK_MS);
+
+  root.classList.remove('auth-intro-active');
+  root.classList.add('auth-intro-finish');
+  root.dataset.introPhase='complete';
+  emitIntro('chennan:intro-complete',{source});
+
+  await wait(reduced?0:260);
+  await showAuthCard();
+}
+
 function injectAuth(){
   const app=document.querySelector('.app');
   if(app)app.classList.add('app-lock');
-  const root=document.createElement('div');root.id='authRoot';root.className='auth-root auth-intro-running';
+
+  const root=document.createElement('div');
+  root.id='authRoot';
+  root.className='auth-root auth-intro-running';
+  root.dataset.introPhase='created';
   root.innerHTML=cinematicIntro()+'<div id="authStage" class="auth-stage auth-stage-pending"></div>';
   document.body.appendChild(root);
 
-  const resume=window.ChenNanCloud?.hasSession?.();
-  const delay=resume?2800:6500;
-  setTimeout(()=>{root.classList.add('auth-intro-finish');showAuthCard();},delay);
+  runIntro(root).catch(error=>{
+    console.error('CHENNAN_INTRO_FAILED',error);
+    root.classList.remove('auth-intro-active');
+    root.classList.add('auth-intro-finish');
+    root.dataset.introPhase='fallback';
+    showAuthCard();
+  });
 }
 
+let authCardShown=false;
 async function showAuthCard(){
-  const stage=byId('authStage');if(!stage)return;
+  if(authCardShown)return;
+  authCardShown=true;
+
+  const stage=byId('authStage');
+  if(!stage)return;
   const root=byId('authRoot');
+
   if(window.ChenNanCloud?.hasSession?.()){
     stage.innerHTML='<div class="auth-card auth-card-resume"><div class="auth-logo">'+brushLogo('brand-brush-small')+'</div><h1 class="auth-title">正在连接云端</h1><p class="auth-sub">正在同步工作区…</p><div class="auth-error" id="authError"></div></div>';
     stage.classList.remove('auth-stage-pending');
     stage.classList.add('auth-stage-visible');
     if(await window.ChenNanCloud.resume()){unlockApp();return}
+
+    stage.classList.remove('auth-stage-visible');
+    stage.classList.add('auth-stage-pending');
   }
 
   stage.innerHTML='<div class="login-shell">'
@@ -80,26 +199,34 @@ async function showAuthCard(){
   setTimeout(()=>{
     stage.classList.remove('auth-stage-pending');
     stage.classList.add('auth-stage-visible');
+    root.dataset.introPhase='login-ready';
+    emitIntro('chennan:login-ready');
   },1050);
 
   byId('loginForm').onsubmit=async function(e){
     e.preventDefault();
     const f=new FormData(e.target),err=byId('authError'),btn=e.target.querySelector('button');
-    err.textContent='正在验证并同步云端数据…';btn.disabled=true;
+    err.textContent='正在验证并同步云端数据…';
+    btn.disabled=true;
     try{
       await window.ChenNanCloud.login(String(f.get('user')||'').trim(),String(f.get('password')||''));
       root?.classList.add('auth-success');
       setTimeout(unlockApp,720);
     }catch(ex){
-      err.textContent=ex?.message||'登录失败';btn.disabled=false;
+      err.textContent=ex?.message||'登录失败';
+      btn.disabled=false;
     }
   };
 }
 
 function unlockApp(){
-  const root=byId('authRoot');if(root)root.classList.add('hidden');
+  const root=byId('authRoot');
+  if(root)root.classList.add('hidden');
   const app=document.querySelector('.app');
-  if(app){app.classList.remove('app-lock');app.classList.add('app-ready');}
+  if(app){
+    app.classList.remove('app-lock');
+    app.classList.add('app-ready');
+  }
 }
 
 injectAuth();
