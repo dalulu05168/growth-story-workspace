@@ -4,7 +4,7 @@
 const byId=id=>document.getElementById(id);
 function brushLogo(extraClass=''){
   const paths=['M8 8 Q27 7 47 8','M30 4 Q29 14 25 24 Q21 34 13 40','M17 17 Q34 16 48 17','M31 16 Q33 24 30 35 Q28 41 21 44','M18 28 Q31 27 44 28','M24 39 Q33 36 45 38','M54 8 Q72 8 91 8','M73 6 Q71 17 71 41','M57 13 Q66 12 86 13','M60 17 Q59 23 59 29','M85 17 Q86 24 85 29','M59 20 Q72 19 86 20','M59 26 Q72 25 85 26','M72 20 Q70 31 71 39','M60 33 Q71 32 84 33','M60 39 Q72 38 84 39'];
-  return '<svg class="brand-brush '+extraClass+'" viewBox="0 0 100 50" role="img" aria-label="辰南" focusable="false"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">'+paths.map((d,i)=>{const delay=extraClass.includes('sidebar')?i*18:i*85;return '<path class="brush-stroke" style="--stroke-order:'+i+';animation-delay:'+delay+'ms" d="'+d+'"/><path class="brush-fly" style="animation-delay:'+delay+'ms" d="'+d+'"/>'}).join('')+'</g><path class="brush-seal" d="M91 1h7v7h-7z"/><text class="brush-seal-mark" x="92" y="6.2">辰</text></svg>';
+  return '<svg class="brand-brush '+extraClass+'" viewBox="0 0 100 50" role="img" aria-label="辰南" focusable="false"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">'+paths.map((d,i)=>{const delay=extraClass.includes('sidebar')?i*18:i*85;return '<path class="brush-stroke" style="--stroke-order:'+i+';animation-delay:'+delay+'ms" d="'+d+'"/><path class="brush-fly" style="animation-delay:'+delay+'ms" d="'+d+'"/>'}).join('')+'</g><text class="brush-glyph" x="50" y="37">辰南</text><path class="brush-seal" d="M91 1h7v7h-7z"/><text class="brush-seal-mark" x="92" y="6.2">辰</text></svg>';
 }
 window.ChenNanBrandMarkup=brushLogo;
 function themeSelect(className=''){
