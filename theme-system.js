@@ -1,6 +1,7 @@
-/* 辰南三主题：每次进入按 星空金黑 → 暖光书卷 → 通透蓝白 轮换；页面内可随时手动切换。 */
+/* 辰南三主题：按 星空金黑 → 暖光书卷 → 通透蓝白 轮换；手动切换使用淡出/淡入过渡。 */
 (function(){
   'use strict';
+
   const sequence=['night','warm','blue'];
   const allowed=new Set(sequence);
   const labels={night:'星空金黑',warm:'暖光书卷',blue:'通透蓝白'};
@@ -18,6 +19,9 @@
     localStorage.setItem(key,String(next));
     current=sequence[next];
   }
+
+  let transitionTimer=0;
+  let transitionFinishTimer=0;
 
   const optionMarkup=()=>sequence.map(id=>`<option value="${id}">${labels[id]}</option>`).join('');
   const buttonMarkup=()=>sequence.map(id=>`<button type="button" class="theme-chip ${id===current?'active':''}" data-theme-button="${id}" aria-pressed="${id===current?'true':'false'}"><span class="theme-swatch"></span><b>${labels[id]}</b></button>`).join('');
@@ -43,16 +47,42 @@
     return current;
   }
 
+  function transitionTo(theme,{persist=true}={}){
+    theme=normalize(theme);
+    if(!allowed.has(theme)||theme===current)return current;
+
+    clearTimeout(transitionTimer);
+    clearTimeout(transitionFinishTimer);
+
+    const root=document.documentElement;
+    const from=current;
+    root.classList.remove('theme-fade-in');
+    root.classList.add('theme-fade-out');
+    document.dispatchEvent(new CustomEvent('chennan:theme-before-change',{detail:{from,to:theme}}));
+
+    transitionTimer=setTimeout(()=>{
+      apply(theme,{persist});
+      root.classList.remove('theme-fade-out');
+      void root.offsetWidth;
+      root.classList.add('theme-fade-in');
+      transitionFinishTimer=setTimeout(()=>root.classList.remove('theme-fade-in'),850);
+    },320);
+
+    return theme;
+  }
+
   document.addEventListener('change',event=>{
-    if(event.target.matches('[data-theme-switcher]'))apply(event.target.value,{persist:true});
+    if(event.target.matches('[data-theme-switcher]'))transitionTo(event.target.value,{persist:true});
   });
+
   document.addEventListener('click',event=>{
     const button=event.target.closest?.('[data-theme-button]');
-    if(button)apply(button.dataset.themeButton,{persist:true});
+    if(button)transitionTo(button.dataset.themeButton,{persist:true});
   });
 
   window.ChenNanTheme={
     apply,
+    transitionTo,
     get:()=>current,
     labels:Object.freeze({...labels}),
     options:optionMarkup,
