@@ -2,6 +2,7 @@
 const {chromium}=require('playwright');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
+const crypto=require('node:crypto');
 
 const URL=process.env.E2E_URL||'https://dalulu05168.github.io/growth-story-workspace/';
 const STAGE=process.env.E2E_STAGE||'memory';
@@ -11,6 +12,21 @@ assert.match(creds.username,/^e2e_/,'Disposable E2E account required');
 const endpoint='https://afelbznpwltuebmqmqbh.supabase.co/functions/v1/workspace-cloud';
 const key='sb_publishable_J548-tZcZAxnUF4HD-VPEA_Gepy26Ec';
 let token='';
+
+async function deploymentHash(){
+  const files=['theme-system.js','auth.js','workspace-core.js','cloud-sync.js','trade-dashboard.js','people-detail.js','trading-simulator.js','document-workspace.js','ui-shell.js','theme-ui.js'];
+  const mismatches=[];
+  for(const file of files){
+    const r=await fetch(URL.replace(/\/$/,'')+'/'+file+'?hashcheck='+Date.now());
+    assert.equal(r.status,200,file+' HTTP '+r.status);
+    const live=await r.text();
+    const liveHash=crypto.createHash('sha256').update(live).digest('hex');
+    const repoHash=crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+    if(liveHash!==repoHash)mismatches.push({file,liveHash,repoHash});
+  }
+  assert.deepEqual(mismatches,[]);
+}
+
 
 async function cloud(action,payload={}){
   const r=await fetch(endpoint,{
@@ -46,7 +62,7 @@ async function login(page){
   await page.locator('#authRoot').waitFor({state:'hidden',timeout:15000});
 }
 
-async function smoke(page){
+async function prelogin(page){
   await page.goto(URL,{waitUntil:'networkidle'});
   await page.locator('#loginForm').waitFor({state:'visible',timeout:20000});
   assert.equal(await page.locator('.auth-theme-control [data-theme-button]').count(),3);
@@ -58,6 +74,8 @@ async function smoke(page){
   assert.equal((await page.locator('.brand-calligraphy').first().innerText()).trim(),'辰南撰写');
   assert.equal(await page.locator('.cinematic-brush').count(),1);
   assert.equal(await page.locator('.cinematic-btc').count(),1);
+}
+async function loginOnly(page){
   await login(page);
   await nav(page,'people');
   assert.equal(await page.locator('#peopleList tbody tr').count(),70);
@@ -117,11 +135,17 @@ async function navigation(page){
 }
 
 (async()=>{
+  if(STAGE==='hash'){
+    await deploymentHash();
+    console.log(JSON.stringify({acceptance:'PASS',stage:STAGE}));
+    return;
+  }
   const browser=await chromium.launch({headless:true});
   const page=await browser.newPage({viewport:{width:1440,height:900}});
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
   try{
-    if(STAGE==='smoke')await smoke(page);
+    if(STAGE==='prelogin')await prelogin(page);
+    else if(STAGE==='login')await loginOnly(page);
     else if(STAGE==='navigation')await navigation(page);
     else await memory(page);
     assert.deepEqual(errors,[]);
