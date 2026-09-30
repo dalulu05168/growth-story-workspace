@@ -36,7 +36,7 @@ function injectAuth(){
   document.body.appendChild(root);
 
   const resume=window.ChenNanCloud?.hasSession?.();
-  const delay=resume?700:3800;
+  const delay=resume?2800:6500;
   setTimeout(()=>{root.classList.add('auth-intro-finish');showAuthCard();},delay);
 }
 
@@ -76,9 +76,11 @@ async function showAuthCard(){
     +'</div>'
   +'</div>';
 
-  stage.classList.remove('auth-stage-pending');
-  stage.classList.add('auth-stage-visible');
   root?.classList.add('auth-form-ready');
+  setTimeout(()=>{
+    stage.classList.remove('auth-stage-pending');
+    stage.classList.add('auth-stage-visible');
+  },1050);
 
   byId('loginForm').onsubmit=async function(e){
     e.preventDefault();
@@ -87,7 +89,7 @@ async function showAuthCard(){
     try{
       await window.ChenNanCloud.login(String(f.get('user')||'').trim(),String(f.get('password')||''));
       root?.classList.add('auth-success');
-      setTimeout(unlockApp,360);
+      setTimeout(unlockApp,720);
     }catch(ex){
       err.textContent=ex?.message||'登录失败';btn.disabled=false;
     }
