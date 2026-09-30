@@ -60,7 +60,13 @@ function holdingStatus(hd){
   return{key:'holding',label:'持有中',left};
 }
 function stockKey(hd){return hd.batchId||hd.id||((hd.offerId||'legacy')+'|'+(hd.symbol||'')+'|'+String(hd.buyAt||''))}
-function personBudget(p,currency){const code=String(currency||'USD').toUpperCase(),map=p?.finance?.available_capital_by_currency;if(map&&map[code]!=null&&Number.isFinite(Number(map[code])))return Number(map[code]);const key={USD:'available_investment_capital_usd',EUR:'available_investment_capital_eur',CNY:'available_investment_capital_cny',HKD:'available_investment_capital_hkd'}[code];if(!key)return null;const raw=p?.finance?.[key];return raw===null||raw===undefined||raw===''?null:Number(raw)}
+// Currency values are independent; preference input takes precedence over imported finance.
+function personBudget(p,currency){
+  const code=String(currency||'USD').toUpperCase();
+  const raw=p?.trade_profile?.available_funds?.[code] ?? p?.finance?.available_capital_by_currency?.[code] ?? p?.finance?.[({USD:'available_investment_capital_usd',EUR:'available_investment_capital_eur',CNY:'available_investment_capital_cny',HKD:'available_investment_capital_hkd'})[code]];
+  return raw==null||raw===''||!Number.isFinite(Number(raw))?null:Number(raw);
+}
+
 function fundingState(p,o){const need=Number(o.minShares||0)*Number(o.unitPrice||0),budget=personBudget(p,o.currency||'USD');return{need,budget,ok:budget==null||budget>=need,known:budget!=null}}
 
 function setupUI(){
@@ -118,7 +124,7 @@ function bindRecommend(){
   qsa('[data-confirm-buy]').forEach(b=>b.onclick=()=>confirmBuy(activeOfferId,b.dataset.confirmBuy));
 }
 function editOffer(id){
-  const o=id?offer(id):{id:'of'+Date.now(),symbol:'DDD',name:'DDD',market:'美股',currency:'USD',discountPct:15,minShares:100,holdDays:3,unitPrice:65,participantCount:10,createdAt:new Date().toISOString()};
+  const o=id?offer(id):{id:'of'+crypto.randomUUID(),symbol:'DDD',name:'DDD',market:'美股',currency:'USD',discountPct:15,minShares:100,holdDays:3,unitPrice:65,participantCount:10,createdAt:new Date().toISOString()};
   openModal(id?'编辑股票计划':'新建股票计划','<div class="form-grid"><div class="field"><label>股票代码 *</label><input class="input" name="symbol" required value="'+h(o.symbol)+'"></div><div class="field"><label>股票名称 *</label><input class="input" name="name" required value="'+h(o.name)+'"></div><div class="field"><label>市场</label><input class="input" name="market" value="'+h(o.market||'美股')+'"></div><div class="field"><label>币种</label><select class="select" name="currency"><option value="USD" '+((o.currency||'USD')==='USD'?'selected':'')+'>USD 美元</option><option value="EUR" '+(o.currency==='EUR'?'selected':'')+'>EUR 欧元</option><option value="HKD" '+(o.currency==='HKD'?'selected':'')+'>HKD 港币</option><option value="CNY" '+(o.currency==='CNY'?'selected':'')+'>CNY 人民币</option></select></div><div class="field"><label>折扣占比 %</label><input class="input" type="number" min="0" max="99" step="0.01" name="discount" value="'+h(o.discountPct)+'"></div><div class="field"><label>最低购买股数</label><input class="input" type="number" min="1" name="shares" value="'+h(o.minShares)+'"></div><div class="field"><label>持有时间限制（天）</label><input class="input" type="number" min="0" name="days" value="'+h(o.holdDays)+'"></div><div class="field"><label>单价</label><input class="input" type="number" min="0" step="0.01" name="price" value="'+h(o.unitPrice)+'"></div><div class="field"><label>购买人数</label><input class="input" type="number" min="1" max="70" name="count" value="'+h(o.participantCount)+'"></div></div>',fd=>{
     o.symbol=String(fd.get('symbol')).trim().toUpperCase();o.name=String(fd.get('name')).trim();o.market=String(fd.get('market')).trim()||'美股';o.currency=String(fd.get('currency')||'USD');o.discountPct=Number(fd.get('discount'))||0;o.minShares=Math.max(1,Number(fd.get('shares'))||1);o.holdDays=Math.max(0,Number(fd.get('days'))||0);o.unitPrice=Math.max(0,Number(fd.get('price'))||0);o.participantCount=Math.max(1,Math.min(70,Number(fd.get('count'))||1));
     if(!id){db.tradeSim.offers.push(o);activeOfferId=o.id}else activeOfferId=id;setTimeout(renderRecommend,0);
@@ -128,36 +134,27 @@ function makeRecommendations(offerId){
   const o=offer(offerId);if(!o)return;const existing=recommendationFor(offerId);if(existing){renderRecommend();toast('今日名单已生成，已保留邀请和成交状态');return}
   const planMap=new Map(todayPlans().map(x=>[String(x.personId),x])),eligible=db.people.filter(p=>opened(p)&&fundingState(p,o).ok);
   const fromToday=eligible.filter(p=>planMap.has(String(p.id))).sort((a,b)=>score(b)-score(a)),todayIds=new Set(fromToday.map(p=>String(p.id))),fill=eligible.filter(p=>!todayIds.has(String(p.id))).sort((a,b)=>score(b)-score(a)),chosen=fromToday.concat(fill).slice(0,o.participantCount);
-  const rec={id:'rec'+Date.now(),offerId:o.id,date:day(),createdAt:new Date().toISOString(),candidates:chosen.map(p=>({personId:String(p.id),status:'pending',source:todayIds.has(String(p.id))?'主看板今日待买':'已开户补充推荐'}))};
+  const rec={id:'rec'+crypto.randomUUID(),offerId:o.id,date:day(),createdAt:new Date().toISOString(),candidates:chosen.map(p=>({personId:String(p.id),status:'pending',source:todayIds.has(String(p.id))?'主看板今日待买':'已开户补充推荐'}))};
   db.tradeSim.recommendations=db.tradeSim.recommendations.filter(x=>!(x.offerId===o.id&&x.date===day()));db.tradeSim.recommendations.push(rec);save();renderRecommend();toast('已推荐 '+chosen.length+' 人；明确资金不足者已排除');
 }
 function setCandidate(offerId,pid,status){
   const rec=recommendationFor(offerId);if(!rec)return;const c=rec.candidates.find(x=>String(x.personId)===String(pid));if(!c||c.status==='bought'||!['invited','rejected'].includes(status))return;
   const o=offer(offerId),p=person(pid);if(!o||!p)return;if(status==='invited'&&!fundingState(p,o).ok){toast('该人物已明确资金不足，不能邀请');return}c.status=status;
-  if(status==='invited'){const exists=db.portfolio.buyPlans.some(x=>x.date===day()&&String(x.personId)===String(pid)&&x.offerId===o.id&&x.status==='planned');if(!exists)db.portfolio.buyPlans.push({id:'bp'+Date.now()+pid,personId:String(pid),date:day(),symbol:o.symbol,stockName:o.name,currency:o.currency||'USD',reason:'模拟交易邀请',source:'recommendation',offerId:o.id,status:'planned'})}
+  if(status==='invited'){const exists=db.portfolio.buyPlans.some(x=>x.date===day()&&String(x.personId)===String(pid)&&x.offerId===o.id&&x.status==='planned');if(!exists)db.portfolio.buyPlans.push({id:'bp'+crypto.randomUUID(),personId:String(pid),date:day(),symbol:o.symbol,stockName:o.name,currency:o.currency||'USD',reason:'模拟交易邀请',source:'recommendation',offerId:o.id,status:'planned'})}
   else db.portfolio.buyPlans=db.portfolio.buyPlans.filter(x=>!(x.date===day()&&String(x.personId)===String(pid)&&x.offerId===o.id&&x.status==='planned'));
   save();renderRecommend();
 }
 function executeBuy(offerId,pid,quantity){
   const o=offer(offerId),rec=recommendationFor(offerId),p=person(pid);if(!o||!rec||!p||!opened(p))return false;const c=rec.candidates.find(x=>String(x.personId)===String(pid));if(!c||c.status!=='invited')return false;
-  const qty=Math.max(Number(o.minShares)||1,Math.floor(Number(quantity)||0)),fs=fundingState(p,o),amount=qty*Number(o.unitPrice||0);if(fs.known&&amount>fs.budget)return false;if(db.portfolio.holdings.some(x=>x.offerId===o.id&&String(x.personId)===String(pid)&&x.status!=='sold'))return false;
+  const qty=Number(quantity);if(!Number.isInteger(qty)||qty<Number(o.minShares)||!(Number(o.unitPrice)>0))return false;const fs=fundingState(p,o),amount=qty*Number(o.unitPrice||0);if(fs.known&&amount>fs.budget)return false;if(db.portfolio.holdings.some(x=>x.offerId===o.id&&String(x.personId)===String(pid)&&x.status!=='sold'))return false;
   const buyAt=new Date().toISOString(),plannedSellAt=sellAt(o.holdDays,buyAt),plan=db.portfolio.buyPlans.find(x=>x.offerId===o.id&&String(x.personId)===String(pid)&&x.status==='planned');
-  db.portfolio.holdings.push({id:'h'+Date.now()+pid,batchId:rec.id,offerId:o.id,buyPlanId:plan?.id||null,personId:String(pid),symbol:o.symbol,name:o.name,market:o.market,currency:o.currency||'USD',quantity:qty,buyPrice:o.unitPrice,buyAt,plannedSellAt,status:'holding',simulated:true});
+  db.portfolio.holdings.push({id:'h'+crypto.randomUUID(),batchId:crypto.randomUUID(),offerId:o.id,buyPlanId:plan?.id||null,personId:String(pid),symbol:o.symbol,name:o.name,market:o.market,currency:o.currency||'USD',quantity:qty,buyPrice:o.unitPrice,buyAt,plannedSellAt,status:'holding',simulated:true});
   if(plan){plan.status='done';plan.doneAt=buyAt;plan.quantity=qty;plan.unitPrice=o.unitPrice;plan.currency=o.currency||'USD'}c.status='bought';save();return true;
 }
 function confirmBuy(offerId,pid){
   const o=offer(offerId),rec=recommendationFor(offerId),p=person(pid);if(!o||!rec||!p)return;const c=rec.candidates.find(x=>String(x.personId)===String(pid));if(!c||c.status!=='invited'||!opened(p))return;
   const fs=fundingState(p,o),budget=fs.known?money(fs.budget,o.currency||'USD'):'未录入 '+(o.currency||'USD')+' 可用资金';
-  openModal('确认买入 · '+nm(p),'<div class="notice">'+h(o.symbol)+' · '+h(o.name)+'　单价 '+h(money(o.unitPrice,o.currency||'USD'))+'　最低 '+h(o.minShares)+' 股<br>该人物可用资金：'+h(budget)+'</div><div class="form-grid"><div class="field"><label>实际购买股数 *</label><input class="input" type="number" min="'+h(o.minShares)+'" step="1" name="quantity" value="'+h(o.minShares)+'" required></div></div>',fd=>{const qty=Math.max(Number(o.minShares)||1,Math.floor(Number(fd.get('quantity'))||0));if(!executeBuy(offerId,pid,qty)){alert('买入失败：请检查邀请状态、开户状态、资金或重复持仓。');return false}setTimeout(renderRecommend,0);toast(nm(p)+' 已确认买入 '+qty+' 股并形成持仓')});
-}
-function confirmBuy(offerId,pid){
-  const o=offer(offerId),rec=recommendationFor(offerId);if(!o||!rec)return;
-  const c=rec.candidates.find(x=>String(x.personId)===String(pid));if(!c||c.status!=='invited')return;
-  if(!person(pid)||!opened(person(pid)))return;
-  const buyAt=new Date().toISOString(),plannedSellAt=sellAt(o.holdDays,buyAt);
-  db.portfolio.holdings.push({id:'h'+Date.now()+pid,offerId:o.id,personId:String(pid),symbol:o.symbol,name:o.name,quantity:o.minShares,buyPrice:o.unitPrice,buyAt,plannedSellAt,status:'holding',simulated:true});
-  db.portfolio.buyPlans.forEach(x=>{if(x.offerId===o.id&&String(x.personId)===String(pid)&&x.status==='planned'){x.status='done';x.doneAt=buyAt}});
-  c.status='bought';save();renderRecommend();toast(nm(person(pid))+' 已确认买入并形成持仓');
+  openModal('确认买入 · '+nm(p),'<div class="notice">'+h(o.symbol)+' · '+h(o.name)+'　单价 '+h(money(o.unitPrice,o.currency||'USD'))+'　最低 '+h(o.minShares)+' 股<br>该人物可用资金：'+h(budget)+'</div><div class="form-grid"><div class="field"><label>实际购买股数 *</label><input class="input" type="number" min="'+h(o.minShares)+'" step="1" name="quantity" value="'+h(o.minShares)+'" required></div></div>',fd=>{const qty=Number(fd.get('quantity'));if(!executeBuy(offerId,pid,qty)){alert('买入失败：请检查邀请状态、开户状态、资金或重复持仓。');return false}setTimeout(renderRecommend,0);toast(nm(p)+' 已确认买入 '+qty+' 股并形成持仓')});
 }
 
 function batches(){
@@ -180,7 +177,7 @@ function renderHoldings(){
   const bs=batches(),max=Math.max(1,...bs.map(b=>b.rows.reduce((s,x)=>s+(Number(x.buyPrice)||0)*(Number(x.quantity)||0),0)));
   body.innerHTML='<div class="topbar"><div><div class="eyebrow">PORTFOLIO HOLDINGS</div><h1 class="page-title">持仓页面</h1><p class="sub">按买入先后展示股票批次、持有人和距离计划卖出时间的剩余时长。</p></div><button class="btn ghost" id="goRecommend">返回人物交易列表</button></div>'+
   '<div class="card panel"><div class="panel-head"><h2>买入批次柱状图</h2><span class="muted">柱高按该批次买入金额；绿色=已满足持有条件，橙色=临近到期</span></div><div class="hold-chart">'+
-  (bs.length?bs.map(b=>{const total=b.rows.reduce((s,x)=>s+(Number(x.buyPrice)||0)*(Number(x.quantity)||0),0),st=batchStatus(b),height=Math.max(14,Math.round(total/max*180));return'<div class="hold-bar-wrap"><div class="hold-bar '+st.key+'" style="height:'+height+'px" title="'+h(b.symbol)+' '+money(total)+'"></div><div class="hold-bar-label '+(st.key==='ready'?'stock-ready':st.key==='soon'?'stock-soon':'stock-holding')+'">'+h(b.symbol||'--')+'<br>'+h(String(b.buyAt||'').slice(0,10))+'</div></div>'}).join(''):'<div class="empty">暂无持仓</div>')+
+  (bs.length?bs.map(b=>{const total=b.rows.reduce((s,x)=>s+(Number(x.buyPrice)||0)*(Number(x.quantity)||0),0),st=batchStatus(b),height=Math.max(14,Math.round(total/max*180));return'<div class="hold-bar-wrap"><div class="hold-bar '+st.key+'" style="height:'+height+'px" title="'+h(b.symbol)+' '+money(total,b.currency||'USD')+'"></div><div class="hold-bar-label '+(st.key==='ready'?'stock-ready':st.key==='soon'?'stock-soon':'stock-holding')+'">'+h(b.symbol||'--')+'<br>'+h(String(b.buyAt||'').slice(0,10))+'</div></div>'}).join(''):'<div class="empty">暂无持仓</div>')+
   '</div></div><div class="card panel" style="margin-top:18px"><div class="panel-head"><h2>持仓明细</h2><span class="muted">'+currentHoldings().length+' 笔</span></div>'+renderBatches(bs)+'</div>';
   el('goRecommend')?.addEventListener('click',()=>{go('tradeRecommend');renderRecommend()});
   qsa('[data-sell-batch]').forEach(b=>b.onclick=()=>openSellBatch(b.dataset.sellBatch));
@@ -188,13 +185,13 @@ function renderHoldings(){
 function renderBatches(bs){
   if(!bs.length)return'<div class="empty">暂无持仓记录</div>';
   return bs.map(b=>{const st=batchStatus(b),next=Math.min(...b.rows.map(x=>new Date(x.plannedSellAt).getTime())),left=remaining(next-Date.now()),total=b.rows.reduce((sum,x)=>sum+(Number(x.buyPrice)||0)*(Number(x.quantity)||0),0),canSell=b.rows.some(x=>holdingStatus(x).key==='ready');
-    return'<div class="batch-card"><div class="batch-top"><div><b class="'+(st.key==='ready'?'stock-ready':st.key==='soon'?'stock-soon':'stock-holding')+'">'+h(b.symbol||'--')+' · '+h(b.name||'')+'</b><div class="muted">买入时间 '+h(dt(b.buyAt))+' · '+b.rows.length+' 人 · 本批投入 '+money(total,b.currency||'USD')+' · '+h(left)+'</div></div><button class="btn '+(st.key==='ready'?'primary':'ghost')+' small" data-sell-batch="'+h(b.key)+'" '+(canSell?'':'disabled')+'>卖出</button></div><div class="person-mini-grid">'+b.rows.map(x=>{const p=person(x.personId),hs=holdingStatus(x);return'<div class="person-mini"><div class="gender-avatar '+(sex(p)==='女'?'f':'m')+'">'+h(initials(p))+'</div><div><b>'+h(String(p?.legacy_id||'').padStart(2,'0')+(genderRelationLabel(p)||'')+' · '+nm(p))+'</b><small class="muted">'+h(hs.label)+' · '+h(remaining(hs.left))+'</small></div></div>'}).join('')+'</div></div>';
+    return'<div class="batch-card"><div class="batch-top"><div><b class="'+(st.key==='ready'?'stock-ready':st.key==='soon'?'stock-soon':'stock-holding')+'">'+h(b.symbol||'--')+' · '+h(b.name||'')+'</b><div class="muted">买入时间 '+h(dt(b.buyAt))+' · '+b.rows.length+' 人 · 本批投入 '+money(total,b.currency||'USD')+' · '+h(left)+'</div></div><button class="btn '+(st.key==='ready'?'primary':'ghost')+' small" data-sell-batch="'+h(b.key)+'" '+(canSell?'':'disabled')+'>卖出</button></div><div class="person-mini-grid">'+b.rows.map(x=>{const p=person(x.personId),hs=holdingStatus(x);return'<div class="person-mini"><div class="gender-avatar '+(sex(p)==='女'?'f':'m')+'">'+h(initials(p))+'</div><div><b>'+h(String(p?.legacy_id||'').padStart(2,'0')+(genderRelationLabel(p)||'')+' · '+nm(p))+'</b><small class="muted">'+h(x.quantity)+' 股 · '+h(x.currency||b.currency||'USD')+' · 买入价 '+h(money(x.buyPrice,x.currency||b.currency||'USD'))+'<br>最早卖出 '+h(dt(x.plannedSellAt))+'<br>'+h(hs.label)+' · '+h(remaining(hs.left))+'</small></div></div>'}).join('')+'</div></div>';
   }).join('');
 }
 function openSellBatch(key){
   const b=batches().find(x=>x.key===key);if(!b)return;const ready=b.rows.filter(x=>holdingStatus(x).key==='ready');if(!ready.length){toast('该批次尚未满足最低持有期限，不能卖出');return}
   const allReady=ready.length===b.rows.length,cards=b.rows.map(x=>{const p=person(x.personId),hs=holdingStatus(x),ok=hs.key==='ready';return'<label class="person-mini"><input type="checkbox" name="sellPerson" value="'+h(x.id)+'" '+(ok?'checked':'disabled')+'><div class="gender-avatar '+(sex(p)==='女'?'f':'m')+'">'+h(initials(p))+'</div><div><b>'+h(nm(p))+'</b><small class="muted">'+h(hs.label)+' · '+h(remaining(hs.left))+(ok?'':' · 未到期锁定')+'</small></div></label>'}).join('');
-  openModal('确认卖出 · '+b.symbol+' '+b.name,'<div class="notice '+(allReady?'success':'warn')+'">'+(allReady?'本批所有持仓均已满足持有时限。':'只有满足最低持有期限的人员可以卖出。')+'</div><div class="person-mini-grid">'+cards+'</div><div class="form-grid" style="margin-top:14px"><div class="field"><label>卖出价（'+h(b.currency||'USD')+'）</label><input class="input" name="soldPrice" type="number" min="0" step="0.01"></div></div>',fd=>{const ids=qsa('#modalForm input[name="sellPerson"]:checked:not(:disabled)').map(x=>x.value);if(!ids.length){toast('至少选择一位已到期持仓人员');return false}const price=Number(fd.get('soldPrice'))||null,now=new Date().toISOString();db.portfolio.holdings.forEach(x=>{if(ids.includes(x.id)){x.status='sold';x.soldAt=now;x.soldPrice=price}});save();setTimeout(renderHoldings,0);toast('已确认卖出 '+ids.length+' 位人员的持仓')});
+  openModal('确认卖出 · '+b.symbol+' '+b.name,'<div class="notice '+(allReady?'success':'warn')+'">'+(allReady?'本批所有持仓均已满足持有时限。':'只有满足最低持有期限的人员可以卖出。')+'</div><div class="person-mini-grid">'+cards+'</div><div class="form-grid" style="margin-top:14px"><div class="field"><label>卖出价（'+h(b.currency||'USD')+'）</label><input class="input" name="soldPrice" type="number" min="0.01" step="0.01" required></div></div>',fd=>{const ids=qsa('#modalForm input[name="sellPerson"]:checked:not(:disabled)').map(x=>x.value);if(!ids.length){toast('至少选择一位已到期持仓人员');return false}const price=Number(fd.get('soldPrice'));if(!Number.isFinite(price)||price<=0){toast('请输入有效的卖出价格');return false}if(b.rows.some(x=>ids.includes(x.id)&&holdingStatus(x).key!=='ready')){toast('持仓尚未到期');return false}const now=new Date().toISOString();db.portfolio.holdings.forEach(x=>{if(ids.includes(x.id)){x.status='sold';x.soldAt=now;x.soldPrice=price}});save();setTimeout(renderHoldings,0);toast('已确认卖出 '+ids.length+' 位人员的持仓')});
 }
 function bindNav(){
   qsa('.nav button').forEach(b=>{
