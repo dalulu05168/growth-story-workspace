@@ -39,9 +39,16 @@ jobs:
             await page.goto(URL+'?live-smoke='+Date.now(),{waitUntil:'networkidle',timeout:60000});
             await page.waitForSelector('#authRoot',{state:'visible',timeout:15000});
             await page.waitForSelector('#loginForm',{state:'visible',timeout:15000});
-            assert.equal(await page.locator('input[name="user"]').inputValue(),'chennan118');
+            assert.equal(await page.locator('input[name="user"]').inputValue(),'');
             assert.equal(await page.locator('input[type="password"]').count(),1);
             assert.equal(await page.locator('input[name*="otp" i],input[name*="totp" i],input[placeholder*="验证码"]').count(),0);
+            const themePicker=page.locator('.auth-theme-control [data-theme-switcher]');
+            assert.equal(await themePicker.locator('option').count(),3,'login must expose all three themes');
+            for(const theme of ['modern','dark','ink']){
+              await themePicker.selectOption(theme);
+              assert.equal(await page.locator('html').getAttribute('data-theme'),theme,'theme did not apply on login: '+theme);
+              assert.equal(await page.evaluate(()=>localStorage.getItem('chennan-theme')),theme,'theme preference did not persist: '+theme);
+            }
 
             await page.fill('input[name="user"]','__live_smoke_invalid__');
             await page.fill('input[type="password"]','not-the-password');
