@@ -39,7 +39,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        stage: [smoke, memory, navigation]
+        stage: [hash, prelogin, login, memory, navigation]
     name: browser-${{ matrix.stage }}
     steps:
       - uses: actions/checkout@v4
