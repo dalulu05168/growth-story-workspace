@@ -28,7 +28,7 @@ jobs:
           cat > live-smoke.cjs <<'NODE'
           const { chromium } = require('playwright');
           const assert = require('node:assert/strict');
-          const URL = 'https://dalulu05168.github.io/growth-story-workspace/';
+          const URL = 'https://nuvexapro.com/';
           (async()=>{
             const browser = await chromium.launch({headless:true});
             const page = await browser.newPage({viewport:{width:1280,height:800}});
@@ -37,6 +37,7 @@ jobs:
             page.on('console',m=>{ if(m.type()==='error') pageErrors.push('console: '+m.text()); });
 
             await page.goto(URL+'?live-smoke='+Date.now(),{waitUntil:'networkidle',timeout:60000});
+            assert.match(await page.title(), /辰南/, 'custom domain must serve the Chen Nan workspace');
             await page.waitForSelector('#authRoot',{state:'visible',timeout:15000});
             await page.waitForSelector('#loginForm',{state:'visible',timeout:15000});
             assert.equal(await page.locator('input[name="user"]').inputValue(),'');
