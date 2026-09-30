@@ -1,0 +1,113 @@
+/* Current production acceptance: cinematic UI + real cloud + memory persistence. */
+const {chromium}=require('playwright');
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+
+const URL=process.env.E2E_URL||'https://dalulu05168.github.io/growth-story-workspace/';
+const creds=JSON.parse(fs.readFileSync(process.env.E2E_CREDENTIALS||'/tmp/chennan-e2e.json'));
+assert.match(creds.username,/^e2e_/,'Disposable E2E account required');
+
+const endpoint='https://afelbznpwltuebmqmqbh.supabase.co/functions/v1/workspace-cloud';
+const key='sb_publishable_J548-tZcZAxnUF4HD-VPEA_Gepy26Ec';
+let token='';
+
+async function cloud(action,payload={}){
+  const r=await fetch(endpoint,{
+    method:'POST',
+    headers:{'Content-Type':'application/json',apikey:key,...(token?{Authorization:'Bearer '+token}:{})},
+    body:JSON.stringify({action,...payload})
+  });
+  const data=await r.json();
+  return {status:r.status,...data};
+}
+async function waitCloud(predicate){
+  for(let i=0;i<40;i++){
+    const r=await cloud('load');
+    if(r.ok&&predicate(r.payload))return r.payload;
+    await new Promise(r=>setTimeout(r,300));
+  }
+  assert.fail('cloud state did not reach expected memory state');
+}
+async function nav(page,id){
+  await page.locator('.nav button[data-page="'+id+'"]').click();
+  await page.locator('#'+id+'.active').waitFor({state:'visible'});
+}
+async function login(page){
+  await page.goto(URL,{waitUntil:'networkidle'});
+  await page.locator('#loginForm').waitFor({state:'visible',timeout:20000});
+  await page.locator('#loginForm input[name=user]').fill(creds.username);
+  await page.locator('#loginForm input[name=password]').fill(creds.password);
+  const response=page.waitForResponse(r=>r.url()===endpoint&&r.request().postData()?.includes('"action":"login"'));
+  await page.locator('#loginForm button').click();
+  const res=await response;const body=await res.json();
+  assert.equal(res.status(),200);assert.equal(body.ok,true);assert.ok(body.token);
+  token=body.token;
+  await page.locator('#authRoot').waitFor({state:'hidden',timeout:15000});
+}
+
+(async()=>{
+  const browser=await chromium.launch({headless:true});
+  const page=await browser.newPage({viewport:{width:1440,height:900}});
+  const errors=[];
+  page.on('pageerror',e=>errors.push(e.message));
+  try{
+    await page.goto(URL,{waitUntil:'networkidle'});
+    await page.locator('#loginForm').waitFor({state:'visible',timeout:20000});
+
+    const themes=[['night','#d7a33e'],['warm','#9a6428'],['blue','#2289ef']];
+    assert.equal(await page.locator('.auth-theme-control [data-theme-button]').count(),3);
+    for(const [theme,accent] of themes){
+      await page.locator('.auth-theme-control [data-theme-button="'+theme+'"]').click();
+      await page.waitForFunction(t=>document.documentElement.dataset.theme===t,theme);
+      assert.equal(await page.evaluate(()=>getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()),accent);
+    }
+    assert.equal((await page.locator('.brand-calligraphy').first().innerText()).trim(),'辰南撰写');
+    assert.equal(await page.locator('.cinematic-brush').count(),1);
+    assert.equal(await page.locator('.cinematic-btc').count(),1);
+
+    await login(page);
+    await nav(page,'people');
+    assert.equal(await page.locator('#peopleList tbody tr').count(),70);
+
+    await page.locator('.edit-person[data-id=FR0021]').click();
+    await page.locator('#modalForm [name=opened]').selectOption('1');
+    await page.locator('#modalForm [name=joined]').selectOption('1');
+    await page.locator('#modalForm [name=vip]').selectOption('1');
+    await page.locator('#modalForm .modal-foot .primary').click();
+    await page.locator('#modal').waitFor({state:'hidden'});
+
+    const marker='E2E_MEMORY_'+Date.now();
+    await nav(page,'novel');
+    await page.locator('#dailyDatePicker').fill('2026-09-30');
+    await page.locator('#openDate').click();
+    await page.locator('#dailyEditor').fill('21：'+marker);
+    await page.locator('#saveDaily').click();
+
+    const stored=await waitCloud(d=>
+      d.dailyDocs?.['2026-09-30']?.content?.includes(marker)&&
+      d.records?.some(r=>r.personId==='FR0021'&&r.type==='发言记录'&&r.content===marker)
+    );
+    assert.equal(stored.records.filter(r=>r.personId==='FR0021'&&r.type==='发言记录'&&r.content===marker).length,1);
+
+    await page.locator('[data-sp=FR0021]').click();
+    assert.match(await page.locator('#memoryTimeline').innerText(),new RegExp(marker));
+
+    await page.reload({waitUntil:'networkidle'});
+    await page.locator('#authRoot').waitFor({state:'hidden',timeout:15000});
+    await nav(page,'novel');
+    await page.locator('[data-sp=FR0021]').click();
+    assert.match(await page.locator('#memoryTimeline').innerText(),new RegExp(marker));
+
+    await page.locator('#dailyDatePicker').fill('2026-10-01');
+    await page.locator('#openDate').click();
+    await page.locator('#dailyEditor').fill('21：我从来没有开过账户');
+    assert.match(await page.locator('#logicWarnings').innerText(),/开户状态冲突/);
+
+    for(const id of ['overview','people','groups','records','novel','topics','tradeRecommend','holdingsV2'])await nav(page,id);
+
+    assert.deepEqual(errors,[]);
+    console.log(JSON.stringify({acceptance:'PASS',people:70,memoryMarker:marker,themes:themes.map(x=>x[0])}));
+  }finally{
+    await browser.close();
+  }
+})().catch(e=>{console.error(e);process.exit(1)});
