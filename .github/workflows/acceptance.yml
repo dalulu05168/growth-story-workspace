@@ -32,10 +32,15 @@ jobs:
       - run: npm ci
       - run: npm test
 
-  browser-memory:
+  browser-current:
     needs: [static-gate, unit-regression]
     runs-on: ubuntu-latest
     timeout-minutes: 18
+    strategy:
+      fail-fast: false
+      matrix:
+        stage: [smoke, memory, navigation]
+    name: browser-${{ matrix.stage }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -49,8 +54,9 @@ jobs:
       - name: Wait for Pages propagation
         if: github.ref == 'refs/heads/main'
         run: sleep 45
-      - name: Current browser and cloud memory acceptance
+      - name: Run current acceptance stage
         env:
+          E2E_STAGE: ${{ matrix.stage }}
           E2E_CREDENTIALS: /tmp/chennan-e2e.json
           E2E_URL: ${{ github.ref == 'refs/heads/main' && 'https://dalulu05168.github.io/growth-story-workspace/' || 'http://127.0.0.1:18768/' }}
         run: |
