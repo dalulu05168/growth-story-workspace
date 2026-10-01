@@ -143,7 +143,7 @@ async function runIntro(root){
   const reduced=matchMedia?.('(prefers-reduced-motion: reduce)')?.matches===true;
   const source=skipped?'user-skip':reduced
     ? (await wait(40),'reduced-motion')
-    : await waitForAnimation(root.querySelector('.cinematic-brand'),'introBrand',INTRO_FALLBACK_MS,skip);
+    : await waitForAnimation(root.querySelector('.cinematic-brand'),'cnBrand',INTRO_FALLBACK_MS,skip);
 
   skipButton?.remove();
   if(reduced||skipped)root.dataset.introFast='true';

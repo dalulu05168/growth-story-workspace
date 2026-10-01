@@ -5,6 +5,7 @@ const path=require('node:path');
 const http=require('node:http');
 const {rejectedLogin}=require('./public-login.cjs');
 const {verifyRelease}=require('../scripts/verify-release.cjs');
+const {workspaceVisuals}=require('./workspace-visuals.cjs');
 const root=path.resolve('dist/pages');
 const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.webp':'image/webp','.json':'application/json'};
 const server=http.createServer((req,res)=>{
@@ -111,6 +112,7 @@ async function run(){
     assert.match(await missing.locator('#authError').innerText(),/登录服务未加载/);
     console.log('PASS missing cloud runtime shows an actionable login error');
     await unavailable.close();
+    await workspaceVisuals(browser,url);
   }finally{if(browser)await browser.close();await new Promise(resolve=>server.close(resolve))}
 }
 run().catch(e=>{console.error(e);process.exitCode=1});
