@@ -287,3 +287,34 @@ html[data-theme="night"]{color-scheme:dark;--bg:#0b1018!important;--paper:#141c2
 .app.app-ready .person-category[data-category="新女"]{color:#d2bbff!important;border-color:#79629e!important}
 .app.app-ready .person-category[data-category="老男"]{color:#efd08a!important;border-color:#907b4d!important}
 .app.app-ready .person-category[data-category="新男"]{color:#99d7ec!important;border-color:#527d8c!important}
+
+/* A single visible brand per viewport; desktop identity lives in the sidebar. */
+@media(min-width:901px){.app.app-ready .app-global-header .header-brand{display:none!important}.app.app-ready .app-global-header{grid-template-columns:minmax(240px,1fr) auto!important}}
+.app.app-ready .brand-copy b,.app.app-ready .header-brand b{color:#ffd166!important;text-shadow:0 0 12px #e7a62955!important}
+.app.app-ready .cn-brand-image,.app.app-ready .cn-header-logo{border:1px solid #d8aa4e!important;animation:cnLogoGlow 5s ease-in-out infinite}
+@keyframes cnLogoGlow{0%,100%{box-shadow:0 0 10px #f5b63244;filter:brightness(1)}50%{box-shadow:0 0 22px #ffc34499;filter:brightness(1.18)}}
+@media(prefers-reduced-motion:reduce){.app.app-ready .cn-brand-image,.app.app-ready .cn-header-logo{animation:none!important}}
+
+@media(min-width:1101px){.app.app-ready .cn-wordmark{width:76px!important;min-width:76px!important;height:76px!important}.app.app-ready .cn-brand-image{width:76px!important;height:76px!important}.app.app-ready>.sidebar .brand{min-height:84px!important;gap:10px!important}.app.app-ready>.sidebar .brand-copy b{font-size:16px!important}}
+
+.app.app-ready.nav-collapsed .cn-wordmark{width:48px!important;min-width:48px!important;height:48px!important}.app.app-ready.nav-collapsed .cn-brand-image{width:48px!important;height:48px!important}
+
+/* Desktop workspace: one 16:9 frame, stationary navigation, internal module scrolling. */
+@media(min-width:901px){
+ html,body{height:100%;overflow:hidden!important}
+ body{display:grid!important;place-items:center!important;min-height:100dvh!important}
+ .app.app-ready{position:relative!important;display:flex!important;width:min(calc(100vw - 32px),calc((100dvh - 32px)*16/9))!important;aspect-ratio:16/9!important;height:auto!important;min-height:0!important;max-height:calc(100dvh - 32px)!important;margin:0!important;overflow:hidden!important;border:1px solid #46516a!important;border-radius:20px!important;box-shadow:0 20px 80px #0008!important}
+ .app.app-ready>.sidebar{position:absolute!important;inset:0 auto 0 0!important;width:220px!important;height:100%!important;padding:20px 12px!important;border-radius:0!important;overflow:hidden!important}
+ .app.app-ready>.sidebar .brand{display:flex!important;justify-content:center!important;width:100%!important;margin:0 auto 16px!important;min-height:76px!important;gap:0!important}
+ .app.app-ready .cn-wordmark,.app.app-ready .cn-brand-image{width:76px!important;min-width:76px!important;height:76px!important}
+ .app.app-ready>.main{margin:0 0 0 220px!important;width:calc(100% - 220px)!important;height:100%!important;min-height:0!important;padding:0!important;display:flex!important;flex-direction:column!important;overflow:hidden!important}
+ .app.app-ready .app-global-header{position:relative!important;top:auto!important;flex:0 0 80px!important;min-height:80px!important;width:100%!important;margin:0!important;padding:16px 24px!important;border-radius:0!important;grid-template-columns:minmax(160px,1fr) auto!important}
+ .app.app-ready>.main>.section{flex:1 1 0!important;width:100%!important;max-width:none!important;min-height:0!important;margin:0!important;padding:32px 24px 24px!important;overflow:auto!important;overscroll-behavior:contain;scrollbar-gutter:stable}
+ .app.app-ready .sidebar .nav{max-height:calc(100% - 212px);overflow:auto;overscroll-behavior:contain}
+ .app.app-ready.nav-collapsed>.sidebar{width:84px!important}
+ .app.app-ready.nav-collapsed>.main{margin-left:84px!important;width:calc(100% - 84px)!important}
+ .app.app-ready.nav-collapsed .cn-wordmark,.app.app-ready.nav-collapsed .cn-brand-image{width:48px!important;min-width:48px!important;height:48px!important}
+ .app.app-ready .cn-brand-image{animation:cnBrandRadiance 4s ease-in-out infinite!important}
+}
+@keyframes cnBrandRadiance{0%,100%{box-shadow:0 0 0 3px #e7b95520,0 0 18px #e7b95555;filter:brightness(1)}50%{box-shadow:0 0 0 5px #ffcc562e,0 0 32px #ffcc5699;filter:brightness(1.22)}}
+@media(prefers-reduced-motion:reduce){.app.app-ready .cn-brand-image{animation:none!important}}
