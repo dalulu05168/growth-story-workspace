@@ -162,7 +162,8 @@
         "股票热情高",
         "高活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.01"
     },
     {
       "id": "FR0002",
@@ -281,7 +282,8 @@
         "股票热情中",
         "高活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.02"
     },
     {
       "id": "FR0003",
@@ -400,7 +402,8 @@
         "股票热情高",
         "高活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.03"
     },
     {
       "id": "FR0004",
@@ -519,7 +522,8 @@
         "股票热情高",
         "高活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.04"
     },
     {
       "id": "FR0005",
@@ -638,7 +642,8 @@
         "股票热情高",
         "高活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.05"
     },
     {
       "id": "FR0006",
@@ -757,7 +762,8 @@
         "股票热情高",
         "高活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.06"
     },
     {
       "id": "FR0007",
@@ -876,7 +882,8 @@
         "股票热情高",
         "高活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.07"
     },
     {
       "id": "FR0008",
@@ -995,7 +1002,8 @@
         "股票热情中",
         "中活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.08"
     },
     {
       "id": "FR0009",
@@ -1114,7 +1122,8 @@
         "股票热情中",
         "中活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.09"
     },
     {
       "id": "FR0010",
@@ -1233,7 +1242,8 @@
         "股票热情高",
         "高活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.10"
     },
     {
       "id": "FR0011",
@@ -1352,7 +1362,8 @@
         "股票热情中",
         "中活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.11"
     },
     {
       "id": "FR0012",
@@ -1471,7 +1482,8 @@
         "股票热情低",
         "中活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.12"
     },
     {
       "id": "FR0013",
@@ -1590,7 +1602,8 @@
         "股票热情低",
         "低活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.13"
     },
     {
       "id": "FR0014",
@@ -1709,7 +1722,8 @@
         "股票热情中",
         "高活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.14"
     },
     {
       "id": "FR0015",
@@ -1828,7 +1842,8 @@
         "股票热情高",
         "高活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.15"
     },
     {
       "id": "FR0016",
@@ -1947,7 +1962,8 @@
         "股票热情中",
         "高活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.16"
     },
     {
       "id": "FR0017",
@@ -2066,7 +2082,8 @@
         "股票热情中",
         "中活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.17"
     },
     {
       "id": "FR0018",
@@ -2185,7 +2202,8 @@
         "股票热情中",
         "高活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.18"
     },
     {
       "id": "FR0019",
@@ -2304,7 +2322,8 @@
         "股票热情中",
         "高活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.19"
     },
     {
       "id": "FR0020",
@@ -2423,7 +2442,8 @@
         "股票热情高",
         "高活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.20"
     },
     {
       "id": "FR0021",
@@ -2542,7 +2562,8 @@
         "股票热情中",
         "低活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.21"
     },
     {
       "id": "FR0022",
@@ -2661,7 +2682,8 @@
         "股票热情低",
         "低活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.22"
     },
     {
       "id": "FR0023",
@@ -2780,7 +2802,8 @@
         "股票热情高",
         "中活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.23"
     },
     {
       "id": "FR0024",
@@ -2899,7 +2922,8 @@
         "股票热情中",
         "低活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.24"
     },
     {
       "id": "FR0025",
@@ -3018,7 +3042,8 @@
         "股票热情低",
         "低活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.25"
     },
     {
       "id": "FR0026",
@@ -3137,7 +3162,8 @@
         "股票热情低",
         "低活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.26"
     },
     {
       "id": "FR0027",
@@ -3256,7 +3282,8 @@
         "股票热情中",
         "低活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.27"
     },
     {
       "id": "FR0028",
@@ -3375,7 +3402,8 @@
         "股票热情中",
         "中活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.28"
     },
     {
       "id": "FR0029",
@@ -3494,7 +3522,8 @@
         "股票热情低",
         "低活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.29"
     },
     {
       "id": "FR0030",
@@ -3613,7 +3642,8 @@
         "股票热情高",
         "高活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.30"
     },
     {
       "id": "FR0031",
@@ -3732,7 +3762,8 @@
         "股票热情中",
         "中活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.31"
     },
     {
       "id": "FR0032",
@@ -3851,7 +3882,8 @@
         "股票热情高",
         "高活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.32"
     },
     {
       "id": "FR0033",
@@ -3970,7 +4002,8 @@
         "股票热情高",
         "高活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.33"
     },
     {
       "id": "FR0034",
@@ -4089,7 +4122,8 @@
         "股票热情中",
         "高活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.34"
     },
     {
       "id": "FR0035",
@@ -4208,7 +4242,8 @@
         "股票热情高",
         "高活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.35"
     },
     {
       "id": "FR0036",
@@ -4327,7 +4362,8 @@
         "股票热情中",
         "高活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.36"
     },
     {
       "id": "FR0037",
@@ -4446,7 +4482,8 @@
         "股票热情中",
         "中活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.37"
     },
     {
       "id": "FR0038",
@@ -4565,7 +4602,8 @@
         "股票热情高",
         "高活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.38"
     },
     {
       "id": "FR0039",
@@ -4684,7 +4722,8 @@
         "股票热情高",
         "高活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.39"
     },
     {
       "id": "FR0040",
@@ -4803,7 +4842,8 @@
         "股票热情中",
         "高活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.40"
     },
     {
       "id": "FR0041",
@@ -4922,7 +4962,8 @@
         "股票热情中",
         "中活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.41"
     },
     {
       "id": "FR0042",
@@ -5041,7 +5082,8 @@
         "股票热情高",
         "高活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.42"
     },
     {
       "id": "FR0043",
@@ -5160,7 +5202,8 @@
         "股票热情中",
         "高活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.43"
     },
     {
       "id": "FR0044",
@@ -5279,7 +5322,8 @@
         "股票热情高",
         "高活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.44"
     },
     {
       "id": "FR0045",
@@ -5398,7 +5442,8 @@
         "股票热情高",
         "高活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.45"
     },
     {
       "id": "FR0046",
@@ -5517,7 +5562,8 @@
         "股票热情高",
         "高活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.46"
     },
     {
       "id": "FR0047",
@@ -5636,7 +5682,8 @@
         "股票热情高",
         "高活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.47"
     },
     {
       "id": "FR0048",
@@ -5755,7 +5802,8 @@
         "股票热情中",
         "中活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.48"
     },
     {
       "id": "FR0049",
@@ -5874,7 +5922,8 @@
         "股票热情中",
         "高活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.49"
     },
     {
       "id": "FR0050",
@@ -5993,7 +6042,8 @@
         "股票热情高",
         "高活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.50"
     },
     {
       "id": "FR0051",
@@ -6112,7 +6162,8 @@
         "股票热情中",
         "中活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.51"
     },
     {
       "id": "FR0052",
@@ -6231,7 +6282,8 @@
         "股票热情低",
         "低活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.52"
     },
     {
       "id": "FR0053",
@@ -6350,7 +6402,8 @@
         "股票热情高",
         "高活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.53"
     },
     {
       "id": "FR0054",
@@ -6469,7 +6522,8 @@
         "股票热情低",
         "低活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.54"
     },
     {
       "id": "FR0055",
@@ -6588,7 +6642,8 @@
         "股票热情低",
         "低活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.55"
     },
     {
       "id": "FR0056",
@@ -6707,7 +6762,8 @@
         "股票热情中",
         "中活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.56"
     },
     {
       "id": "FR0057",
@@ -6826,7 +6882,8 @@
         "股票热情中",
         "中活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.57"
     },
     {
       "id": "FR0058",
@@ -6945,7 +7002,8 @@
         "股票热情中",
         "高活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.58"
     },
     {
       "id": "FR0059",
@@ -7064,7 +7122,8 @@
         "股票热情高",
         "高活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.59"
     },
     {
       "id": "FR0060",
@@ -7183,7 +7242,8 @@
         "股票热情中",
         "高活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.60"
     },
     {
       "id": "FR0061",
@@ -7302,7 +7362,8 @@
         "股票热情中",
         "中活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.61"
     },
     {
       "id": "FR0062",
@@ -7421,7 +7482,8 @@
         "股票热情高",
         "中活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.62"
     },
     {
       "id": "FR0063",
@@ -7540,7 +7602,8 @@
         "股票热情中",
         "中活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.63"
     },
     {
       "id": "FR0064",
@@ -7659,7 +7722,8 @@
         "股票热情高",
         "中活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.64"
     },
     {
       "id": "FR0065",
@@ -7778,7 +7842,8 @@
         "股票热情中",
         "低活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.65"
     },
     {
       "id": "FR0066",
@@ -7897,7 +7962,8 @@
         "股票热情低",
         "低活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.66"
     },
     {
       "id": "FR0067",
@@ -8016,7 +8082,8 @@
         "股票热情高",
         "中活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.67"
     },
     {
       "id": "FR0068",
@@ -8135,7 +8202,8 @@
         "股票热情低",
         "低活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.68"
     },
     {
       "id": "FR0069",
@@ -8254,7 +8322,8 @@
         "股票热情低",
         "低活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.69"
     },
     {
       "id": "FR0070",
@@ -8373,7 +8442,8 @@
         "股票热情中",
         "低活跃度"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "display_id": "C.70"
     }
   ]
 }

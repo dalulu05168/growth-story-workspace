@@ -74,8 +74,9 @@ async function workspaceVisuals(browser,url){
    for(const width of [375,390,414,430,768,1366,1440,1920]){
     await page.setViewportSize({width,height:960});await settle(page);
     const layout=await page.evaluate(()=>({width:innerWidth,height:innerHeight,scroll:document.documentElement.scrollWidth,
-     side:document.querySelector('.sidebar').getBoundingClientRect().toJSON(),header:document.querySelector('.app-global-header').getBoundingClientRect().toJSON()}));
+     frame:document.querySelector('.app').getBoundingClientRect().toJSON(),side:document.querySelector('.sidebar').getBoundingClientRect().toJSON(),header:document.querySelector('.app-global-header').getBoundingClientRect().toJSON()}));
     assert(layout.scroll<=width+1,'workspace overflow '+width);
+    if(width>900){assert(Math.abs(layout.frame.width/layout.frame.height-16/9)<.01,'desktop frame must be 16:9');assert(layout.frame.left>=0&&layout.frame.right<=width+1,'frame fits viewport');assert(layout.frame.top>=0&&layout.frame.bottom<=layout.height+1,'frame height fits viewport')}
     if(width<=760){assert(Math.abs(layout.side.bottom-layout.height)<2,'bottom nav not fixed to viewport');assert(Math.abs(layout.header.top)<2,'header not fixed to viewport')}
    }
    await page.setViewportSize({width:390,height:844});
@@ -90,16 +91,15 @@ async function workspaceVisuals(browser,url){
     await page.locator('#people.active').waitFor({state:'visible'});await settle(page);
     const layout=await page.evaluate(()=>{
      const rect=e=>e.getBoundingClientRect().toJSON(),header=document.querySelector('.app-global-header');
-     const title=header.querySelector('.header-brand b'),host=document.querySelector('#peopleList'),wrap=host.querySelector('.people-table-wrap');
+     const title=document.querySelector(innerWidth>900?'.cn-brand-image':'.cn-header-logo'),host=document.querySelector('#peopleList'),wrap=host.querySelector('.people-table-wrap');
      return {title:rect(title),header:rect(header),host:rect(host),wrap:rect(wrap),
-      titleLine:getComputedStyle(title).whiteSpace,scroll:document.documentElement.scrollWidth,width:innerWidth,
+      mainWidth:document.querySelector('.main').getBoundingClientRect().width,frame:rect(document.querySelector('.app')),scroll:document.documentElement.scrollWidth,width:innerWidth,
       tableWidth:wrap.scrollWidth,tableViewport:wrap.clientWidth};
     });
     assert(layout.scroll<=width+1,'landscape page overflow '+width);
     assert(layout.wrap.width>=layout.host.width-2,'table must fill the people panel '+width);
-    assert(layout.wrap.width>=width*.65,'table viewport too narrow '+width);
-    assert.equal(layout.titleLine,'nowrap');
-    assert(layout.title.right<=layout.header.right,'brand outside header '+width);
+    assert(layout.wrap.width>=layout.mainWidth*.75,'table viewport too narrow '+width);
+    assert(layout.title.right<=layout.frame.right&&layout.title.left>=layout.frame.left,'brand outside workspace '+width);
     assert(layout.tableWidth>layout.tableViewport,'wide table must scroll inside its container');
     const initial=await page.locator('.people-table-wrap').evaluate(e=>e.scrollLeft);
     await page.locator('.people-table-wrap').evaluate(e=>{e.scrollLeft=e.scrollWidth});

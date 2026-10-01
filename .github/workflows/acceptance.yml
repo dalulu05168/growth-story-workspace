@@ -57,6 +57,9 @@ jobs:
   browser-current:
     needs: [static-gate, unit-regression, deployment-hash]
     runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.55.1-noble
+      options: --ipc=host
     timeout-minutes: 18
     strategy:
       fail-fast: false
@@ -71,7 +74,6 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
       - name: Provision isolated account via GitHub identity
         if: ${{ matrix.stage != 'intro' && matrix.stage != 'prelogin' }}
         run: node tests/create-e2e-credentials.cjs
