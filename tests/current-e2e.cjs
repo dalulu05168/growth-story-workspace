@@ -118,10 +118,10 @@ async function intro(page){
   assert.ok(ready.at>complete.at,'login must reveal only after the cinematic sequence completes');
 
   const resource=await page.evaluate(()=>performance.getEntriesByType('resource')
-    .filter(x=>/scene-night\.webp|login-black-gold\.webp/.test(x.name))
+    .filter(x=>/landscape\.webp|brush\.webp|bitcoin\.webp/.test(x.name))
     .map(x=>({name:x.name,duration:x.duration,transferSize:x.transferSize})));
 
-  assert.ok(resource.some(x=>x.name.includes('login-black-gold.webp')),'brush image must load before/for intro');
+  assert.ok(resource.some(x=>x.name.includes('landscape.webp')),'landscape image must load before/for intro');
 
   console.log(JSON.stringify({intro:'PASS',duration,events,resource}));
 }

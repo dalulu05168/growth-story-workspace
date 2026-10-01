@@ -4,7 +4,7 @@
 const brush=window.ChenNanBrandMarkup;
 const brand=document.querySelector('.brand');
 if(brand){
-  brand.innerHTML='<div class="cn-wordmark">'+(brush?brush('brand-brush-sidebar'):'辰南')+'</div><div class="brand-copy"><b>辰南撰写</b><small>让人物拥有灵魂</small></div>';
+  brand.innerHTML='<div class="cn-wordmark"><img class="cn-brand-image" src="./assets/brand/chennan-logo.jpg" alt="辰南 Chen N"></div><div class="brand-copy"><b>辰南撰写</b><small>人物与创作工作台</small></div>' ;
 }
 const sideNote=document.querySelector('.side-note');
 if(sideNote)sideNote.innerHTML='<span class="cloud-live-dot"></span> 云端自动保存<br><small>人物 · 撰写 · 记忆 · 文档</small>';
@@ -13,6 +13,7 @@ if(header){
   const title=header.querySelector('.header-brand b');
   const tagline=header.querySelector('.header-brand span');
   if(title)title.textContent="辰南撰写";
+  const mark=document.createElement("img");mark.className="cn-header-logo";mark.src="./assets/brand/chennan-logo.jpg";mark.alt="辰南 Chen N";header.querySelector(".header-brand")?.prepend(mark);
   if(tagline)tagline.textContent="让人物拥有灵魂";
   const right=header.querySelector('.header-right');
   if(right&&!right.querySelector('[data-theme-switcher]')){

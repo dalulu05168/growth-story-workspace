@@ -61,3 +61,19 @@
  #authRoot.auth-intro-active .cinematic-brand{animation-duration:.01ms!important;filter:none!important;transform:none!important}
  #authRoot #authStage,#authRoot.auth-success #authStage{transition:none!important;transform:none!important}
 }
+/* 分层持续动态场景，登录卡从下方缓缓进入。 */
+#authRoot .cinematic-brand{background-image:url('./assets/login/landscape.webp')}
+#authRoot .scene-lake{position:absolute;inset:0;width:100%;height:100%;display:block}
+#authRoot .scene-brush{position:absolute;left:-4%;top:0;width:49%;height:auto;transform-origin:15% 15%;animation:cnBrushDrift 9s ease-in-out infinite;filter:drop-shadow(0 10px 20px #0005);pointer-events:none}
+#authRoot .scene-coin{position:absolute;left:29%;top:29%;width:25%;aspect-ratio:1;transform-style:preserve-3d;animation:cnCoinRotate 18s linear infinite;perspective:1200px;pointer-events:none}
+#authRoot .scene-coin img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;backface-visibility:hidden;transform:translateZ(4px);filter:drop-shadow(0 0 18px #ffc34466)}
+#authRoot .scene-coin .coin-back{transform:rotateY(180deg) translateZ(4px)}
+#authRoot #authStage{transform:none!important;transition:opacity .5s ease!important}
+#authRoot #authStage.auth-stage-visible .auth-card{animation:cnLoginRise 1.8s cubic-bezier(.16,.7,.2,1) both!important}
+#authRoot .auth-card{backdrop-filter:blur(12px)!important;background:rgba(14,16,21,.9)!important}
+@keyframes cnBrushDrift{0%,100%{transform:translate(0,0) rotate(-3deg)}50%{transform:translate(12px,15px) rotate(2deg)}}
+@keyframes cnCoinRotate{0%{transform:perspective(1200px) rotateY(0deg) rotateZ(-7deg) translateY(0)}50%{transform:perspective(1200px) rotateY(180deg) rotateZ(-7deg) translateY(-10px)}100%{transform:perspective(1200px) rotateY(360deg) rotateZ(-7deg) translateY(0)}}
+@keyframes cnLoginRise{from{opacity:0;translate:0 100px}to{opacity:1;translate:0 0}}
+@media(prefers-reduced-motion:reduce){#authRoot .scene-brush,#authRoot .scene-coin,#authRoot #authStage.auth-stage-visible .auth-card{animation:none!important;translate:none!important;transform:none!important}#authRoot .auth-card{backdrop-filter:none!important}}
+
+@media(prefers-reduced-motion:reduce){#authRoot #authStage,#authRoot.auth-success #authStage{transition:none!important}}

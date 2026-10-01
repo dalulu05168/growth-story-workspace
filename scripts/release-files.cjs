@@ -6,7 +6,8 @@ function releaseFiles(){
   const linked=[...html.matchAll(/(?:src|href)="\.\/([^"?]+)(?:\?[^" ]*)?"/g)].map(m=>m[1]);
   const files=[...new Set(['index.html',...linked,'data/people.json','CNAME',
     'login-black-gold.webp','scene-night.webp','scene-warm.webp','scene-blue.webp',
-    ...fs.readdirSync(path.join(root,'icons')).map(file=>'icons/'+file)])].sort();
+    ...fs.readdirSync(path.join(root,'icons')).map(file=>'icons/'+file),
+    ...['brand','login','people'].flatMap(dir=>fs.readdirSync(path.join(root,'assets',dir)).filter(file=>!file.includes('source')).map(file=>'assets/'+dir+'/'+file))])].sort();
   for(const file of files){
     if(path.isAbsolute(file)||file.split('/').includes('..'))throw new Error('Invalid release path: '+file);
     if(!fs.statSync(path.join(root,file)).isFile())throw new Error('Missing release file: '+file);

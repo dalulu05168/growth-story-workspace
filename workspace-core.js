@@ -23,7 +23,10 @@ function loadLocal(){
 function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(db))}
 function toast(t){const x=$('#toast');x.textContent=t;x.classList.add('show');setTimeout(()=>x.classList.remove('show'),2400)}
 function today(){return new Date().toISOString().slice(0,10)}
-function person(id){return db.people.find(p=>String(p.id)===String(id))||null}
+function pCode(p){const m=String(p?.id||'').match(/^(?:FR0*|C\.)(\d+)$/i);return m&&Number(m[1])>=1&&Number(m[1])<=70?'C.'+String(Number(m[1])).padStart(2,'0'):String(p?.id||'')}
+function person(id){const key=String(id).trim().toUpperCase();return db.people.find(p=>String(p.id).toUpperCase()===key||pCode(p).toUpperCase()===key)||null}
+function pAvatar(p){const m=pCode(p).match(/^C\.(\d+)$/);const n=m?Number(m[1])-1:-1;if(n<0||n>=70)return '<img class="person-portrait" src="./assets/brand/chennan-logo.jpg" alt="">';return '<span class="person-portrait" role="img" aria-label="'+esc(pName(p))+'的虚构头像" style="--portrait-x:'+((n%10)/9*100)+'%;--portrait-y:'+((Math.floor(n/10))/6*100)+'%"></span>'}
+
 function pName(p){return p?.name||p?.frenchName||'未命名'}
 function pGender(p){return p?.gender||((p?.genderAge||'').includes('女')?'女':(p?.genderAge||'').includes('男')?'男':'')}
 function pRelationCode(p){return p?.customer_relation?.type_code||((p?.genderAge||'').includes('老')?'OLD':(p?.genderAge||'').includes('新')?'NEW':'')}
@@ -107,9 +110,10 @@ function customGroup(id){return db.customGroups.find(g=>g.id===id)||null}
 
 function eventHTML(r){
   const p=person(r.personId);
-  return `<div class="timeline-item"><div class="date">${esc(r.date||'')}</div><div class="dotline"></div><div class="event"><div class="event-head"><div><span class="event-title">${esc(r.title)}</span><div class="muted" style="font-size:12px;margin-top:2px">${p?`#${esc(p.id)} · ${esc(genderRelationLabel(p)||'未分类')} · ${esc(pName(p))}`:'未知人物'}</div></div><span class="type ${r.type==='发言记录'?'talk':''}">${esc(r.type)}</span></div><p>${esc(r.content)}</p><div class="tags">${(r.topics||[]).map(t=>`<span class="tag"># ${esc(t)}</span>`).join('')}<button class="link-btn edit-record" data-id="${esc(r.id)}">编辑</button></div></div></div>`;
+  return `<div class="timeline-item"><div class="date">${esc(r.date||'')}</div><div class="dotline"></div><div class="event"><div class="event-head"><div><span class="event-title">${esc(r.title)}</span><div class="muted" style="font-size:12px;margin-top:2px">${p?`${esc(pCode(p))} · ${esc(genderRelationLabel(p)||'未分类')} · ${esc(pName(p))}`:'未知人物'}</div></div><span class="type ${r.type==='发言记录'?'talk':''}">${esc(r.type)}</span></div><p>${esc(r.content)}</p><div class="tags">${(r.topics||[]).map(t=>`<span class="tag"># ${esc(t)}</span>`).join('')}<button class="link-btn edit-record" data-id="${esc(r.id)}">编辑</button></div></div></div>`;
 }
 function render(){
+  if(db.people.length&&$('#seedNotice'))$('#seedNotice').textContent=`${db.people.length} 位人物资料已加载 · 完整画像与工作区数据`;
   renderOverview();renderPeopleFilters();renderPeople();renderGroups();fillSelect();renderRecords();renderTopics();renderDocs();bindDynamic();
 }
 function renderOverview(){
@@ -135,7 +139,7 @@ function renderPeopleFilters(){
   c.value=db.customGroups.some(g=>g.id===cold)?cold:'all';
 }
 function personSearchBlob(p){
-  return [p.id,p.legacy_id,pName(p),pGender(p),p.age,pRelationName(p),p.location?.city,p.location?.region,p.occupation?.title_zh,p.occupation?.title_fr,p.occupation?.industry_zh,p.personality?.summary,p.crm?.notes,...(p.tags||[])].join(' ').toLowerCase();
+  return [p.id,pCode(p),p.legacy_id,pName(p),pGender(p),p.age,pRelationName(p),p.location?.city,p.location?.region,p.occupation?.title_zh,p.occupation?.title_fr,p.occupation?.industry_zh,p.personality?.summary,p.crm?.notes,...(p.tags||[])].join(' ').toLowerCase();
 }
 function renderPeople(){
   const q=($('#personSearch')?.value||'').trim().toLowerCase(),sort=$('#personSort')?.value||'id';
@@ -144,8 +148,8 @@ function renderPeople(){
   list.sort((a,b)=>sort==='name'?pName(a).localeCompare(pName(b),'fr'):sort==='enthusiasm'?pEnthusiasm(b)-pEnthusiasm(a):sort==='assets'?pAssets(b)-pAssets(a):String(a.id).localeCompare(String(b.id),undefined,{numeric:true}));
   $('#peopleCount').textContent=`当前显示 ${list.length} / ${db.people.length} 人`;
   $('#peopleList').innerHTML=list.map(p=>`<div class="profile-row">
-    <div class="avatar">${esc(initials(pName(p)))}</div>
-    <div class="person"><b>#${esc(p.id)} · ${esc(pName(p))}</b><small>${esc(genderRelationLabel(p)||'未分类')} · ${esc(p.age||'--')}岁 · ${esc(p.location?.city||'城市未填')} · ${esc(p.occupation?.title_zh||p.occupation?.title_fr||'职业未填')}</small></div>
+    <div class="avatar">${pAvatar(p)}</div>
+    <div class="person"><b>${esc(pCode(p))} · ${esc(pName(p))}</b><small>${esc(genderRelationLabel(p)||'未分类')} · ${esc(p.age||'--')}岁 · ${esc(p.location?.city||'城市未填')} · ${esc(p.occupation?.title_zh||p.occupation?.title_fr||'职业未填')}</small></div>
     ${pVip(p)?'<span class="status vip">VIP</span>':''}
     <span class="status ${pOpened(p)?'good':'warn'}">${pOpened(p)?'已开户':'未开户'}</span>
     <span class="status ${pJoined(p)?'good':''}">${pJoined(p)?'已入群':'未入群'}</span>
@@ -165,7 +169,7 @@ function renderGroups(){
 }
 function fillSelect(){
   const s=$('#recordPerson'),old=s.value;
-  s.innerHTML='<option value="all">全部人物</option>'+db.people.map(p=>`<option value="${esc(p.id)}">#${esc(p.id)} · ${esc(pName(p))}</option>`).join('');
+  s.innerHTML='<option value="all">全部人物</option>'+db.people.map(p=>`<option value="${esc(p.id)}">${esc(pCode(p))} · ${esc(pName(p))}</option>`).join('');
   s.value=[...s.options].some(o=>o.value===old)?old:'all';
 }
 function renderRecords(){
@@ -310,7 +314,7 @@ function openCustomGroup(id){go('people');$('#systemGroupFilter').value='all';$(
 
 function openGroup(id){
   const g=id?customGroup(id):{id:'g'+Date.now(),name:'',leader:'',members:[]};if(!g)return;
-  const memberRows=[...db.people].sort((a,b)=>String(a.id).localeCompare(String(b.id),undefined,{numeric:true})).map(p=>`<label class="member-option"><input type="checkbox" name="members" value="${esc(p.id)}" ${(g.members||[]).includes(String(p.id))?'checked':''}><span><b>#${esc(p.id)} · ${esc(pName(p))}</b><br><small class="muted">${esc(genderRelationLabel(p)||'未分类')} · ${esc(p.age||'--')}岁 · ${pVip(p)?'VIP · ':''}${pOpened(p)?'已开户':'未开户'} · ${pJoined(p)?'已入群':'未入群'}</small></span></label>`).join('');
+  const memberRows=[...db.people].sort((a,b)=>String(a.id).localeCompare(String(b.id),undefined,{numeric:true})).map(p=>`<label class="member-option"><input type="checkbox" name="members" value="${esc(p.id)}" ${(g.members||[]).includes(String(p.id))?'checked':''}><span><b>${esc(pCode(p))} · ${esc(pName(p))}</b><br><small class="muted">${esc(genderRelationLabel(p)||'未分类')} · ${esc(p.age||'--')}岁 · ${pVip(p)?'VIP · ':''}${pOpened(p)?'已开户':'未开户'} · ${pJoined(p)?'已入群':'未入群'}</small></span></label>`).join('');
   openModal(id?'编辑自定义小组':'新建自定义小组',`<div class="form-grid"><div class="field"><label>小组名称 *</label><input class="input" name="name" required value="${esc(g.name||'')}" placeholder="例如：重点跟进A组"></div><div class="field"><label>组长姓名（可不在名单中）</label><input class="input" name="leader" value="${esc(g.leader||'')}" placeholder="直接填写组长名称"></div><div class="field full"><label>选择成员</label><div class="member-picker">${memberRows||'<div class="empty">人物库为空</div>'}</div></div></div>`,f=>{
     const name=String(f.get('name')).trim();if(!name)return false;
     const members=[...document.querySelectorAll('#modalForm input[name="members"]:checked')].map(x=>String(x.value));
@@ -325,7 +329,7 @@ function similarity(a,b){const x=normalize(a),y=normalize(b);if(!x||!y)return 0;
 function stateKeys(s){const t=String(s).toLowerCase(),keys=[];[['账户','有账户','没有账户'],['婚姻','已婚','未婚'],['工作','有工作','没有工作'],['记忆','记得','不记得'],['住处','住在','不住在']].forEach(([k,pos,neg])=>{const negative=t.includes(neg);if(negative)keys.push({k,v:'负'});if(t.replaceAll(neg,'').includes(pos))keys.push({k,v:'正'})});return keys}
 function checks(personId,content,ignoreId){const same=db.records.filter(r=>String(r.personId)===String(personId)&&r.id!==ignoreId),exact=same.find(r=>normalize(r.content)===normalize(content)),near=same.filter(r=>similarity(r.content,content)>=.72),states=stateKeys(content),conflicts=[];states.forEach(s=>same.filter(r=>stateKeys(r.content).some(old=>old.k===s.k&&old.v!==s.v)).forEach(r=>conflicts.push({r,now:s})));return{exact,near,conflicts}}
 function openRecord(id){
-  const r=id?db.records.find(x=>x.id===id):{};openModal(id?'编辑重要记录':'新增重要记录',`<div class="form-grid"><div class="field"><label>人物 *</label><select class="select" name="personId" required>${db.people.map(p=>`<option value="${esc(p.id)}" ${String(p.id)===String(r.personId)?'selected':''}>#${esc(p.id)} · ${esc(pName(p))}</option>`).join('')}</select></div><div class="field"><label>日期 *</label><input class="input" type="date" name="date" required value="${esc(r.date||today())}"></div><div class="field"><label>记录类型</label><select class="select" name="type"><option ${r.type==='重要事件'?'selected':''}>重要事件</option><option ${r.type==='发言记录'?'selected':''}>发言记录</option><option ${r.type==='联系记录'?'selected':''}>联系记录</option></select></div><div class="field"><label>主题标签</label><input class="input" name="topics" value="${esc((r.topics||[]).join('、'))}" placeholder="用顿号分隔"></div><div class="field full"><label>标题 *</label><input class="input" name="title" required value="${esc(r.title||'')}"></div><div class="field full"><label>人物事实 / 发言内容 *</label><textarea name="content" rows="5" required>${esc(r.content||'')}</textarea></div></div>`,f=>{const personId=f.get('personId'),content=String(f.get('content')).trim(),c=checks(personId,content,id);if(c.exact){alert('已阻止保存：该人物已有完全重复内容。');return false}if(c.near.length||c.conflicts.length){if(!confirm('发现高相似度或状态冲突记录，确认复核后仍要保存吗？'))return false}const x={id:id||'r'+Date.now(),personId,date:f.get('date'),type:f.get('type'),title:String(f.get('title')).trim(),content,topics:String(f.get('topics')).split(/[、,，]/).map(s=>s.trim()).filter(Boolean)};if(id)db.records=db.records.map(a=>a.id===id?x:a);else db.records.push(x)});
+  const r=id?db.records.find(x=>x.id===id):{};openModal(id?'编辑重要记录':'新增重要记录',`<div class="form-grid"><div class="field"><label>人物 *</label><select class="select" name="personId" required>${db.people.map(p=>`<option value="${esc(p.id)}" ${String(p.id)===String(r.personId)?'selected':''}>${esc(pCode(p))} · ${esc(pName(p))}</option>`).join('')}</select></div><div class="field"><label>日期 *</label><input class="input" type="date" name="date" required value="${esc(r.date||today())}"></div><div class="field"><label>记录类型</label><select class="select" name="type"><option ${r.type==='重要事件'?'selected':''}>重要事件</option><option ${r.type==='发言记录'?'selected':''}>发言记录</option><option ${r.type==='联系记录'?'selected':''}>联系记录</option></select></div><div class="field"><label>主题标签</label><input class="input" name="topics" value="${esc((r.topics||[]).join('、'))}" placeholder="用顿号分隔"></div><div class="field full"><label>标题 *</label><input class="input" name="title" required value="${esc(r.title||'')}"></div><div class="field full"><label>人物事实 / 发言内容 *</label><textarea name="content" rows="5" required>${esc(r.content||'')}</textarea></div></div>`,f=>{const personId=f.get('personId'),content=String(f.get('content')).trim(),c=checks(personId,content,id);if(c.exact){alert('已阻止保存：该人物已有完全重复内容。');return false}if(c.near.length||c.conflicts.length){if(!confirm('发现高相似度或状态冲突记录，确认复核后仍要保存吗？'))return false}const x={id:id||'r'+Date.now(),personId,date:f.get('date'),type:f.get('type'),title:String(f.get('title')).trim(),content,topics:String(f.get('topics')).split(/[、,，]/).map(s=>s.trim()).filter(Boolean)};if(id)db.records=db.records.map(a=>a.id===id?x:a);else db.records.push(x)});
 }
 function currentDoc(){return db.docs.find(d=>d.id===selectedDocId)||null}
 function renderDocs(){if(!$('#docList'))return;if(!db.docs.length){selectedDocId=null;$('#docList').innerHTML='<div class="empty">还没有文档</div>';$('#docTitle').value='';$('#editor').value='';$('#docStatus').textContent='点击“新建文档”开始写作';return}if(!selectedDocId||!currentDoc())selectedDocId=db.docs[0].id;const d=currentDoc();$('#docList').innerHTML=db.docs.map(x=>`<button class="doc-item ${x.id===selectedDocId?'active':''}" data-doc="${esc(x.id)}"><b>${esc(x.title)}</b><small>更新于 ${esc(x.updated||today())}</small></button>`).join('');$('#docTitle').value=d.title;$('#editor').value=d.content;$('#docStatus').textContent=`已在本地保存 · ${d.content.length} 字`;document.querySelectorAll('.doc-item').forEach(b=>b.onclick=()=>{selectedDocId=b.dataset.doc;renderDocs()})}
