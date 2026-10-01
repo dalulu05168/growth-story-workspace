@@ -58,3 +58,13 @@ Logo：用户第五张 `/tmp/codex-remote-attachments/01a0f537-7f86-7752-9b54-77
 清理未引用的旧图片、脚本、旧主题预览；删除已由intro.css拥有的重复登录规则、旧主题切换代码。迁移历史和有效测试保留。新一轮正式CI及完整业务验收继续进行，结果以发布检查为准。
 
 手工交易计划恢复后，各标签、规则表单与持仓表通过对比度检查。真实浏览器验证手工加入、重算保留手工计划、刷新及完成标记。旧直接标记已售入口改为统一到期/价格确认。写作输入立即记入本地日志，云端请求仍防抖处理。
+
+
+## 2026-10 desktop writing and recovery update
+
+- Retained single black/gold theme, gold sidebar logo and the desktop 16:9 frame. Added bounded document revisions, escaped line-change comparison and reversible restore.
+- Added editable character relationships/foreshadowing, per-person evidence acknowledgements, adjustable writing columns, focus mode and global search shortcuts.
+- Added account-scoped cloud snapshots, transactional pre-change backup, validated export/import, session revocation and verifier replacement with fresh second-factor proof.
+- Local validation: 70 unit checks, runtime static gate, Chromium/WebKit prelogin regression, real cloud history/reload/notes/contrast/keyboard and mouse resize/search/export/snapshot restore/file import/session revocation, and real verifier rotation/recovery/replay checks passed. Isolated accounts removed after verification.
+- Cloud snapshots share the database; downloaded exports provide independently stored copies. Application snapshots are not a database disaster-recovery service.
+- Production browser acceptance is dispatched after merge; do not interpret local tests as production deployment verification.

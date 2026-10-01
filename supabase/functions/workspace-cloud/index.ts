@@ -273,12 +273,12 @@ Deno.serve(async (req) => {
         recoveryHash=await sha256Hex(String(body.recoveryCode).trim().toUpperCase());
         if(!a.recovery_hashes.includes(recoveryHash))recoveryHash=null;
       }else{
-        const seed=await mfa.open(c.purpose==="enroll"?c.encrypted_seed:a.totp_secret,Deno.env.get("WORKSPACE_MFA_KEY")||secretKey);
-        step=await mfa.verify(seed,String(body.code||""),c.purpose==="enroll"?-1:Number(a.totp_last_step));
+        const seed=await mfa.open(c.purpose!=="verify"?c.encrypted_seed:a.totp_secret,Deno.env.get("WORKSPACE_MFA_KEY")||secretKey);
+        step=await mfa.verify(seed,String(body.code||""),c.purpose!=="verify"?-1:Number(a.totp_last_step));
       }
     }catch(error){console.error("MFA seed verification failed");return json({ok:false,error:"动态验证暂不可用，请联系管理员"},503)}
     if(step===null&&recoveryHash===null){await admin.rpc("workspace_fail_mfa",{p_hash:hash});return json({ok:false,error:"验证码或恢复码错误，或验证码已经使用"},401)}
-    const recoveryCodes=c.purpose==="enroll"?Array.from({length:10},()=>crypto.randomUUID().replaceAll("-","").slice(0,20).toUpperCase()):null;
+    const recoveryCodes=c.purpose!=="verify"?Array.from({length:10},()=>crypto.randomUUID().replaceAll("-","").slice(0,20).toUpperCase()):null;
     const recoveryHashes=recoveryCodes?await Promise.all(recoveryCodes.map(sha256Hex)):null;
     const token=randomToken(),expiresAt=new Date(Date.now()+12*60*60*1000).toISOString();
     const {data:sid,error}=await admin.rpc("workspace_complete_mfa",{p_challenge_hash:hash,p_step:step,p_recovery_hash:recoveryHash,p_token_hash:await sha256Hex(token),p_expires:expiresAt,p_recovery_hashes:recoveryHashes});
@@ -291,6 +291,45 @@ Deno.serve(async (req) => {
   if (auth.error) return auth.error;
   const session = auth.session!;
 
+  if(action==="sessions_list"){
+    const {data,error}=await admin.from("workspace_sessions").select("id,created_at,last_seen_at,expires_at,mfa_verified").eq("account_id",session.account_id).gt("expires_at",new Date().toISOString()).order("last_seen_at",{ascending:false});
+    if(error)return json({ok:false,error:"读取登录会话失败"},500);
+    return json({ok:true,sessions:data.map(x=>({...x,current:x.id===session.id}))});
+  }
+  if(action==="sessions_revoke"){
+    let query=admin.from("workspace_sessions").delete().eq("account_id",session.account_id).neq("id",session.id);
+    if(body.sessionId)query=query.eq("id",String(body.sessionId));
+    const {error}=await query;if(error)return json({ok:false,error:"撤销登录失败"},500);return json({ok:true});
+  }
+  if(action==="backup_list"){
+    const {data,error}=await admin.from("workspace_backups").select("id,version,label,created_at").eq("account_id",session.account_id).order("created_at",{ascending:false}).limit(30);
+    if(error)return json({ok:false,error:"读取备份失败"},500);return json({ok:true,backups:data});
+  }
+  if(action==="backup_get"){
+    const {data,error}=await admin.from("workspace_backups").select("id,version,label,created_at,payload").eq("account_id",session.account_id).eq("id",String(body.id||"")).maybeSingle();
+    if(error||!data)return json({ok:false,error:"备份不存在"},404);return json({ok:true,backup:data});
+  }
+  if(action==="backup_create"){
+    const {data,error}=await admin.rpc("workspace_create_backup",{p_account:session.account_id,p_label:String(body.label||"手动备份")});
+    if(error||!data)return json({ok:false,error:"创建备份失败"},500);return json({ok:true,id:data});
+  }
+  if(action==="mfa_replace"){
+    const {data:a}=await admin.from("workspace_accounts").select("username,password_salt,password_hash,password_iterations,totp_enabled,totp_secret,totp_last_step,recovery_hashes").eq("id",session.account_id).single();
+    if(!a?.totp_enabled)return json({ok:false,error:"请先绑定验证器"},400);
+    const ipHash=await sha256Hex(requestIp(req));
+    const {data:attempt}=await admin.from("workspace_login_attempts").select("failed_count,locked_until").eq("username",a.username).eq("ip_hash",ipHash).maybeSingle();
+    if(attempt?.locked_until&&new Date(attempt.locked_until).getTime()>Date.now())return json({ok:false,error:"尝试次数过多，请稍后再试"},429);
+    let step=null,recovery=null;
+    if(constantTimeEqual(await pbkdf2(String(body.password||""),a.password_salt,a.password_iterations),a.password_hash)){
+      if(body.recoveryCode){const hash=await sha256Hex(String(body.recoveryCode).trim().toUpperCase());if(a.recovery_hashes.includes(hash))recovery=hash;}
+      else{try{step=await mfa.verify(await mfa.open(a.totp_secret,Deno.env.get("WORKSPACE_MFA_KEY")||secretKey),String(body.code||""),Number(a.totp_last_step));}catch(_){return json({ok:false,error:"验证器暂不可用"},503)}}
+    }
+    if(step===null&&recovery===null){await recordFailure(a.username,ipHash,Number(attempt?.failed_count||0));return json({ok:false,error:"密码或动态验证错误，请使用未使用的验证码或恢复码"},401)}
+    const seed=mfa.secret(),challenge=randomToken();
+    const {data:authorized,error}=await admin.rpc("workspace_authorize_replacement",{p_account:session.account_id,p_step:step,p_recovery:recovery,p_challenge_hash:await sha256Hex(challenge),p_seed:await mfa.seal(seed,Deno.env.get("WORKSPACE_MFA_KEY")||secretKey)});
+    if(error||!authorized)return json({ok:false,error:"验证已失效，请使用新的验证码"},401);
+    return json({ok:true,challenge,secret:seed});
+  }
   if(action==="mfa_status"){
     const {data:a,error}=await admin.from("workspace_accounts").select("totp_enabled,recovery_hashes").eq("id",session.account_id).single();
     if(error)return json({ok:false,error:"读取安全设置失败"},500);
@@ -413,27 +452,10 @@ Deno.serve(async (req) => {
       );
     }
 
-    const nextVersion = Number(current.version) + 1;
-    const { data: updated, error: updateError } = await admin
-      .from("workspace_cloud_state")
-      .update({
-        payload,
-        version: nextVersion,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("account_id", session.account_id)
-      .eq("version", current.version)
-      .select("version,updated_at")
-      .maybeSingle();
-
-    if (updateError) return json({ ok: false, error: "保存云端数据失败" }, 500);
-    if (!updated) {
-      return json(
-        { ok: false, error: "云端数据发生并发更新，请重新载入", code: "VERSION_CONFLICT" },
-        409,
-      );
-    }
-    return json({ ok: true, version: updated.version, updatedAt: updated.updated_at });
+    const {data:updated,error:updateError}=await admin.rpc("workspace_save_with_backup",{p_account:session.account_id,p_payload:payload,p_expected:Number(current.version),p_label:body.restore===true?"恢复前自动备份":null});
+    if(updateError)return json({ok:false,error:"保存云端数据失败"},500);
+    if(!updated?.ok)return json({ok:false,error:"云端数据发生并发更新，请重新载入",code:"VERSION_CONFLICT"},409);
+    return json(updated);
   }
 
   return json({ ok: false, error: "未知操作" }, 400);

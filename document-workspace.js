@@ -73,7 +73,7 @@ function detect(p,content){
   const grounded=issues.filter(x=>!x.startsWith('态度变化：')&&!x.startsWith('经历冲突：历史中曾称'));
   return [...new Set([...grounded,...dated])];
 }
-function allIssues(rows){return rows.flatMap(x=>detect(x.p,x.content).map(reason=>({p:x.p,reason,content:x.content})))}
+function allIssues(rows){return rows.flatMap(x=>detect(x.p,x.content).map(reason=>({p:x.p,reason,content:x.content}))).filter(x=>!db.memoryAcknowledgements?.[h32(activeDate+'|'+x.p.id+'|'+x.content+'|'+x.reason)])}
 function issueText(xs){return xs.slice(0,10).map((x,i)=>(i+1)+'. '+pCode(x.p)+pcl(x.p)+' · '+pname(x.p)+'\n'+x.reason+'\n文本：'+x.content).join('\n\n')}
 function textHtml(t){return String(t||'').split(/\n/).map(x=>'<div>'+esc(x||' ')+'</div>').join('')}
 function cleanHtml(markup){
@@ -123,6 +123,7 @@ function saveDaily(showToast=false,silentWarnings=false,notify=true){
   if(!silentWarnings&&showToast&&issues.length&&!confirm('保存前发现人物逻辑/塑造风险：\n\n'+issueText(issues)+'\n\n仍要保存今日内容吗？'))return false;
   const title=E('dailyTitle').value.trim(),html=cleanHtml(E('dailyEditor').innerHTML);
   if((!d.updatedAt&&!title&&!text.trim())||(d.title===title&&d.html===html&&d.content===text)){renderWarnings();if(notify)notifyGrowth(issues);return true;}
+  window.ChenNanWritingHistory?.checkpoint(db,activeDate,d,showToast?'手动保存前':'自动版本');
   d.title=title;d.html=html;d.content=text;d.updatedAt=new Date().toISOString();
   db.records=db.records.filter(r=>!(r.source==='document'&&r.docDate===activeDate));
   rows.forEach(x=>db.records.push({id:'docmem-'+activeDate+'-'+x.p.id+'-'+h32(x.content),personId:x.p.id,date:activeDate,type:'发言记录',source:'document',docDate:activeDate,title:'每日文档 · '+(d.title||activeDate),content:x.content,topics:['文档记忆']}));
@@ -136,6 +137,7 @@ function selectionPerson(){const s=window.getSelection();if(!s||!s.rangeCount)re
 function renderMemory(pid){
   const p=pid?person(pid):null;if(!p){E('memoryPerson').innerHTML='<div class="empty">点击左侧人物，或输入编号查看记忆</div>';E('memoryTimeline').innerHTML='';E('personFrequency').textContent='未选择';return}
   E('personFrequency').textContent='发言 '+speechCount(p)+'次';E('memoryPerson').innerHTML='<div class="memory-person-card"><b>'+esc(pCode(p)+pcl(p)+' · '+pname(p))+'</b><small>'+esc(p.age||'--')+'岁 · '+esc(p.account?.status||'--')+' · '+(pVip(p)?esc(p.vip?.level||'VIP'):'非VIP')+'</small><p>'+esc(p.personality?.summary||'暂无性格描述')+'</p></div>';
+  document.dispatchEvent(new CustomEvent('chennan:memory-person',{detail:{personId:p.id}}));
   E('memoryTimeline').innerHTML=memRows(p).map(x=>'<div class="memory-row"><b>'+esc(x.d)+' · '+esc(x.t)+'</b><small>'+esc(x.k)+'</small><p>'+esc(x.x)+'</p></div>').join('')||'<div class="empty">暂无历史记忆</div>';
 }
 function notifyGrowth(issues){
@@ -143,10 +145,10 @@ function notifyGrowth(issues){
  const fresh=issues.filter(x=>!shownWarnings.has(activeDate+'|'+x.p.id+'|'+x.reason));if(!fresh.length)return;
  fresh.forEach(x=>shownWarnings.add(activeDate+'|'+x.p.id+'|'+x.reason));
  let box=E('growthNotice');if(!box){box=document.createElement('dialog');box.id='growthNotice';box.className='growth-notice';document.body.appendChild(box)}
- box.innerHTML='<h3>人物成长与顺序提醒</h3><p>草稿已保存。请核对历史依据；若是回忆或正常成长，请在文中补充日期、原因。</p><div>'+fresh.slice(0,3).map(x=>'<p><b>'+esc(pCode(x.p)+' · '+pname(x.p))+'</b><br>'+esc(x.reason).replace(/\n/g,'<br>')+'</p>').join('')+'</div><button type="button" class="btn ghost">知道了，继续撰写</button>';
+ box.innerHTML='<h3>人物成长与顺序提醒</h3><p>草稿已保存。请核对历史依据；若是回忆或正常成长，请在文中补充日期、原因。</p><div>'+fresh.slice(0,3).map(x=>'<p><b>'+esc(pCode(x.p)+' · '+pname(x.p))+'</b><br>'+'<strong>'+(/冲突|回退|顺序|首次/.test(x.reason)?'明显矛盾':'需要确认')+'</strong> · '+esc(x.reason).replace(/\n/g,'<br>')+'</p>').join('')+'</div><button type="button" class="btn ghost">知道了，继续撰写</button>';
  box.querySelector('button').onclick=()=>box.close();if(!box.open)box.show();
 }
-function renderWarnings(){const host=E('logicWarnings');if(!host)return;const is=allIssues(statements(E('dailyEditor')?.innerText||''));host.innerHTML=is.length?'<div class="logic-warning"><b>逻辑一致性提示 · '+is.length+'条</b><br>'+is.slice(0,3).map(x=>esc(pCode(x.p)+pcl(x.p)+'：'+x.reason)).join('<br>')+'</div>':''}
+function renderWarnings(){const host=E('logicWarnings');if(!host)return;const is=allIssues(statements(E('dailyEditor')?.innerText||''));host.innerHTML=is.length?'<div class="logic-warning"><b>逻辑一致性提示 · '+is.length+'条</b><br>'+is.slice(0,3).map(x=>esc((/冲突|回退|顺序|首次/.test(x.reason)?'明显矛盾':'需要确认')+' · '+pCode(x.p)+pcl(x.p)+'：'+x.reason)).join('<br>')+'</div>':''}
 
 /* 无 CDN 的最小 DOCX，保留段落/标题/粗体/斜体/下划线/删除线/对齐。 */
 function xml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
@@ -157,7 +159,7 @@ function zip(files){const e=new TextEncoder(),ls=[],cs=[];let off=0;files.forEac
 function run(n,p={}){if(n.nodeType===Node.TEXT_NODE){if(!n.textContent)return'';const r=(p.b?'<w:b/>':'')+(p.i?'<w:i/>':'')+(p.u?'<w:u w:val="single"/>':'')+(p.s?'<w:strike/>':'');return'<w:r>'+(r?'<w:rPr>'+r+'</w:rPr>':'')+'<w:t xml:space="preserve">'+xml(n.textContent)+'</w:t></w:r>'}if(n.nodeType!==Node.ELEMENT_NODE)return'';const q={...p,b:p.b||['B','STRONG'].includes(n.tagName),i:p.i||['I','EM'].includes(n.tagName),u:p.u||n.tagName==='U',s:p.s||n.tagName==='S'};if(n.tagName==='BR')return'<w:r><w:br/></w:r>';return[...n.childNodes].map(x=>run(x,q)).join('')}
 function docXml(){const box=document.createElement('div');box.innerHTML=cleanHtml(E('dailyEditor').innerHTML);let body='';[...box.childNodes].forEach(n=>{const tag=n.tagName||'',al=n.style?.textAlign||'';let pr='';if(['center','right','justify'].includes(al))pr+='<w:jc w:val="'+al+'"/>';if(tag==='H1')pr+='<w:pStyle w:val="Heading1"/>';if(tag==='H2')pr+='<w:pStyle w:val="Heading2"/>';body+='<w:p>'+(pr?'<w:pPr>'+pr+'</w:pPr>':'')+(tag==='LI'?'<w:r><w:t>• </w:t></w:r>':'')+run(n)+'</w:p>'});return'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>'+body+'<w:sectPr/></w:body></w:document>'}
 function exportDocx(){if(saveDaily(true,false)===false)return;const d=cur(),files=[{name:'[Content_Types].xml',data:'<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>'},{name:'_rels/.rels',data:'<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>'},{name:'word/document.xml',data:docXml()}],blob=new Blob([zip(files)],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(activeDate+(d.title?'_'+d.title:'')+'.docx').replace(/[\\/:*?"<>|]/g,'_');a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast('DOCX 已离线导出')}
-window.ChenNanDocumentWorkspace={refresh:refreshWorkspace,saveDraft:()=>saveDaily(false,true)};
+window.ChenNanDocumentWorkspace={acknowledge:pid=>{const issues=allIssues(statements(E('dailyEditor')?.innerText||'')).filter(x=>!pid||String(x.p.id)===String(pid));db.memoryAcknowledgements=db.memoryAcknowledgements||{};issues.forEach(x=>db.memoryAcknowledgements[h32(activeDate+'|'+x.p.id+'|'+x.content+'|'+x.reason)]={date:activeDate,personId:x.p.id,reason:x.reason,content:x.content,confirmedAt:new Date().toISOString()});save();renderWarnings();E('growthNotice')?.close()},refresh:refreshWorkspace,saveDraft:()=>saveDaily(false,true),get date(){return activeDate},openDate:setDate,selectPerson:pid=>{currentPersonId=pid;renderRank();renderMemory(pid)},restore:doc=>{window.ChenNanWritingHistory.checkpoint(db,activeDate,cur(),'回滚前保留');E('dailyTitle').value=doc.title||'';E('dailyEditor').innerHTML=cleanHtml(doc.html||textHtml(doc.content||''));saveDaily(false,true,false)},sanitize:cleanHtml};
 document.addEventListener('chennan:cloud-saved',()=>{if(E('dailyStatus'))E('dailyStatus').textContent='云端已保存'});
 document.addEventListener('chennan:cloud-error',()=>{if(E('dailyStatus'))E('dailyStatus').textContent='云端未保存，请重试'});
 const documentRenderBase=render;render=function(){documentRenderBase();renderRank();if(currentPersonId)renderMemory(currentPersonId);};
