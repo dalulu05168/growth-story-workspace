@@ -108,8 +108,8 @@ html[data-theme="night"]{--scene:var(--scene-night);--beam:rgba(255,217,121,.24)
 .cinematic-brush{
  position:absolute;left:-32vw;top:-18vh;
  width:min(680px,46vw);height:min(330px,30vw);
- background-image:url("./chen-nan-ink.webp");
- background-size:980px auto;background-position:65% 1%;background-repeat:no-repeat;
+ background-image:url("./cinematic-brush.svg");
+ background-size:contain;background-position:center;background-repeat:no-repeat;
  transform:rotate(16deg) scale(.28);opacity:0;
  filter:saturate(1.2) contrast(1.08) drop-shadow(0 18px 38px rgba(0,0,0,.48));
  -webkit-mask-image:radial-gradient(ellipse at center,#000 35%,rgba(0,0,0,.92) 56%,transparent 78%);

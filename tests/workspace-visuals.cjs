@@ -30,6 +30,16 @@ async function workspaceVisuals(browser,url){
     });
     assert.deepEqual(effects,{beam:'none',dust:'none',bars:'none',blur:'none'});
    }
+   for(const [width,height] of [[852,393],[932,430]]){
+    await page.setViewportSize({width,height});
+    const button=page.locator('#loginForm button[type=submit]');
+    await button.scrollIntoViewIfNeeded();
+    const bounds=await button.boundingBox();
+    assert(bounds.y>=0&&bounds.y+bounds.height<=height+1,'landscape login submit must remain reachable');
+    await page.locator('#loginUser').scrollIntoViewIfNeeded();
+    assert(await page.locator('#loginUser').isVisible(),'landscape login input must remain reachable');
+   }
+   await page.setViewportSize({width:1440,height:960});
    await page.locator('#loginUser').fill('e2e_local_visual');
    await page.locator('#loginPassword').fill('local-fixture-password');
    await page.locator('#loginForm button[type=submit]').click();
@@ -48,11 +58,19 @@ async function workspaceVisuals(browser,url){
      const canvas=document.createElement('canvas');canvas.width=canvas.height=1;
      const ctx=canvas.getContext('2d',{willReadFrequently:true});
      const lum=color=>{ctx.clearRect(0,0,1,1);ctx.fillStyle=color;ctx.fillRect(0,0,1,1);return [...ctx.getImageData(0,0,1,1).data].slice(0,3).map(x=>{x/=255;return x<=.04045?x/12.92:((x+.055)/1.055)**2.4}).reduce((s,x,i)=>s+x*[.2126,.7152,.0722][i],0)};
-     return ['.metric .label','.metric strong','.metric .trend'].map(selector=>{
+     const result=['.metric .label','.metric strong','.metric .trend'].map(selector=>{
       const el=document.querySelector(selector),s=getComputedStyle(el),fg=lum(s.color);
       const ratios=['--paper','--accent-soft'].map(token=>{const bg=lum(s.getPropertyValue(token));return (Math.max(fg,bg)+.05)/(Math.min(fg,bg)+.05)});
       return {selector,ratio:Math.min(...ratios)};
      });
+     for(const selector of ['tr.is-vip .table-name','tr.relation-old:not(.is-vip) .table-name','tr.relation-new:not(.is-vip) .table-name']){
+      const el=document.querySelector('.people-data-table '+selector);
+      const fg=lum(getComputedStyle(el).color);let parent=el.closest('td');
+      while(parent&&getComputedStyle(parent).backgroundColor==='rgba(0, 0, 0, 0)')parent=parent.parentElement;
+      const bg=lum(getComputedStyle(parent).backgroundColor);
+      result.push({selector,ratio:(Math.max(fg,bg)+.05)/(Math.min(fg,bg)+.05)});
+     }
+     return result;
     });
     for(const r of ratios)assert(r.ratio>=4.5,theme+' '+r.selector+' contrast '+r.ratio);
     fs.mkdirSync('evidence',{recursive:true});
@@ -70,6 +88,33 @@ async function workspaceVisuals(browser,url){
     await page.locator('.nav [data-page="'+id+'"]').click();
     await page.locator('#'+id+'.active').waitFor({state:'visible'});await settle(page);
     assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'mobile page overflow '+id);
+   }
+   for(const [width,height] of [[667,375],[852,393],[932,430],[1024,600],[1280,540]]){
+    await page.setViewportSize({width,height});
+    await page.locator('.nav [data-page="people"]').click();
+    await page.locator('#people.active').waitFor({state:'visible'});await settle(page);
+    const layout=await page.evaluate(()=>{
+     const rect=e=>e.getBoundingClientRect().toJSON(),header=document.querySelector('.app-global-header');
+     const title=header.querySelector('.header-brand b'),host=document.querySelector('#peopleList'),wrap=host.querySelector('.people-table-wrap');
+     return {title:rect(title),header:rect(header),host:rect(host),wrap:rect(wrap),
+      titleLine:getComputedStyle(title).whiteSpace,scroll:document.documentElement.scrollWidth,width:innerWidth,
+      tableWidth:wrap.scrollWidth,tableViewport:wrap.clientWidth};
+    });
+    assert(layout.scroll<=width+1,'landscape page overflow '+width);
+    assert(layout.wrap.width>=layout.host.width-2,'table must fill the people panel '+width);
+    assert(layout.wrap.width>=width*.65,'table viewport too narrow '+width);
+    assert.equal(layout.titleLine,'nowrap');
+    assert(layout.title.right<=layout.header.right,'brand outside header '+width);
+    assert(layout.tableWidth>layout.tableViewport,'wide table must scroll inside its container');
+    const initial=await page.locator('.people-table-wrap').evaluate(e=>e.scrollLeft);
+    await page.locator('.people-table-wrap').evaluate(e=>{e.scrollLeft=e.scrollWidth});
+    assert(await page.locator('.people-table-wrap').evaluate(e=>e.scrollLeft)>initial,'table columns must be reachable');
+    await page.locator('.people-table-wrap').evaluate(e=>{e.scrollLeft=0});
+    if(reducedMotion==='no-preference'&&width===852){
+     await page.locator('.people-table-wrap').scrollIntoViewIfNeeded();
+     await page.mouse.move(width-1,height-1);
+     await page.screenshot({path:'evidence/people-landscape.png'});
+    }
    }
    if(reducedMotion==='no-preference')await page.screenshot({path:'evidence/workspace-mobile.png'});
    assert.deepEqual(calls,['login','load']);assert.deepEqual(errors,[]);

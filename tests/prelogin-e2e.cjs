@@ -1,4 +1,4 @@
-const {chromium}=require('playwright');
+const {chromium,webkit}=require('playwright');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
@@ -7,7 +7,7 @@ const {rejectedLogin}=require('./public-login.cjs');
 const {verifyRelease}=require('../scripts/verify-release.cjs');
 const {workspaceVisuals}=require('./workspace-visuals.cjs');
 const root=path.resolve('dist/pages');
-const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.webp':'image/webp','.json':'application/json'};
+const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.webp':'image/webp','.svg':'image/svg+xml','.json':'application/json'};
 const server=http.createServer((req,res)=>{
   const pathname=decodeURIComponent(new URL(req.url,'http://localhost').pathname);
   const file=path.resolve(root,'.'+(pathname==='/'?'/index.html':pathname));
@@ -113,6 +113,8 @@ async function run(){
     console.log('PASS missing cloud runtime shows an actionable login error');
     await unavailable.close();
     await workspaceVisuals(browser,url);
+    const safari=await webkit.launch({headless:true});
+    try{await workspaceVisuals(safari,url)}finally{await safari.close()}
   }finally{if(browser)await browser.close();await new Promise(resolve=>server.close(resolve))}
 }
 run().catch(e=>{console.error(e);process.exitCode=1});

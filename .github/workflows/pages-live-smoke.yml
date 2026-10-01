@@ -28,7 +28,7 @@ jobs:
       - run: npm test
       - run: npm run test:gate
       - run: npm run build:static
-      - run: npx playwright install --with-deps chromium
+      - run: npx playwright install --with-deps chromium webkit
       - run: npm run test:prelogin
       - uses: actions/upload-artifact@v4
         with:

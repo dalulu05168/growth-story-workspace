@@ -20,7 +20,7 @@ test('cinematic intro has a critical pre-auth stylesheet and external scene asse
   assert.ok(!ui.includes('data:image/webp;base64'),'large scene images must not be embedded in theme-ui.js');
   assert.ok(fs.statSync('theme-ui.js').size<150000,'theme-ui.js must remain small enough not to race the intro clock');
 
-  for(const file of ['intro.css','chen-nan-ink.webp','scene-night.webp','scene-warm.webp','scene-blue.webp']){
+  for(const file of ['intro.css','cinematic-brush.svg','scene-night.webp','scene-warm.webp','scene-blue.webp']){
     assert.ok(fs.existsSync(file),'missing intro asset '+file);
     assert.ok(fs.statSync(file).size>0,'empty intro asset '+file);
   }
