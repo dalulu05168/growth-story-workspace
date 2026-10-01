@@ -123,8 +123,7 @@ async function flush(force=false){
       const result=await call('save',{payload:snapshot,expectedVersion:cloudVersion});
       cloudVersion=Number(result.version);savedGeneration=generation;
       retryAttempt=0;clearTimeout(retryTimer);
-      if(cacheKey())localStorage.setItem(cacheKey(),JSON.stringify({version:cloudVersion,payload:snapshot}));
-      if(editGeneration===generation){const key=journalKey();if(key)localStorage.removeItem(key)}else writeJournal();
+      try{if(cacheKey())localStorage.setItem(cacheKey(),JSON.stringify({version:cloudVersion,payload:snapshot}));if(editGeneration===generation){const key=journalKey();if(key)localStorage.removeItem(key)}else writeJournal()}catch(error){console.warn('Local recovery cache unavailable')}
       sessionStorage.setItem('chennan-cloud-version',String(cloudVersion));
       document.dispatchEvent(new CustomEvent('chennan:cloud-saved',{detail:{version:cloudVersion,updatedAt:result.updatedAt}}));
     }catch(err){
@@ -169,10 +168,10 @@ async function logout(){
 function account(){try{return JSON.parse(sessionStorage.getItem(ACCOUNT_KEY)||'{}')}catch(_){return{}}}
 
 const localSave=save;
-save=function(){localSave();editGeneration++;writeJournal();scheduleSave()};
+save=function(){let failed=false;try{localSave()}catch(error){failed=true}editGeneration++;try{writeJournal()}catch(error){failed=true}scheduleSave();if(failed)document.dispatchEvent(new CustomEvent('chennan:cloud-error',{detail:{code:'LOCAL_STORAGE_FAILED'}}))};
 window.addEventListener?.('online',()=>{retryAttempt=0;flush().catch(()=>{})});
 window.addEventListener?.('pagehide',()=>{window.ChenNanDocumentWorkspace?.saveDraft?.();if(editGeneration!==savedGeneration)writeJournal()});
 document.addEventListener?.('visibilitychange',()=>{if(document.visibilityState==='hidden'){window.ChenNanDocumentWorkspace?.saveDraft?.();flush().catch(()=>{})}});
 
-window.ChenNanCloud={login,verifyMfa,securityStatus:()=>call('mfa_status'),enrollMfa:password=>call('mfa_enroll',{password}),resume,logout,hydrate,flush,hasSession:()=>!!getToken(),account,pending:()=>readJournal(),exportPending:()=>{let pending;try{pending=JSON.parse(localStorage.getItem?.(journalKey()+':conflict')||'null')||readJournal()}catch(_){pending=readJournal()}if(!pending)return false;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(pending,null,2)],{type:'application/json'}));a.download='chennan-unsynced-'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);return true},get version(){return cloudVersion},get hydrated(){return hydrated}};
+window.ChenNanCloud={login,verifyMfa,securityStatus:()=>call('mfa_status'),enrollMfa:password=>call('mfa_enroll',{password}),resume,logout,hydrate,flush,hasSession:()=>!!getToken(),account,pending:()=>readJournal(),exportPending:()=>{let pending;try{pending=JSON.parse(localStorage.getItem?.(journalKey()+':conflict')||'null')||readJournal()}catch(_){pending=readJournal()}if(!pending&&hydrated)pending={version:cloudVersion,payload:db};if(!pending)return false;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(pending,null,2)],{type:'application/json'}));a.download='chennan-unsynced-'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);return true},get version(){return cloudVersion},get hydrated(){return hydrated}};
 })();

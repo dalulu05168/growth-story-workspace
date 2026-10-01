@@ -110,23 +110,23 @@ function setup(){
 function bind(){
   document.addEventListener('click',event=>{if(event.target.closest?.('.nav button,[data-day],#openDate'))E('growthNotice')?.close()},true);
   E('saveDaily').onclick=()=>saveDaily(true,false);E('docxExport').onclick=exportDocx;E('openDate').onclick=()=>setDate(E('dailyDatePicker').value);
-  E('dailyTitle').oninput=schedule;E('dailyEditor').addEventListener('input',()=>{schedule();suggest();wordCount();renderWarnings()});E('dailyEditor').addEventListener('keyup',suggest);E('dailyEditor').addEventListener('keydown',keyDown);E('dailyEditor').addEventListener('click',()=>{const p=selectionPerson();if(p){currentPersonId=p.id;renderRank();renderMemory(p.id)}});
+  E('dailyTitle').oninput=()=>{saveDaily(false,true,false);schedule()};E('dailyEditor').addEventListener('input',()=>{saveDaily(false,true,false);schedule();suggest();wordCount();renderWarnings()});E('dailyEditor').addEventListener('keyup',suggest);E('dailyEditor').addEventListener('keydown',keyDown);E('dailyEditor').addEventListener('click',()=>{const p=selectionPerson();if(p){currentPersonId=p.id;renderRank();renderMemory(p.id)}});
   QA('#wordToolbar [data-cmd]').forEach(b=>b.onclick=()=>{document.execCommand(b.dataset.cmd,false,null);E('dailyEditor').focus();schedule()});
   QA('#wordToolbar [data-block]').forEach(b=>b.onclick=()=>{document.execCommand('formatBlock',false,b.dataset.block);E('dailyEditor').focus();schedule()});
 }
 function loadEditor(){const d=cur();E('dailyTitle').value=d.title||'';E('dailyEditor').innerHTML=cleanHtml(d.html||textHtml(d.content||''));E('dailyStatus').textContent=d.updatedAt?'已保存 '+new Date(d.updatedAt).toLocaleTimeString('zh-CN',{hour12:false}):'新建内容';wordCount();renderWarnings()}
 function schedule(){E('dailyStatus').textContent='正在编辑…';clearTimeout(autosaveTimer);autosaveTimer=setTimeout(()=>saveDaily(false,true),300)}
 function wordCount(){E('wordCount').textContent=E('dailyEditor').innerText.replace(/\s/g,'').length+' 字'}
-function saveDaily(showToast=false,silentWarnings=false){
+function saveDaily(showToast=false,silentWarnings=false,notify=true){
   clearTimeout(autosaveTimer);
   if(!E('dailyEditor'))return false;const d=cur(),text=E('dailyEditor').innerText,rows=statements(text),issues=allIssues(rows);
   if(!silentWarnings&&showToast&&issues.length&&!confirm('保存前发现人物逻辑/塑造风险：\n\n'+issueText(issues)+'\n\n仍要保存今日内容吗？'))return false;
   const title=E('dailyTitle').value.trim(),html=cleanHtml(E('dailyEditor').innerHTML);
-  if((!d.updatedAt&&!title&&!text.trim())||(d.title===title&&d.html===html&&d.content===text)){renderWarnings();return true;}
+  if((!d.updatedAt&&!title&&!text.trim())||(d.title===title&&d.html===html&&d.content===text)){renderWarnings();if(notify)notifyGrowth(issues);return true;}
   d.title=title;d.html=html;d.content=text;d.updatedAt=new Date().toISOString();
   db.records=db.records.filter(r=>!(r.source==='document'&&r.docDate===activeDate));
   rows.forEach(x=>db.records.push({id:'docmem-'+activeDate+'-'+x.p.id+'-'+h32(x.content),personId:x.p.id,date:activeDate,type:'发言记录',source:'document',docDate:activeDate,title:'每日文档 · '+(d.title||activeDate),content:x.content,topics:['文档记忆']}));
-  save();notifyGrowth(issues);E('dailyStatus').textContent='本地已保存，等待云端 '+new Date().toLocaleTimeString('zh-CN',{hour12:false});renderRank();renderWarnings();if(currentPersonId)renderMemory(currentPersonId);if(showToast)toast('今日文档已保存到本地，正在同步云端');return true;
+  save();if(notify)notifyGrowth(issues);E('dailyStatus').textContent='本地已保存，等待云端 '+new Date().toLocaleTimeString('zh-CN',{hour12:false});renderRank();renderWarnings();if(currentPersonId)renderMemory(currentPersonId);if(showToast)toast('今日文档已保存到本地，正在同步云端');return true;
 }
 function currentBlock(){const s=window.getSelection();if(!s||!s.rangeCount)return null;let n=s.anchorNode;if(n?.nodeType===3)n=n.parentElement;while(n&&n!==E('dailyEditor')&&n.parentElement!==E('dailyEditor'))n=n.parentElement;return n||null}
 function suggest(){const b=currentBlock(),box=E('personSuggest');if(!b||!box)return;const m=b.innerText.trim().match(/^(?:C\.)?0*(\d{1,3})$/i),p=m?byNumber(m[1]):null;if(p){box.className='doc-suggest show';box.innerHTML='Enter 插入：<b>'+esc(pCode(p)+pcl(p)+' · '+pname(p))+'</b>　发言 '+speechCount(p)+'次';currentPersonId=p.id;renderRank();renderMemory(p.id)}else box.className='doc-suggest'}

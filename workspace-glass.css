@@ -346,3 +346,9 @@ html[data-theme="night"]{color-scheme:dark;--bg:#0b1018!important;--paper:#141c2
 @media(max-width:1100px){.app.app-ready #tradeRecommendBody>.grid{grid-template-columns:1fr!important}}
 .growth-notice{position:fixed;inset:auto 28px 28px auto;width:min(460px,calc(100vw - 56px));max-height:60dvh;overflow:auto;box-sizing:border-box;margin:0;padding:20px;background:#1d2532;color:#f1f4f8;border:1px solid #b9975d;border-radius:14px;box-shadow:0 12px 36px #0008;z-index:150;font:14px/1.7 inherit}
 .growth-notice h3{color:#ffe2a6;margin-top:0}.growth-notice p{color:#e6ecf4}.growth-notice button{padding:10px 14px;background:#efd08a;color:#151922;border-radius:8px;border:0;cursor:pointer}
+.app.app-ready .trade-tab{background:#1d2735!important;color:#e2eaf5!important;border:1px solid #42516a!important}
+.app.app-ready .trade-tab.active{background:#efd08a!important;color:#151922!important;border-color:#efd08a!important}
+.app.app-ready .trade-item{background:#141c28!important;color:#f1f4f8!important;border-color:#334052!important}
+.app.app-ready .trade-item :is(b,strong){color:#f1f4f8!important}
+.app.app-ready .trade-item .trade-meta{color:#b5c0d0!important}
+.app.app-ready .section .field>label{color:#c3cddd!important;font-size:14px!important}

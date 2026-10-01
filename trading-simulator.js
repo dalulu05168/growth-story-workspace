@@ -72,7 +72,7 @@ function fundingState(p,o){const need=Number(o.minShares||0)*Number(o.unitPrice|
 function setupUI(){
   ensure();
   const nav=document.querySelector('.nav');
-  const old=nav?.querySelector('[data-page="trades"]');if(old)old.style.display='none';
+  // Keep manual planning accessible alongside simulated stock recommendations.
   if(nav&&!nav.querySelector('[data-page="tradeRecommend"]')){
     const a=document.createElement('button');a.dataset.page='tradeRecommend';a.innerHTML='<i>✦</i><span>人物交易列表</span>';a.onclick=()=>{go('tradeRecommend');renderRecommend()};
     const b=document.createElement('button');b.dataset.page='holdingsV2';b.innerHTML='<i>▥</i><span>持仓管理</span>';b.onclick=()=>{go('holdingsV2');renderHoldings()};
@@ -223,5 +223,6 @@ function bindNav(){
     if(b.dataset.page==='holdingsV2')b.onclick=()=>{go('holdingsV2');renderHoldings()};
   });
 }
+if(typeof window!=='undefined')window.ChenNanTrading={sellHolding:id=>{const holding=db.portfolio.holdings.find(x=>x.id===id);if(holding)openSellBatch(stockKey(holding))}};
 setupUI();bindNav();
 })();

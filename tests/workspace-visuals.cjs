@@ -81,7 +81,7 @@ async function workspaceVisuals(browser,url){
     if(width<=760){assert(Math.abs(layout.side.bottom-layout.height)<2,'bottom nav not fixed to viewport');assert(Math.abs(layout.header.top)<2,'header not fixed to viewport')}
    }
    await page.setViewportSize({width:390,height:844});
-   for(const id of ['overview','people','groups','records','novel','topics','tradeRecommend','holdingsV2']){
+   for(const id of ['overview','people','groups','records','novel','topics','trades','tradeRecommend','holdingsV2']){
     await page.locator('.nav [data-page="'+id+'"]').click();
     await page.locator('#'+id+'.active').waitFor({state:'visible'});await settle(page);
     assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'mobile page overflow '+id);
