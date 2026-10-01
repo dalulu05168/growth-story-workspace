@@ -33,57 +33,26 @@ jobs:
       - run: npm test
 
   deployment-hash:
+    if: github.ref == 'refs/heads/main'
     needs: [static-gate, unit-regression]
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
-        file:
-          - index.html
-          - intro.css
-          - theme-system.js
-          - auth.js
-          - workspace-core.js
-          - cloud-sync.js
-          - trade-dashboard.js
-          - people-detail.js
-          - trading-simulator.js
-          - document-workspace.js
-          - ui-shell.js
-          - theme-ui.js
-          - chen-nan-ink.webp
-          - scene-night.webp
-          - scene-warm.webp
-          - scene-blue.webp
-    name: hash-${{ matrix.file }}
+        origin: [https://nuvexapro.com/, https://growth-story-workspace.vercel.app/]
+    name: release-${{ matrix.origin }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Wait for Vercel propagation
-        run: sleep 25
-      - name: Compare live file with repository
+      - run: npm run build:static
+      - name: Verify complete published release
         env:
-          FILE: ${{ matrix.file }}
-        run: |
-          node - <<'NODE'
-          const fs=require('fs');
-          const crypto=require('crypto');
-          const file=process.env.FILE;
-          const url='https://growth-story-workspace.vercel.app/'+file+'?hashcheck='+Date.now();
-          const hash=x=>crypto.createHash('sha256').update(x).digest('hex');
-          (async()=>{
-            const r=await fetch(url);
-            if(r.status!==200)throw new Error(file+' HTTP '+r.status);
-            const live=Buffer.from(await r.arrayBuffer());
-            const local=fs.readFileSync(file);
-            const a=hash(live),b=hash(local);
-            console.log(JSON.stringify({file,url,liveBytes:live.length,repoBytes:local.length,liveHash:a,repoHash:b,contentType:r.headers.get('content-type')}));
-            if(a!==b)throw new Error('HASH_MISMATCH '+file+' live='+a+' repo='+b);
-          })().catch(e=>{console.error(e);process.exit(1)});
-          NODE
+          ORIGIN: ${{ matrix.origin }}
+          RELEASE_CHECK_ATTEMPTS: '30'
+        run: node scripts/verify-release.cjs "$ORIGIN"
 
   browser-current:
     needs: [static-gate, unit-regression, deployment-hash]
