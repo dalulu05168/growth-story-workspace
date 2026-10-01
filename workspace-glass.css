@@ -137,3 +137,6 @@ html[data-theme] .app.app-ready:after{
  .app.app-ready:before{filter:none!important;transform:none}
  .app.app-ready :is(.card,.group-card,.profile-row,.event,.metric,.batch-card,.offer-card):hover{transform:none!important}
 }
+
+/* 固定黑金主题，不提供切换入口。 */
+.app.app-ready :is(.theme-dock,.theme-picker,.theme-picker-label){display:none!important}

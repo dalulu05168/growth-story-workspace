@@ -11,7 +11,7 @@ npm ci
 npm test
 npm run test:gate
 npm run build:static
-npx playwright install chromium
+npx playwright install --with-deps chromium webkit
 npm run test:prelogin
 python -m http.server 3000 --directory dist/pages
 ```
@@ -24,7 +24,7 @@ python -m http.server 3000 --directory dist/pages
 
 已加载的数据及编辑缓存保留在 `localStorage`。云端保存完成才显示同步成功；请求最长等待 15 秒，失败后保留本地修改并提示重试，不自动重试写入。超时并不保证服务端未处理请求；遇到版本冲突先备份本地修改，再恢复云端版本。
 
-三套主题：星空金黑、暖光书卷、通透蓝白。手动选择在刷新和重新进入后恢复；支持 `?theme=night|warm|blue`，以及旧的 `dark|ink|modern` 参数。电影开场可跳过，跳过动画不会绕过认证；减少动态效果设置使用快速显示。
+固定黑金主题，以用户提供的仙山楼阁、毛笔与比特币登录设计为准；不显示主题切换入口，旧查询参数和旧偏好不改变主题。完整插画约 2.6 秒渐显后浮出真实登录卡片，可跳过；减少动态效果时快速显示。记住账号只存账号名称，不保存密码。
 
 ## 发布与自定义域名
 

@@ -23,12 +23,7 @@ async function workspaceVisuals(browser,url){
    if(reducedMotion==='no-preference')await page.locator('#skipIntro').click();
    await page.locator('#loginForm').waitFor({state:'visible'});
    if(reducedMotion==='reduce'){
-    const effects=await page.evaluate(()=>{
-     const c=document.querySelector('.auth-cinematic'),s=document.querySelector('.cinematic-shade');
-     return {beam:getComputedStyle(c,'::before').animationName,dust:getComputedStyle(c,'::after').animationName,
-      bars:getComputedStyle(s,'::after').animationName,blur:getComputedStyle(c).filter};
-    });
-    assert.deepEqual(effects,{beam:'none',dust:'none',bars:'none',blur:'none'});
+    assert.equal(await page.locator('.cinematic-brand').evaluate(e=>getComputedStyle(e).filter),'none');
    }
    for(const [width,height] of [[852,393],[932,430]]){
     await page.setViewportSize({width,height});
@@ -48,8 +43,8 @@ async function workspaceVisuals(browser,url){
    assert.equal(animation,reducedMotion==='reduce'?'none':'cnSidebarEnter');
    assert.equal(await page.locator('.app').evaluate(e=>getComputedStyle(e).transform),'none');
    await settle(page);
-   for(const theme of ['night','warm','blue']){
-    await page.locator('.theme-dock [data-theme-button="'+theme+'"]').click();
+   for(const theme of ['night']){
+    assert.equal(await page.locator('[data-theme-button]').count(),0);
     await page.waitForFunction(t=>document.documentElement.dataset.theme===t,theme);
     await page.waitForFunction(()=>!document.documentElement.classList.contains('theme-fade-in')&&!document.documentElement.classList.contains('theme-fade-out'));
     await settle(page);
