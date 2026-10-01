@@ -22,7 +22,7 @@ async function deploymentHash(){
   const files=[
     'index.html','intro.css','theme-system.js','auth.js','workspace-core.js','cloud-sync.js',
     'trade-dashboard.js','people-detail.js','trading-simulator.js','document-workspace.js',
-    'ui-shell.js','theme-ui.js','login-black-gold.webp','scene-night.webp','scene-warm.webp','scene-blue.webp'
+    'ui-shell.js','theme-ui.js','character-memory.js','security-ui.js'
   ];
   const mismatches=[];
   for(const file of files){
@@ -188,9 +188,9 @@ async function memory(page){
 
 async function navigation(page){
   await login(page);
-  for(const id of ['overview','people','groups','records','novel','topics','tradeRecommend','holdingsV2'])await nav(page,id);
+  for(const id of ['overview','people','groups','records','novel','topics','trades','tradeRecommend','holdingsV2'])await nav(page,id);
   await page.setViewportSize({width:390,height:844});
-  for(const id of ['overview','people','groups','records','novel','topics','tradeRecommend','holdingsV2']){
+  for(const id of ['overview','people','groups','records','novel','topics','trades','tradeRecommend','holdingsV2']){
     await nav(page,id);
     const layout=await page.evaluate(()=>({viewport:innerWidth,scroll:document.documentElement.scrollWidth,side:document.querySelector('.sidebar').getBoundingClientRect().toJSON(),main:document.querySelector('.main').getBoundingClientRect().toJSON()}));
     assert(layout.scroll<=layout.viewport,'horizontal overflow '+id+' '+JSON.stringify(layout));

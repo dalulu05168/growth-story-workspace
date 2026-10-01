@@ -4,8 +4,7 @@ const root=path.resolve(__dirname,'..');
 function releaseFiles(){
   const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
   const linked=[...html.matchAll(/(?:src|href)="\.\/([^"?]+)(?:\?[^" ]*)?"/g)].map(m=>m[1]);
-  const files=[...new Set(['index.html',...linked,'data/people.json','CNAME',
-    'login-black-gold.webp','scene-night.webp','scene-warm.webp','scene-blue.webp',
+  const files=[...new Set(['index.html',...linked,'data/people.json','CNAME','offline-worker.js',
     ...fs.readdirSync(path.join(root,'icons')).map(file=>'icons/'+file),
     ...['brand','login','people'].flatMap(dir=>fs.readdirSync(path.join(root,'assets',dir)).filter(file=>!file.includes('source')).map(file=>'assets/'+dir+'/'+file))])].sort();
   for(const file of files){

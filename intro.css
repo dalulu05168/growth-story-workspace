@@ -1,10 +1,10 @@
 /* 固定黑金登录：真实插画 + 真实表单；不从登录截图裁切动画素材。 */
-:root{--scene:url('./login-black-gold.webp');--gold:#f5ca72;--gold-strong:#ffe9a7}
-#authRoot{position:fixed;inset:0;isolation:isolate;background:#080d14!important;color:#fff;overflow:auto!important;padding:0!important;display:block!important;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans CJK SC','PingFang SC','Microsoft YaHei',sans-serif}
+:root{--scene:url('./assets/login/landscape.webp');--gold:#f5ca72;--gold-strong:#ffe9a7}
+#authRoot{position:fixed;z-index:9999;inset:0;isolation:isolate;background:#080d14!important;color:#fff;overflow:auto!important;padding:0!important;display:block!important;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans CJK SC','PingFang SC','Microsoft YaHei',sans-serif}
 #authRoot.hidden{display:none!important;pointer-events:none}
 #authRoot:before,#authRoot:after{display:none!important}
 #authRoot .auth-cinematic{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;filter:none!important;opacity:1!important;transition:none!important}
-#authRoot .cinematic-brand{position:absolute;inset:0;background-image:url('./login-black-gold.webp');background-size:cover;background-position:center;opacity:0;transform:scale(1.035);filter:brightness(.35)}
+#authRoot .cinematic-brand{position:absolute;inset:0;background-image:url('./assets/login/landscape.webp');background-size:cover;background-position:center;opacity:0;transform:scale(1.035);filter:brightness(.35)}
 #authRoot.auth-intro-active .cinematic-brand{animation:cnBrand 2.6s cubic-bezier(.2,.65,.2,1) forwards!important}
 #authRoot.auth-intro-finish .cinematic-brand{opacity:1;transform:none;filter:none}
 @keyframes cnBrand{0%{opacity:0;transform:scale(1.035);filter:brightness(.35)}42%{opacity:1;filter:brightness(.8)}100%{opacity:1;transform:none;filter:none}}

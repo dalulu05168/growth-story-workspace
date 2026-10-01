@@ -26,7 +26,7 @@ async function run(){
     const release=await verifyRelease(url);assert(release.files>=18);
     assert(!fs.existsSync(path.join(root,'supabase')),'server source must not be published');
     browser=await chromium.launch({headless:true});
-    const context=await browser.newContext({viewport:{width:1440,height:900},reducedMotion:'reduce'});
+    const context=await browser.newContext({serviceWorkers:"block",viewport:{width:1440,height:900},reducedMotion:'reduce'});
     let mode='reject',loginRequests=0;
     await context.route('**/functions/v1/workspace-cloud',async route=>{
       assert.equal(route.request().postDataJSON().action,'login','tests must never access business data');
@@ -77,7 +77,7 @@ async function run(){
     assert.deepEqual(errors,[]);
     await context.close();
 
-    const normal=await browser.newContext({reducedMotion:'no-preference'});
+    const normal=await browser.newContext({serviceWorkers:"block",reducedMotion:'no-preference'});
     const motion=await normal.newPage();
     await motion.addInitScript(()=>{
       window.introResults=[];
@@ -93,7 +93,7 @@ async function run(){
     await motion.screenshot({path:'evidence/repaired-login.png'});
     await normal.close();
 
-    const unavailable=await browser.newContext({reducedMotion:'reduce'});
+    const unavailable=await browser.newContext({serviceWorkers:"block",reducedMotion:'reduce'});
     await unavailable.route('**/cloud-sync.js*',route=>route.abort());
     const missing=await unavailable.newPage();await missing.goto(url);
     await missing.locator('#loginForm').waitFor({state:'visible',timeout:8000});

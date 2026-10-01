@@ -1,6 +1,7 @@
 /* Local-only visual acceptance. Exercise the login form against synthetic cloud responses. */
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
+const {contrastAudit}=require('./contrast-audit.cjs');
 async function settle(page){
  await page.evaluate(async()=>{await Promise.all(document.getAnimations().filter(a=>a.effect.getComputedTiming().iterations!==Infinity).map(a=>a.finished.catch(()=>{})))});
 }
@@ -8,13 +9,13 @@ async function workspaceVisuals(browser,url){
  assert.equal(new URL(url).hostname,'127.0.0.1','mock cloud responses must stay local');
  const people=JSON.parse(fs.readFileSync('data/people.json','utf8')).people;
  for(const reducedMotion of ['no-preference','reduce']){
-  const context=await browser.newContext({viewport:{width:1440,height:960},reducedMotion});
+  const context=await browser.newContext({serviceWorkers:"block",viewport:{width:1440,height:960},reducedMotion});
   const calls=[];
   await context.route('**/functions/v1/workspace-cloud',async route=>{
    const request=route.request().postDataJSON();calls.push(request.action);
    assert(['login','load'].includes(request.action),'visual tests may not modify cloud data');
    const body=request.action==='login'?{ok:true,token:'local-visual-session',account:{username:'e2e_local_visual'}}:
-    {ok:true,version:1,payload:{people,records:[],docs:[],dailyDocs:{},customGroups:[],meta:{},portfolio:{},tradeSim:{}}};
+    {ok:true,version:1,payload:{people,records:[],docs:[],dailyDocs:{},customGroups:[],meta:{},portfolio:{},tradeSim:{offers:[{id:'visual-offer',symbol:'SOTA',name:'Elbo EU',market:'美股',currency:'USD',unitPrice:32,minShares:300,discountPct:15,holdDays:3,participantCount:10}],recommendations:[]}}};
    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(body)});
   });
   try{
@@ -38,7 +39,7 @@ async function workspaceVisuals(browser,url){
    await page.locator('#loginUser').fill('e2e_local_visual');
    await page.locator('#loginPassword').fill('local-fixture-password');
    await page.locator('#loginForm button[type=submit]').click();
-   await page.locator('.app.app-ready').waitFor({state:'visible'});
+   await page.locator('.app.app-ready').waitFor({state:'visible'}).catch(async error=>{console.error('WORKSPACE_LOGIN_DIAGNOSTIC',JSON.stringify({calls,errors,authError:await page.locator('#authError').textContent()}));throw error});
    const animation=await page.locator('.sidebar').evaluate(e=>getComputedStyle(e).animationName);
    assert.equal(animation,reducedMotion==='reduce'?'none':'cnSidebarEnter');
    assert.equal(await page.locator('.app').evaluate(e=>getComputedStyle(e).transform),'none');
@@ -80,10 +81,11 @@ async function workspaceVisuals(browser,url){
     if(width<=760){assert(Math.abs(layout.side.bottom-layout.height)<2,'bottom nav not fixed to viewport');assert(Math.abs(layout.header.top)<2,'header not fixed to viewport')}
    }
    await page.setViewportSize({width:390,height:844});
-   for(const id of ['overview','people','groups','records','novel','topics','tradeRecommend','holdingsV2']){
+   for(const id of ['overview','people','groups','records','novel','topics','trades','tradeRecommend','holdingsV2']){
     await page.locator('.nav [data-page="'+id+'"]').click();
     await page.locator('#'+id+'.active').waitFor({state:'visible'});await settle(page);
     assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'mobile page overflow '+id);
+    await contrastAudit(page);
    }
    for(const [width,height] of [[667,375],[852,393],[932,430],[1024,600],[1280,540]]){
     await page.setViewportSize({width,height});

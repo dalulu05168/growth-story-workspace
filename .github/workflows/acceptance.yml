@@ -64,7 +64,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        stage: [intro, prelogin, login, memory, navigation]
+        stage: [intro, prelogin, login, memory, navigation, business, security, offline]
       max-parallel: 1
     name: browser-${{ matrix.stage }}
     steps:
@@ -82,7 +82,13 @@ jobs:
           E2E_STAGE: ${{ matrix.stage }}
           E2E_CREDENTIALS: /tmp/chennan-e2e.json
           E2E_URL: https://growth-story-workspace.vercel.app/
-        run: node tests/current-e2e.cjs
+        run: |
+          case "$E2E_STAGE" in
+            business) node tests/business-e2e.cjs && node tests/planning-e2e.cjs ;;
+            security) node tests/security-e2e.cjs ;;
+            offline) node tests/offline-e2e.cjs ;;
+            *) node tests/current-e2e.cjs ;;
+          esac
       - name: Revoke test account and delete synthetic data
         if: ${{ always() && matrix.stage != 'intro' && matrix.stage != 'prelogin' }}
         run: node tests/create-e2e-credentials.cjs cleanup
