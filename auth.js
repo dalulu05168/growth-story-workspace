@@ -82,7 +82,7 @@ async function prepareIntroAssets(root){
   ]);
 }
 
-function waitForAnimation(element,animationName,timeoutMs){
+function waitForAnimation(element,animationName,timeoutMs,skip){
   return new Promise(resolve=>{
     let settled=false;
     const finish=source=>{
@@ -97,6 +97,7 @@ function waitForAnimation(element,animationName,timeoutMs){
     };
     const timer=setTimeout(()=>finish('fallback'),timeoutMs);
     element?.addEventListener('animationend',onEnd);
+    skip?.then(()=>finish('user-skip'));
   });
 }
 
@@ -106,8 +107,15 @@ function storedSessionExists(){
 }
 
 async function runIntro(root){
+  const skipButton=root.querySelector('#skipIntro');
+  let skipped=false;
+  const skip=new Promise(resolve=>{
+    if(skipButton)skipButton.onclick=()=>{skipped=true;resolve('user-skip')};
+  });
   // 已登录会话只做快速恢复，避免每次刷新都强制播放完整电影开场。
   if(storedSessionExists()){
+    skipButton?.remove();
+    root.dataset.introFast='true';
     root.dataset.introPhase='resume';
     root.classList.add('auth-intro-finish');
     emitIntro('chennan:intro-skip',{reason:'session-resume'});
@@ -123,24 +131,28 @@ async function runIntro(root){
   root.dataset.introPhase='preparing';
   emitIntro('chennan:intro-preparing');
 
-  await prepareIntroAssets(root);
+  await Promise.race([prepareIntroAssets(root),skip]);
   await nextPaint();
 
-  root.dataset.introPhase='playing';
-  root.classList.add('auth-intro-active');
-  emitIntro('chennan:intro-start');
+  if(!skipped){
+    root.dataset.introPhase='playing';
+    root.classList.add('auth-intro-active');
+    emitIntro('chennan:intro-start');
+  }
 
   const reduced=matchMedia?.('(prefers-reduced-motion: reduce)')?.matches===true;
-  const source=reduced
+  const source=skipped?'user-skip':reduced
     ? (await wait(40),'reduced-motion')
-    : await waitForAnimation(root.querySelector('.cinematic-brand'),'introBrand',INTRO_FALLBACK_MS);
+    : await waitForAnimation(root.querySelector('.cinematic-brand'),'introBrand',INTRO_FALLBACK_MS,skip);
 
+  skipButton?.remove();
+  if(reduced||skipped)root.dataset.introFast='true';
   root.classList.remove('auth-intro-active');
   root.classList.add('auth-intro-finish');
   root.dataset.introPhase='complete';
   emitIntro('chennan:intro-complete',{source});
 
-  await wait(reduced?0:260);
+  await wait(reduced||skipped?0:260);
   await showAuthCard();
 }
 
@@ -153,6 +165,9 @@ function injectAuth(){
   root.className='auth-root auth-intro-running';
   root.dataset.introPhase='created';
   root.innerHTML=cinematicIntro()+'<div id="authStage" class="auth-stage auth-stage-pending"></div>';
+  const skip=document.createElement('button');
+  skip.id='skipIntro';skip.type='button';skip.className='intro-skip';skip.textContent='跳过动画';
+  root.appendChild(skip);
   document.body.appendChild(root);
 
   runIntro(root).catch(error=>{
@@ -160,6 +175,7 @@ function injectAuth(){
     root.classList.remove('auth-intro-active');
     root.classList.add('auth-intro-finish');
     root.dataset.introPhase='fallback';
+    root.querySelector('#skipIntro')?.remove();
     showAuthCard();
   });
 }
@@ -193,7 +209,7 @@ async function showAuthCard(){
       +'<div class="hero-en">CHENNAN · WRITING WORKSPACE</div>'
       +'<h2>让人物拥有灵魂</h2>'
       +'<p>人物档案 · 群组运营 · 事件记忆 · 文档创作 · 交易与资产</p>'
-      +'<div class="hero-theme-caption"><span></span><b>三套主题，轮流出场</b></div>'
+      +'<div class="hero-theme-caption"><span></span><b>三套主题，随心切换</b></div>'
     +'</div>'
     +'<div class="auth-card">'
       +'<div class="auth-logo">'+brushLogo('brand-brush-small')+'</div>'
@@ -202,10 +218,10 @@ async function showAuthCard(){
       +'<h1 class="auth-title">欢迎回来，辰南撰写</h1>'
       +'<p class="auth-sub">输入账户与密码，继续进入你的工作台</p>'
       +'<form id="loginForm">'
-        +'<div class="auth-field"><label>账户</label><div class="auth-input-wrap"><span class="auth-input-icon">◎</span><input name="user" autocomplete="username" placeholder="请输入账号" required></div></div>'
-        +'<div class="auth-field"><label>密码</label><div class="auth-input-wrap"><span class="auth-input-icon">◇</span><input type="password" name="password" autocomplete="current-password" placeholder="请输入密码" required></div></div>'
-        +'<button class="auth-btn">进入工作台 <span>→</span></button>'
-        +'<div class="auth-error" id="authError"></div>'
+        +'<div class="auth-field"><label for="loginUser">账户</label><div class="auth-input-wrap"><span class="auth-input-icon" aria-hidden="true">◎</span><input id="loginUser" name="user" autocomplete="username" placeholder="请输入账号" aria-describedby="authError" required></div></div>'
+        +'<div class="auth-field"><label for="loginPassword">密码</label><div class="auth-input-wrap"><span class="auth-input-icon" aria-hidden="true">◇</span><input id="loginPassword" type="password" name="password" autocomplete="current-password" placeholder="请输入密码" aria-describedby="authError" required></div></div>'
+        +'<button type="submit" class="auth-btn">进入工作台 <span>→</span></button>'
+        +'<div class="auth-error" id="authError" role="alert"></div>'
       +'</form>'
       +'<div class="auth-note"><span class="cloud-dot"></span> 云端数据同步 · 安全登录</div>'
     +'</div>'
@@ -217,20 +233,26 @@ async function showAuthCard(){
     stage.classList.add('auth-stage-visible');
     root.dataset.introPhase='login-ready';
     emitIntro('chennan:login-ready');
-  },1050);
+  },root.dataset.introFast==='true'?0:1050);
+  if(!cloud)byId('authError').textContent='登录服务未加载，请刷新页面重试';
 
   byId('loginForm').onsubmit=async function(e){
     e.preventDefault();
-    const f=new FormData(e.target),err=byId('authError'),btn=e.target.querySelector('button');
+    const f=new FormData(e.target),err=byId('authError'),btn=e.target.querySelector('button[type="submit"]');
     err.textContent='正在验证并同步云端数据…';
     btn.disabled=true;
+    e.target.setAttribute('aria-busy','true');
     try{
-      await window.ChenNanCloud.login(String(f.get('user')||'').trim(),String(f.get('password')||''));
+      const runtime=window.ChenNanCloud||await waitForCloudRuntime();
+      if(!runtime)throw new Error('登录服务未加载，请刷新页面重试');
+      await runtime.login(String(f.get('user')||'').trim(),String(f.get('password')||''));
       root?.classList.add('auth-success');
       setTimeout(unlockApp,720);
     }catch(ex){
       err.textContent=ex?.message||'登录失败';
       btn.disabled=false;
+    }finally{
+      e.target.setAttribute('aria-busy','false');
     }
   };
 }
