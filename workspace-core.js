@@ -115,10 +115,12 @@ function render(){
 function renderOverview(){
   const rs=[...db.records].sort((a,b)=>String(b.date).localeCompare(String(a.date)));
   $('#metrics').innerHTML=[
-    ['人物总数',db.people.length,'完整画像'],
-    ['VIP',db.people.filter(pVip).length,'动态统计'],
+    ['总人物',db.people.length,'完整画像'],
+    ['老客户',db.people.filter(p=>pRelationCode(p)==='OLD').length,'关系分层'],
+    ['新客户',db.people.filter(p=>pRelationCode(p)==='NEW').length,'关系分层'],
+    ['VIP 用户',db.people.filter(pVip).length,'金色标识'],
     ['已开户',db.people.filter(pOpened).length,'账户状态'],
-    ['已入群',db.people.filter(pJoined).length,'可手动更新']
+    ['群组数量',db.customGroups.length,'自定义小组']
   ].map(([l,n,t])=>`<div class="card metric"><span class="label">${l}</span><strong>${n}</strong><span class="trend">${t}</span></div>`).join('');
   $('#recentTimeline').innerHTML=rs.slice(0,4).map(eventHTML).join('')||'<div class="empty">还没有重要记录</div>';
   const ids=['new_male','new_female','old_male','old_female','vip','opened','joined'];
@@ -184,7 +186,31 @@ function bindDynamic(){
   document.querySelectorAll('.open-custom-group').forEach(b=>b.onclick=()=>openCustomGroup(b.dataset.id));
   document.querySelectorAll('.delete-group').forEach(b=>b.onclick=()=>deleteGroup(b.dataset.id));
 }
-function go(page){document.querySelectorAll('.section').forEach(s=>s.classList.toggle('active',s.id===page));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));window.scrollTo(0,0)}
+let pageTransitionToken=0;
+function go(page){
+  const target=document.getElementById(page);
+  if(!target)return;
+  const token=++pageTransitionToken;
+  const current=document.querySelector('.section.active');
+
+  const activate=()=>{
+    if(token!==pageTransitionToken)return;
+    document.querySelectorAll('.section').forEach(s=>{
+      s.classList.remove('active','section-leaving','section-entering');
+    });
+    target.classList.add('active','section-entering');
+    document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));
+    window.scrollTo({top:0,left:0,behavior:'auto'});
+    requestAnimationFrame(()=>requestAnimationFrame(()=>target.classList.remove('section-entering')));
+  };
+
+  if(current&&current!==target){
+    current.classList.add('section-leaving');
+    setTimeout(activate,230);
+  }else{
+    activate();
+  }
+}
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>go(b.dataset.page));document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));document.addEventListener('click',e=>{const b=e.target.closest?.('.nav button[data-page]');if(b){e.preventDefault();go(b.dataset.page)}});
 $('#personSearch').oninput=renderPeople;$('#personSort').onchange=renderPeople;$('#systemGroupFilter').onchange=renderPeople;$('#customGroupFilter').onchange=renderPeople;
 ['recordPerson','recordType','recordSearch'].forEach(id=>$('#'+id).addEventListener(id==='recordSearch'?'input':'change',renderRecords));

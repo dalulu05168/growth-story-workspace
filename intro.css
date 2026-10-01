@@ -1,0 +1,222 @@
+/* 辰南撰写：关键进场动画层。
+   必须在 auth.js 之前加载，避免动画计时早于样式/背景资源。 */
+:root{
+  --scene-blue:url("./scene-blue.webp");
+  --scene-warm:url("./scene-warm.webp");
+  --scene-night:url("./scene-night.webp");
+  --scene:var(--scene-night);
+  --gold:#f3bc55;
+  --gold-strong:#ffd979;
+}
+html[data-theme="blue"]{--scene:var(--scene-blue)}
+html[data-theme="warm"]{--scene:var(--scene-warm)}
+html[data-theme="night"]{--scene:var(--scene-night)}
+
+.auth-root{
+  isolation:isolate;
+  overflow:hidden!important;
+  background-image:
+    linear-gradient(90deg,rgba(3,10,20,.34),rgba(3,10,20,.04) 54%,rgba(3,10,20,.20)),
+    var(--scene)!important;
+  background-size:cover!important;
+  background-position:center!important;
+}
+.auth-root:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-2;
+  background:linear-gradient(90deg,rgba(3,10,20,.26),rgba(3,10,20,.04) 52%,rgba(3,10,20,.18));
+  pointer-events:none;
+}
+.auth-root:after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  background:
+    radial-gradient(circle at 50% 42%,rgba(255,190,67,.18),transparent 25%),
+    linear-gradient(180deg,transparent 64%,rgba(2,8,17,.18));
+  pointer-events:none;
+}
+.auth-cinematic{
+  position:absolute;
+  inset:0;
+  z-index:1;
+  pointer-events:none;
+  overflow:hidden;
+  transition:opacity 1.25s ease,filter 1.25s ease;
+}
+.intro-skip{
+  position:absolute;right:max(20px,env(safe-area-inset-right));
+  bottom:max(20px,env(safe-area-inset-bottom));z-index:3;
+  min-height:44px;padding:10px 18px;border:1px solid rgba(255,255,255,.6);
+  border-radius:8px;background:rgba(4,10,18,.75);color:#fff;
+}
+.intro-skip:focus-visible{outline:3px solid var(--gold);outline-offset:4px}
+.cinematic-shade{
+  position:absolute;
+  inset:0;
+  background:radial-gradient(circle at 50% 45%,transparent 0 17%,rgba(4,10,18,.16) 45%,rgba(4,10,18,.34) 100%);
+}
+.cinematic-brush{
+  position:absolute;
+  left:-32vw;
+  top:-18vh;
+  width:min(680px,46vw);
+  height:min(330px,30vw);
+  background-image:url("./chen-nan-ink.webp");
+  background-size:980px auto;
+  background-position:65% 1%;
+  background-repeat:no-repeat;
+  transform:rotate(16deg) scale(.28);
+  opacity:0;
+  filter:saturate(1.2) contrast(1.08) drop-shadow(0 18px 38px rgba(0,0,0,.48));
+  -webkit-mask-image:radial-gradient(ellipse at center,#000 35%,rgba(0,0,0,.92) 56%,transparent 78%);
+  mask-image:radial-gradient(ellipse at center,#000 35%,rgba(0,0,0,.92) 56%,transparent 78%);
+  will-change:left,top,opacity,transform;
+}
+.cinematic-trail{
+  position:absolute;
+  left:22%;
+  top:45%;
+  width:0;
+  height:4px;
+  border-radius:999px;
+  background:linear-gradient(90deg,transparent,var(--gold-strong),#fff2b8,var(--gold-strong),transparent);
+  box-shadow:0 0 16px var(--gold),0 0 42px rgba(255,185,54,.72);
+  transform:rotate(-8deg);
+  opacity:0;
+  will-change:width,opacity;
+}
+.cinematic-ring{
+  position:absolute;
+  left:50%;
+  top:43%;
+  width:240px;
+  height:240px;
+  margin:-120px;
+  border:3px solid rgba(255,206,104,.92);
+  border-radius:50%;
+  opacity:0;
+  transform:scale(.18) rotate(-28deg);
+  box-shadow:0 0 0 14px rgba(255,194,68,.05),0 0 46px rgba(255,188,55,.72),inset 0 0 36px rgba(255,195,77,.38);
+  will-change:opacity,transform;
+}
+.cinematic-ring:before,.cinematic-ring:after{
+  content:"";
+  position:absolute;
+  border-radius:50%;
+  inset:17px;
+  border:1px dashed rgba(255,220,148,.76);
+}
+.cinematic-ring:after{
+  inset:34px;
+  border-style:solid;
+  border-color:rgba(255,201,95,.32);
+}
+.cinematic-btc{
+  position:absolute;
+  left:50%;
+  top:43%;
+  transform:translate(-50%,-50%) scale(.12) rotate(-8deg);
+  font:900 150px/1 Georgia,serif;
+  color:#ffe197;
+  opacity:0;
+  text-shadow:0 0 7px #fff5c7,0 0 24px #ffc451,0 0 72px rgba(255,170,32,.8);
+  will-change:opacity,transform;
+}
+.cinematic-brand{
+  position:absolute;
+  left:50%;
+  top:72%;
+  transform:translate(-50%,18px);
+  font:900 38px/1 "Kaiti SC","STKaiti","KaiTi","Songti SC",serif;
+  letter-spacing:.15em;
+  color:#fff;
+  opacity:0;
+  text-align:center;
+  text-shadow:0 3px 18px rgba(0,0,0,.5);
+  will-change:opacity,transform;
+}
+.cinematic-brand small{
+  display:block;
+  margin-top:12px;
+  font:600 13px/1 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  letter-spacing:.42em;
+  color:rgba(255,255,255,.82);
+}
+
+/* JS 准备好资源后才添加 auth-intro-active；在此之前绝不偷跑。 */
+.auth-root.auth-intro-active .cinematic-brush{
+  animation:brushFlyIn 3.1s cubic-bezier(.18,.68,.22,1) .35s forwards!important;
+}
+.auth-root.auth-intro-active .cinematic-trail{
+  animation:goldTrail 2.2s cubic-bezier(.22,.68,.28,1) 2.15s forwards!important;
+}
+.auth-root.auth-intro-active .cinematic-ring{
+  animation:ringForm 1.85s cubic-bezier(.15,.82,.2,1) 3.65s forwards!important;
+}
+.auth-root.auth-intro-active .cinematic-btc{
+  animation:btcForm 1.75s cubic-bezier(.15,.88,.2,1) 3.95s forwards!important;
+}
+.auth-root.auth-intro-active .cinematic-brand{
+  animation:introBrand 1.15s ease 5.15s forwards!important;
+}
+.auth-intro-finish .auth-cinematic{
+  opacity:.18!important;
+  filter:blur(4px) brightness(.9)!important;
+}
+.auth-stage{
+  position:relative;
+  z-index:3;
+  width:min(1480px,calc(100vw - 42px));
+  min-height:min(820px,calc(100vh - 42px));
+  margin:auto;
+  display:grid;
+  place-items:center;
+  opacity:0;
+  transform:translateY(16px);
+  transition:opacity 1.05s ease,transform 1.05s cubic-bezier(.2,.72,.2,1);
+}
+.auth-stage-visible{opacity:1;transform:none}
+
+@keyframes brushFlyIn{
+  0%{left:-34vw;top:-22vh;opacity:0;transform:rotate(22deg) scale(.18)}
+  38%{opacity:1}
+  100%{left:35%;top:17%;opacity:1;transform:rotate(18deg) scale(.84)}
+}
+@keyframes goldTrail{
+  0%{width:0;opacity:0}
+  20%{opacity:1}
+  100%{width:56%;opacity:.96}
+}
+@keyframes ringForm{
+  0%{opacity:0;transform:scale(.18) rotate(-30deg)}
+  70%{opacity:1}
+  100%{opacity:1;transform:scale(1) rotate(0)}
+}
+@keyframes btcForm{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.12) rotate(-8deg)}
+  100%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(0)}
+}
+@keyframes introBrand{
+  to{opacity:1;transform:translate(-50%,0)}
+}
+
+@media(max-width:760px){
+  .cinematic-brush{width:520px;height:260px}
+  .cinematic-ring{width:190px;height:190px;margin:-95px}
+  .cinematic-btc{font-size:116px}
+  .cinematic-brand{top:67%;font-size:30px}
+}
+@media(prefers-reduced-motion:reduce){
+  .auth-root.auth-intro-active .cinematic-brush,
+  .auth-root.auth-intro-active .cinematic-trail,
+  .auth-root.auth-intro-active .cinematic-ring,
+  .auth-root.auth-intro-active .cinematic-btc,
+  .auth-root.auth-intro-active .cinematic-brand{
+    animation-duration:.01ms!important;
+    animation-delay:0ms!important;
+  }
+}

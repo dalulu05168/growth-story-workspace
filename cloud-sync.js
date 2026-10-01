@@ -12,6 +12,7 @@ let saveTimer=null;
 let saving=null;
 let queued=false;
 let editGeneration=0, savedGeneration=0;
+const REQUEST_TIMEOUT_MS=15000;
 
 function getToken(){return sessionStorage.getItem(SESSION_KEY)||''}
 function setToken(token){if(token)sessionStorage.setItem(SESSION_KEY,token);else sessionStorage.removeItem(SESSION_KEY)}
@@ -20,9 +21,31 @@ function headers(withAuth=true){
   const token=getToken();if(withAuth&&token)h.Authorization='Bearer '+token;
   return h;
 }
+async function requestJson(url,options,action){
+  const controller=new AbortController();
+  let timer;
+  const timeout=new Promise((_,reject)=>{
+    timer=setTimeout(()=>{
+      const error=new Error(action==='login'?'登录连接超时，请检查网络后重试':'云端连接超时，请重试；本地修改仍保留');
+      error.code='CLOUD_TIMEOUT';reject(error);controller.abort();
+    },REQUEST_TIMEOUT_MS);
+  });
+  const request=(async()=>{
+    const res=await fetch(url,{...options,signal:controller.signal});
+    let data;
+    try{data=await res.json()}catch(error){
+      if(controller.signal.aborted)throw error;
+      const invalid=new Error('云端响应格式错误，请稍后重试');invalid.code='INVALID_RESPONSE';throw invalid;
+    }
+    return {res,data};
+  })();
+  try{return await Promise.race([request,timeout])}catch(error){
+    if(error.code)throw error;
+    const network=new Error('无法连接云端，请检查网络后重试');network.code='NETWORK_ERROR';throw network;
+  }finally{clearTimeout(timer)}
+}
 async function call(action,payload={},withAuth=true){
-  const res=await fetch(CLOUD_URL,{method:'POST',headers:headers(withAuth),body:JSON.stringify({action,...payload})});
-  let data=null;try{data=await res.json()}catch(_){data={ok:false,error:'云端响应格式错误'}}
+  const {res,data}=await requestJson(CLOUD_URL,{method:'POST',headers:headers(withAuth),body:JSON.stringify({action,...payload})},action);
   if(!res.ok||!data?.ok){const e=new Error(data?.error||('云端请求失败 HTTP '+res.status));e.status=res.status;e.code=data?.code;e.data=data;throw e}
   return data;
 }
@@ -40,8 +63,9 @@ function normalizePayload(raw){
 }
 async function ensureDefaultPeople(){
   if(db.people?.length)return;
-  const res=await fetch(DATA_URL,{cache:'no-store'});if(!res.ok)return;
-  const src=await res.json();const list=Array.isArray(src)?src:(Array.isArray(src.people)?src.people:[]);
+  const {res,data:src}=await requestJson(DATA_URL,{cache:'no-store'},'dataset');
+  if(!res.ok)throw new Error('人物资料加载失败，请稍后重试');
+  const list=Array.isArray(src)?src:(Array.isArray(src.people)?src.people:[]);
   if(list.length){db.people=list.map(normalizePerson);db.meta.defaultDatasetVersion=DEFAULT_DATASET_VERSION;db.meta.defaultDatasetName=src.dataset_name||'法国人物70位'}
 }
 async function hydrate(){
