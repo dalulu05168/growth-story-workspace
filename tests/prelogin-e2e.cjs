@@ -45,6 +45,25 @@ async function run(){
     await page.locator('#loginForm').waitFor({state:'visible'});
     assert.equal(await page.locator('html').getAttribute('data-theme'),'blue');
     console.log('PASS manual theme survives a fresh navigation without query parameters');
+    for(const theme of ['night','warm','blue']){
+      await page.locator('.auth-theme-control [data-theme-button="'+theme+'"]').click();
+      await page.evaluate(async()=>{await Promise.all(document.querySelector('.auth-card').getAnimations({subtree:true}).filter(a=>a.effect.getComputedTiming().iterations!==Infinity).map(a=>a.finished.catch(()=>{})))});
+      const contrast=await page.evaluate(()=>{
+        const card=document.querySelector('.login-shell .auth-card');
+        const bg=getComputedStyle(card).backgroundColor;
+        const canvas=document.createElement('canvas');canvas.width=canvas.height=1;
+        const ctx=canvas.getContext('2d',{willReadFrequently:true});
+        function rgb(color,base){ctx.clearRect(0,0,1,1);if(base){ctx.fillStyle=base;ctx.fillRect(0,0,1,1)}ctx.fillStyle=color;ctx.fillRect(0,0,1,1);return [...ctx.getImageData(0,0,1,1).data].slice(0,3)}
+        function luminance(color){return color.map(x=>{x/=255;return x<=.04045?x/12.92:((x+.055)/1.055)**2.4}).reduce((sum,x,i)=>sum+x*[.2126,.7152,.0722][i],0)}
+        return ['.auth-title','.auth-sub','.auth-field label'].map(selector=>{
+          const fg=luminance(rgb(getComputedStyle(card.querySelector(selector)).color));
+          const ratios=['#fff','#000'].map(base=>{const b=luminance(rgb(bg,base));return (Math.max(fg,b)+.05)/(Math.min(fg,b)+.05)});
+          return {selector,ratio:Math.min(...ratios)};
+        });
+      });
+      for(const entry of contrast)assert(entry.ratio>=4.5,theme+' '+entry.selector+' contrast '+entry.ratio);
+    }
+    console.log('PASS login title, subtitle and label contrast in all three themes');
     for(const width of [375,390,414,430,1366,1440,1920]){
       await page.setViewportSize({width,height:900});
       const size=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,width:innerWidth}));
