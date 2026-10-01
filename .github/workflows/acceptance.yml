@@ -57,7 +57,9 @@ jobs:
   browser-current:
     needs: [static-gate, unit-regression, deployment-hash]
     runs-on: ubuntu-latest
-    container: mcr.microsoft.com/playwright:v1.55.1-noble
+    container:
+      image: mcr.microsoft.com/playwright:v1.55.1-noble
+      options: --ipc=host
     timeout-minutes: 18
     strategy:
       fail-fast: false
