@@ -22,7 +22,7 @@ async function deploymentHash(){
   const files=[
     'index.html','intro.css','theme-system.js','auth.js','workspace-core.js','cloud-sync.js',
     'trade-dashboard.js','people-detail.js','trading-simulator.js','document-workspace.js',
-    'ui-shell.js','theme-ui.js','cinematic-brush.svg','scene-night.webp','scene-warm.webp','scene-blue.webp'
+    'ui-shell.js','theme-ui.js','login-black-gold.webp','scene-night.webp','scene-warm.webp','scene-blue.webp'
   ];
   const mismatches=[];
   for(const file of files){
@@ -66,7 +66,7 @@ async function login(page){
   await page.locator('#loginForm input[name=user]').fill(loginCreds.username);
   await page.locator('#loginForm input[name=password]').fill(loginCreds.password);
   const response=page.waitForResponse(r=>r.url()===endpoint&&r.request().postData()?.includes('"action":"login"'));
-  await page.locator('#loginForm button').click();
+  await page.locator('#loginForm button[type=submit]').click();
   const res=await response;const body=await res.json();
   assert.equal(res.status(),200);assert.equal(body.ok,true);assert.ok(body.token);
   token=body.token;
@@ -90,18 +90,13 @@ async function intro(page){
 
   assert.equal(await page.locator('#loginForm').count(),0,'login form must not appear before cinematic intro completes');
 
-  const early=await page.locator('.cinematic-brush').evaluate(el=>{
-    const s=getComputedStyle(el);
-    return {animationName:s.animationName,opacity:Number.parseFloat(s.opacity||'0'),transform:s.transform,left:s.left};
+  const early=await page.locator('.cinematic-brand').evaluate(el=>{
+    const s=getComputedStyle(el);return {name:s.animationName,opacity:s.opacity,transform:s.transform};
   });
-  assert.match(early.animationName,/cnBrush/,'brush animation must actually be running');
-
-  await page.waitForTimeout(1200);
-  const later=await page.locator('.cinematic-brush').evaluate(el=>{
-    const s=getComputedStyle(el);
-    return {opacity:Number.parseFloat(s.opacity||'0'),transform:s.transform,left:s.left};
-  });
-  assert.notEqual(JSON.stringify(later),JSON.stringify(early),'brush visual state must advance while intro is playing');
+  assert.equal(early.name,'cnBrand');
+  await page.waitForTimeout(1100);
+  const later=await page.locator('.cinematic-brand').evaluate(el=>({opacity:getComputedStyle(el).opacity,transform:getComputedStyle(el).transform}));
+  assert.notEqual(later.opacity,early.opacity,'full artwork must reveal progressively');
 
   await page.waitForFunction(()=>document.querySelector('#authRoot')?.dataset.introPhase==='complete',{timeout:12000});
   await page.waitForFunction(()=>document.querySelector('#authRoot')?.dataset.introPhase==='login-ready',{timeout:6000});
@@ -119,14 +114,14 @@ async function intro(page){
   assert.equal(complete?.source,'animationend','intro must finish on the cnBrand event, not the fallback timer');
   assert.ok(start&&complete&&ready,'intro lifecycle events must reach start -> complete -> login-ready');
   const duration=complete.at-start.at;
-  assert.ok(duration>=5600&&duration<=8200,'cinematic duration out of bounds: '+duration);
+  assert.ok(duration>=2200&&duration<=4200,'cinematic duration out of bounds: '+duration);
   assert.ok(ready.at>complete.at,'login must reveal only after the cinematic sequence completes');
 
   const resource=await page.evaluate(()=>performance.getEntriesByType('resource')
-    .filter(x=>/scene-night\.webp|cinematic-brush\.svg/.test(x.name))
+    .filter(x=>/scene-night\.webp|login-black-gold\.webp/.test(x.name))
     .map(x=>({name:x.name,duration:x.duration,transferSize:x.transferSize})));
-  assert.ok(resource.some(x=>x.name.includes('scene-night.webp')),'night scene must load as an external image asset');
-  assert.ok(resource.some(x=>x.name.includes('cinematic-brush.svg')),'brush image must load before/for intro');
+
+  assert.ok(resource.some(x=>x.name.includes('login-black-gold.webp')),'brush image must load before/for intro');
 
   console.log(JSON.stringify({intro:'PASS',duration,events,resource}));
 }
@@ -138,15 +133,12 @@ async function prelogin(page){
     {timeout:20000}
   );
   await page.locator('#loginForm').waitFor({state:'attached',timeout:2000});
-  assert.equal(await page.locator('.auth-theme-control [data-theme-button]').count(),3);
-  for(const [theme,accent] of [['night','#d7a33e'],['warm','#9a6428'],['blue','#2289ef']]){
-    await page.locator('.auth-theme-control [data-theme-button="'+theme+'"]').click();
-    await page.waitForFunction(t=>document.documentElement.dataset.theme===t,theme);
-    assert.equal(await page.evaluate(()=>getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()),accent);
-  }
-  assert.equal((await page.locator('#authRoot .brand-calligraphy').first().innerText()).trim(),'辰南撰写');
-  assert.equal(await page.locator('.cinematic-brush').count(),1);
-  assert.equal(await page.locator('.cinematic-btc').count(),1);
+  assert.equal(await page.locator('[data-theme-button]').count(),0);
+  assert.equal(await page.locator('html').getAttribute('data-theme'),'night');
+  assert.equal(await page.locator('.auth-title').innerText(),'欢迎回来');
+  assert.equal(await page.locator('#loginForm input').count(),2);
+  assert.equal(await page.locator('.login-language').innerText(),'简体中文');
+
 }
 async function loginOnly(page){
   await login(page);

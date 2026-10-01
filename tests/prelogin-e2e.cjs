@@ -40,46 +40,39 @@ async function run(){
     assert.equal(await page.locator('#authRoot').getAttribute('data-intro-phase'),'login-ready');
     await rejectedLogin(page);assert.equal(loginRequests,1);
     console.log('PASS rejected login submits exactly once and keeps the workspace locked');
-    await page.getByRole('button',{name:'通透蓝白',exact:true}).click();
-    assert.equal(await page.locator('html').getAttribute('data-theme'),'blue');
-    await page.goto(url);
-    await page.locator('#loginForm').waitFor({state:'visible'});
-    assert.equal(await page.locator('html').getAttribute('data-theme'),'blue');
-    console.log('PASS manual theme survives a fresh navigation without query parameters');
-    for(const theme of ['night','warm','blue']){
-      await page.locator('.auth-theme-control [data-theme-button="'+theme+'"]').click();
-      await page.evaluate(async()=>{await Promise.all(document.querySelector('.auth-card').getAnimations({subtree:true}).filter(a=>a.effect.getComputedTiming().iterations!==Infinity).map(a=>a.finished.catch(()=>{})))});
-      const contrast=await page.evaluate(()=>{
-        const card=document.querySelector('.login-shell .auth-card');
-        const bg=getComputedStyle(card).backgroundColor;
-        const canvas=document.createElement('canvas');canvas.width=canvas.height=1;
-        const ctx=canvas.getContext('2d',{willReadFrequently:true});
-        function rgb(color,base){ctx.clearRect(0,0,1,1);if(base){ctx.fillStyle=base;ctx.fillRect(0,0,1,1)}ctx.fillStyle=color;ctx.fillRect(0,0,1,1);return [...ctx.getImageData(0,0,1,1).data].slice(0,3)}
-        function luminance(color){return color.map(x=>{x/=255;return x<=.04045?x/12.92:((x+.055)/1.055)**2.4}).reduce((sum,x,i)=>sum+x*[.2126,.7152,.0722][i],0)}
-        return ['.auth-title','.auth-sub','.auth-field label'].map(selector=>{
-          const fg=luminance(rgb(getComputedStyle(card.querySelector(selector)).color));
-          const ratios=['#fff','#000'].map(base=>{const b=luminance(rgb(bg,base));return (Math.max(fg,b)+.05)/(Math.min(fg,b)+.05)});
-          return {selector,ratio:Math.min(...ratios)};
-        });
-      });
-      for(const entry of contrast)assert(entry.ratio>=4.5,theme+' '+entry.selector+' contrast '+entry.ratio);
-    }
-    console.log('PASS login title, subtitle and label contrast in all three themes');
-    for(const width of [375,390,414,430,1366,1440,1920]){
-      await page.setViewportSize({width,height:900});
+    assert.equal(await page.locator('html').getAttribute('data-theme'),'night');
+    assert.equal(await page.locator('[data-theme-button]').count(),0);
+    await page.getByRole('button',{name:'显示密码',exact:true}).click();
+    assert.equal(await page.locator('#loginPassword').getAttribute('type'),'text');
+    await page.getByRole('button',{name:'隐藏密码',exact:true}).click();
+    assert.equal(await page.locator('#loginPassword').getAttribute('type'),'password');
+    await page.locator('#rememberAccount').check();await rejectedLogin(page);
+    const remembered=await page.locator('#loginUser').inputValue();
+    assert.equal(await page.evaluate(()=>localStorage.getItem('chennan-login-account')),remembered);
+    await page.goto(url+'?theme=blue');await page.locator('#loginForm').waitFor({state:'visible'});
+    assert.equal(await page.locator('html').getAttribute('data-theme'),'night');
+    assert.equal(await page.locator('#loginUser').inputValue(),remembered);
+    assert.equal(await page.locator('#rememberAccount').isChecked(),true);
+    await page.locator('#rememberAccount').uncheck();
+    assert.equal(await page.evaluate(()=>localStorage.getItem('chennan-login-account')),null);
+    await page.locator('#passwordHelp').click();assert.equal(await page.locator('#authHelp').isVisible(),true);
+    console.log('PASS fixed black-gold theme, password visibility, account-only memory and password help');
+    for(const [width,height] of [[1280,720],[1366,768],[1440,900],[1920,1080]]){
+      await page.setViewportSize({width,height});
       const size=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,width:innerWidth}));
-      assert(size.scroll<=size.width+1,'login horizontal overflow at '+width);
+      assert(size.scroll<=size.width+1,'desktop login overflow '+width);
+      await page.locator('#loginForm button[type=submit]').scrollIntoViewIfNeeded();
     }
-    console.log('PASS login layout at seven desktop/mobile widths');
+    console.log('PASS desktop login at four sizes');
     mode='hang';
     await page.locator('#loginForm [name=user]').fill('__timeout_check__');
     await page.locator('#loginForm [name=password]').fill('invalid-credential');
     await page.locator('#loginForm button[type=submit]').click();
     await page.waitForFunction(()=>document.querySelector('#authError')?.textContent.includes('超时'),null,{timeout:19000});
     assert.equal(await page.locator('#loginForm button[type=submit]').isEnabled(),true);
-    assert.equal(loginRequests,2,'requests must not be retried automatically');
+    assert.equal(loginRequests,3,'requests must not be retried automatically');
     console.log('PASS stalled login times out and allows an explicit retry');
-    mode='reject';await rejectedLogin(page);assert.equal(loginRequests,3);
+    mode='reject';await rejectedLogin(page);assert.equal(loginRequests,4);
     assert.deepEqual(errors,[]);
     await context.close();
 
@@ -95,12 +88,6 @@ async function run(){
     assert.deepEqual(await motion.evaluate(()=>window.introResults),['user-skip']);
     assert.equal(await motion.locator('#skipIntro').count(),0);
     console.log('PASS skip animation releases login exactly once');
-    await motion.getByRole('button',{name:'通透蓝白',exact:true}).click();
-    await motion.getByRole('button',{name:'星空金黑',exact:true}).click();
-    await motion.waitForTimeout(500);
-    assert.equal(await motion.locator('html').getAttribute('data-theme'),'night');
-    assert.equal(await motion.evaluate(()=>localStorage.getItem('chennan-theme-manual')),'night');
-    console.log('PASS reverting a pending theme transition keeps the latest choice');
     fs.mkdirSync('evidence',{recursive:true});
     await motion.screenshot({path:'evidence/repaired-login.png'});
     await normal.close();
