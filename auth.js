@@ -28,7 +28,7 @@ function brushLogo(extraClass=''){
 window.ChenNanBrandMarkup=brushLogo;
 
 function cinematicIntro(){
-  return '<div class="auth-cinematic" id="authCinematic" aria-hidden="true"><div class="cinematic-brand"></div></div>';
+  return '<div class="auth-cinematic" id="authCinematic" aria-hidden="true"><div class="cinematic-brand"><canvas class="scene-lake"></canvas><img class="scene-brush" src="./assets/login/brush.webp" alt=""><div class="scene-coin"><img src="./assets/login/bitcoin.webp" alt=""><img class="coin-back" src="./assets/login/bitcoin.webp" alt=""></div></div></div>';
 }
 
 function nextPaint(){
@@ -57,7 +57,7 @@ function backgroundUrls(element){
 
 async function prepareIntroAssets(root){
   const jobs=[
-    imageReady('./login-black-gold.webp'),
+    Promise.all([imageReady('./assets/login/landscape.webp'),imageReady('./assets/login/brush.webp'),imageReady('./assets/login/bitcoin.webp')]),
     ...backgroundUrls(root).map(imageReady)
   ];
   if(document.fonts?.ready)jobs.push(document.fonts.ready.catch(()=>{}));
@@ -92,6 +92,7 @@ function storedSessionExists(){
 }
 
 async function runIntro(root){
+  window.ChenNanScene?.mount(root);
   const skipButton=root.querySelector('#skipIntro');
   let skipped=false;
   const skip=new Promise(resolve=>{

@@ -37,7 +37,7 @@ function memRows(p){
 }
 function statements(text){
   const out=[];String(text||'').split(/\n+/).map(x=>x.trim()).filter(Boolean).forEach(line=>{
-    const m=line.match(/^0*(\d{1,3})(?:新男|新女|老男|老女)?(?:\s*[·\-]\s*[^：:]+)?[：:]\s*(.+)$/);
+    const m=line.match(/^(?:C\.)?0*(\d{1,3})(?:新男|新女|老男|老女)?(?:\s*[·\-]\s*[^：:]+)?[：:]\s*(.+)$/);
     if(m){const p=byNumber(m[1]);if(p)out.push({p,content:m[2].trim()})}
   });return out;
 }
@@ -70,7 +70,7 @@ function detect(p,content){
   return [...new Set(issues)];
 }
 function allIssues(rows){return rows.flatMap(x=>detect(x.p,x.content).map(reason=>({p:x.p,reason,content:x.content})))}
-function issueText(xs){return xs.slice(0,10).map((x,i)=>(i+1)+'. '+pnum(x.p).padStart(2,'0')+pcl(x.p)+' · '+pname(x.p)+'\n'+x.reason+'\n文本：'+x.content).join('\n\n')}
+function issueText(xs){return xs.slice(0,10).map((x,i)=>(i+1)+'. '+pCode(x.p)+pcl(x.p)+' · '+pname(x.p)+'\n'+x.reason+'\n文本：'+x.content).join('\n\n')}
 function textHtml(t){return String(t||'').split(/\n/).map(x=>'<div>'+esc(x||' ')+'</div>').join('')}
 function cleanHtml(markup){
   const src=new DOMParser().parseFromString(String(markup||''),'text/html'),allowed=new Set(['DIV','P','BR','B','STRONG','I','EM','U','S','SPAN','H1','H2','H3','UL','OL','LI','BLOCKQUOTE','HR']);
@@ -93,7 +93,7 @@ function renderTabs(){
 }
 function renderRank(){
   const host=E('speechRanking');if(!host)return;
-  host.innerHTML=ranking().map(p=>'<button class="speech-row '+(String(p.id)===String(currentPersonId)?'active':'')+'" data-sp="'+esc(p.id)+'"><b>'+esc(pnum(p).padStart(2,'0'))+'</b><span class="'+(pGender(p)==='女'?'female':'male')+'">'+esc(pcl(p))+'</span><em>'+speechCount(p)+'次</em></button>').join('');
+  host.innerHTML=ranking().map(p=>'<button class="speech-row '+(String(p.id)===String(currentPersonId)?'active':'')+'" data-sp="'+esc(p.id)+'">'+pAvatar(p)+'<div><b>'+esc(pCode(p))+'</b><span class="speech-name">'+esc(pname(p))+'</span><small class="person-category" data-category="'+esc(pcl(p))+'">'+esc(pcl(p))+'</small></div><em>'+speechCount(p)+'次</em></button>').join('');
   QA('[data-sp]').forEach(b=>b.onclick=()=>{currentPersonId=b.dataset.sp;renderRank();renderMemory(currentPersonId)});
 }
 function refreshWorkspace(){ensureDocs();renderTabs();loadEditor();renderRank();if(currentPersonId&&person(currentPersonId))renderMemory(currentPersonId);else renderMemory(null);}
@@ -124,16 +124,16 @@ function saveDaily(showToast=false,silentWarnings=false){
   save();E('dailyStatus').textContent='本地已保存，等待云端 '+new Date().toLocaleTimeString('zh-CN',{hour12:false});renderRank();renderWarnings();if(currentPersonId)renderMemory(currentPersonId);if(showToast)toast('今日文档已保存到本地，正在同步云端');return true;
 }
 function currentBlock(){const s=window.getSelection();if(!s||!s.rangeCount)return null;let n=s.anchorNode;if(n?.nodeType===3)n=n.parentElement;while(n&&n!==E('dailyEditor')&&n.parentElement!==E('dailyEditor'))n=n.parentElement;return n||null}
-function suggest(){const b=currentBlock(),box=E('personSuggest');if(!b||!box)return;const m=b.innerText.trim().match(/^0*(\d{1,3})$/),p=m?byNumber(m[1]):null;if(p){box.className='doc-suggest show';box.innerHTML='Enter 插入：<b>'+esc(pnum(p).padStart(2,'0')+pcl(p)+' · '+pname(p))+'</b>　发言 '+speechCount(p)+'次';currentPersonId=p.id;renderRank();renderMemory(p.id)}else box.className='doc-suggest'}
+function suggest(){const b=currentBlock(),box=E('personSuggest');if(!b||!box)return;const m=b.innerText.trim().match(/^(?:C\.)?0*(\d{1,3})$/i),p=m?byNumber(m[1]):null;if(p){box.className='doc-suggest show';box.innerHTML='Enter 插入：<b>'+esc(pCode(p)+pcl(p)+' · '+pname(p))+'</b>　发言 '+speechCount(p)+'次';currentPersonId=p.id;renderRank();renderMemory(p.id)}else box.className='doc-suggest'}
 function caretEnd(n){const r=document.createRange(),s=window.getSelection();r.selectNodeContents(n);r.collapse(false);s.removeAllRanges();s.addRange(r)}
-function keyDown(e){if(e.key!=='Enter')return;const b=currentBlock();if(!b)return;const t=b.innerText.trim(),m=t.match(/^0*(\d{1,3})$/);if(m){const p=byNumber(m[1]);if(p){e.preventDefault();b.innerHTML='<span class="person-token" contenteditable="false" data-person="'+esc(p.id)+'">'+esc(pnum(p).padStart(2,'0')+pcl(p)+' · '+pname(p))+'</span>：&nbsp;';caretEnd(b);currentPersonId=p.id;renderRank();renderMemory(p.id);E('personSuggest').className='doc-suggest';schedule();return}}const is=allIssues(statements(t));if(is.length&&!confirm('人物逻辑/塑造提示：\n\n'+issueText(is)+'\n\n继续换行吗？'))e.preventDefault()}
+function keyDown(e){if(e.key!=='Enter')return;const b=currentBlock();if(!b)return;const t=b.innerText.trim(),m=t.match(/^(?:C\.)?0*(\d{1,3})$/i);if(m){const p=byNumber(m[1]);if(p){e.preventDefault();b.innerHTML='<span class="person-token" contenteditable="false" data-person="'+esc(p.id)+'">'+esc(pCode(p)+pcl(p)+' · '+pname(p))+'</span>：&nbsp;';caretEnd(b);currentPersonId=p.id;renderRank();renderMemory(p.id);E('personSuggest').className='doc-suggest';schedule();return}}const is=allIssues(statements(t));if(is.length&&!confirm('人物逻辑/塑造提示：\n\n'+issueText(is)+'\n\n继续换行吗？'))e.preventDefault()}
 function selectionPerson(){const s=window.getSelection();if(!s||!s.rangeCount)return null;let n=s.anchorNode;if(n?.nodeType===3)n=n.parentElement;const t=n?.closest?.('.person-token');return t?person(t.dataset.person):null}
 function renderMemory(pid){
   const p=pid?person(pid):null;if(!p){E('memoryPerson').innerHTML='<div class="empty">点击左侧人物，或输入编号查看记忆</div>';E('memoryTimeline').innerHTML='';E('personFrequency').textContent='未选择';return}
-  E('personFrequency').textContent='发言 '+speechCount(p)+'次';E('memoryPerson').innerHTML='<div class="memory-person-card"><b>'+esc(pnum(p).padStart(2,'0')+pcl(p)+' · '+pname(p))+'</b><small>'+esc(p.age||'--')+'岁 · '+esc(p.account?.status||'--')+' · '+(pVip(p)?esc(p.vip?.level||'VIP'):'非VIP')+'</small><p>'+esc(p.personality?.summary||'暂无性格描述')+'</p></div>';
+  E('personFrequency').textContent='发言 '+speechCount(p)+'次';E('memoryPerson').innerHTML='<div class="memory-person-card"><b>'+esc(pCode(p)+pcl(p)+' · '+pname(p))+'</b><small>'+esc(p.age||'--')+'岁 · '+esc(p.account?.status||'--')+' · '+(pVip(p)?esc(p.vip?.level||'VIP'):'非VIP')+'</small><p>'+esc(p.personality?.summary||'暂无性格描述')+'</p></div>';
   E('memoryTimeline').innerHTML=memRows(p).map(x=>'<div class="memory-row"><b>'+esc(x.d)+' · '+esc(x.t)+'</b><small>'+esc(x.k)+'</small><p>'+esc(x.x)+'</p></div>').join('')||'<div class="empty">暂无历史记忆</div>';
 }
-function renderWarnings(){const host=E('logicWarnings');if(!host)return;const is=allIssues(statements(E('dailyEditor')?.innerText||''));host.innerHTML=is.length?'<div class="logic-warning"><b>逻辑一致性提示 · '+is.length+'条</b><br>'+is.slice(0,3).map(x=>esc(pnum(x.p).padStart(2,'0')+pcl(x.p)+'：'+x.reason)).join('<br>')+'</div>':''}
+function renderWarnings(){const host=E('logicWarnings');if(!host)return;const is=allIssues(statements(E('dailyEditor')?.innerText||''));host.innerHTML=is.length?'<div class="logic-warning"><b>逻辑一致性提示 · '+is.length+'条</b><br>'+is.slice(0,3).map(x=>esc(pCode(x.p)+pcl(x.p)+'：'+x.reason)).join('<br>')+'</div>':''}
 
 /* 无 CDN 的最小 DOCX，保留段落/标题/粗体/斜体/下划线/删除线/对齐。 */
 function xml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
