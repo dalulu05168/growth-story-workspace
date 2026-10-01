@@ -1,4 +1,4 @@
-/* 辰南三主题：按 星空金黑 → 暖光书卷 → 通透蓝白 轮换；手动切换使用淡出/淡入过渡。 */
+/* 查询参数优先，其次恢复手动选择；未选择过主题的访客沿用三主题轮换。 */
 (function(){
   'use strict';
 
@@ -8,15 +8,24 @@
   const legacy={modern:'blue',ink:'warm',dark:'night'};
   const normalize=value=>legacy[value]||value;
   const query=normalize(new URLSearchParams(location.search).get('theme'));
+  function readPreference(key){try{return localStorage.getItem(key)}catch{return null}}
+  function writePreference(key,value){try{localStorage.setItem(key,String(value))}catch{}}
+  const saved=normalize(readPreference('chennan-theme-manual'));
+  const oldSaved=normalize(readPreference('chennan-theme'));
 
   let current;
   if(allowed.has(query)){
     current=query;
+  }else if(allowed.has(saved)){
+    current=saved;
+  }else if(allowed.has(oldSaved)){
+    current=oldSaved;
+    writePreference('chennan-theme-manual',current);
   }else{
     const key='chennan-theme-cycle-index';
-    const previous=Number.parseInt(localStorage.getItem(key)??'-1',10);
-    const next=Number.isFinite(previous)?(previous+1)%sequence.length:0;
-    localStorage.setItem(key,String(next));
+    const previous=Number.parseInt(readPreference(key)??'-1',10);
+    const next=Number.isInteger(previous)&&previous>=-1?(previous+1)%sequence.length:0;
+    writePreference(key,next);
     current=sequence[next];
   }
 
@@ -42,17 +51,25 @@
     document.documentElement.dataset.theme=theme;
     document.body?.setAttribute?.('data-theme',theme);
     syncControls();
-    if(persist)localStorage.setItem('chennan-theme-manual',theme);
+    if(persist)writePreference('chennan-theme-manual',theme);
     document.dispatchEvent(new CustomEvent('chennan:theme-change',{detail:{theme,label:labels[theme]}}));
     return current;
   }
 
   function transitionTo(theme,{persist=true}={}){
     theme=normalize(theme);
-    if(!allowed.has(theme)||theme===current)return current;
+    if(!allowed.has(theme))return current;
+    clearTimeout(transitionTimer);clearTimeout(transitionFinishTimer);
+    if(theme===current){
+      document.documentElement.classList.remove('theme-fade-out','theme-fade-in');
+      return apply(theme,{persist});
+    }
 
-    clearTimeout(transitionTimer);
-    clearTimeout(transitionFinishTimer);
+    if(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches){
+      clearTimeout(transitionTimer);clearTimeout(transitionFinishTimer);
+      document.documentElement.classList.remove('theme-fade-out','theme-fade-in');
+      return apply(theme,{persist});
+    }
 
     const root=document.documentElement;
     const from=current;
