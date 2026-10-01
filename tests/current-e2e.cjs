@@ -94,7 +94,7 @@ async function intro(page){
     const s=getComputedStyle(el);
     return {animationName:s.animationName,opacity:Number.parseFloat(s.opacity||'0'),transform:s.transform,left:s.left};
   });
-  assert.match(early.animationName,/brushFlyIn/,'brush animation must actually be running');
+  assert.match(early.animationName,/cnBrush/,'brush animation must actually be running');
 
   await page.waitForTimeout(1200);
   const later=await page.locator('.cinematic-brush').evaluate(el=>{
@@ -116,6 +116,7 @@ async function intro(page){
   const start=events.find(x=>x.type==='chennan:intro-start');
   const complete=events.find(x=>x.type==='chennan:intro-complete');
   const ready=events.find(x=>x.type==='chennan:login-ready');
+  assert.equal(complete?.source,'animationend','intro must finish on the cnBrand event, not the fallback timer');
   assert.ok(start&&complete&&ready,'intro lifecycle events must reach start -> complete -> login-ready');
   const duration=complete.at-start.at;
   assert.ok(duration>=5600&&duration<=8200,'cinematic duration out of bounds: '+duration);

@@ -1,222 +1,272 @@
-/* 辰南撰写：关键进场动画层。
-   必须在 auth.js 之前加载，避免动画计时早于样式/背景资源。 */
+/* 辰南撰写：电影感进场动画层（v2）。
+ 必须在 auth.js 之前加载。DOM 钩子与旧版完全一致，不需要改 JS。
+ 本文件的动画名全部使用 cn* 前缀：theme-ui.js 里有同名的旧 @keyframes，
+ 后加载的会覆盖先加载的，换名可避免被覆盖。
+ 总时长与旧版一致（品牌字约 6.3s 落定），不会打乱 auth.js 的显示计时。
+
+ 四幕：
+ Ⅰ 0–2s   暗场渐亮，上下黑边收窄成宽银幕，光束扫过场景
+ Ⅱ 0.35–3.5s 毛笔飞入，金色笔迹拉开
+ Ⅲ 3.65–5.7s 金环成形，BTC 点亮并带光晕
+ Ⅳ 5.15–6.3s 品牌字从虚焦收紧；黑边退场，登录区从景深浮出 */
 :root{
-  --scene-blue:url("./scene-blue.webp");
-  --scene-warm:url("./scene-warm.webp");
-  --scene-night:url("./scene-night.webp");
-  --scene:var(--scene-night);
-  --gold:#f3bc55;
-  --gold-strong:#ffd979;
+ --scene-blue:url("./scene-blue.webp");
+ --scene-warm:url("./scene-warm.webp");
+ --scene-night:url("./scene-night.webp");
+ --scene:var(--scene-night);
+ --gold:#f3bc55;
+ --gold-strong:#ffd979;
+ --beam:rgba(255,217,121,.26);
+ --dust:255,226,160;
+ --bar:8.5vh;
 }
-html[data-theme="blue"]{--scene:var(--scene-blue)}
-html[data-theme="warm"]{--scene:var(--scene-warm)}
-html[data-theme="night"]{--scene:var(--scene-night)}
+html[data-theme="blue"]{--scene:var(--scene-blue);--beam:rgba(176,226,255,.30);--dust:214,238,255}
+html[data-theme="warm"]{--scene:var(--scene-warm);--beam:rgba(255,196,110,.30);--dust:255,214,150}
+html[data-theme="night"]{--scene:var(--scene-night);--beam:rgba(255,217,121,.24);--dust:255,226,160}
 
 .auth-root{
-  isolation:isolate;
-  overflow:hidden!important;
-  background-image:
-    linear-gradient(90deg,rgba(3,10,20,.34),rgba(3,10,20,.04) 54%,rgba(3,10,20,.20)),
-    var(--scene)!important;
-  background-size:cover!important;
-  background-position:center!important;
+ isolation:isolate;
+ overflow:hidden!important;
+ background-image:
+ linear-gradient(90deg,rgba(3,10,20,.34),rgba(3,10,20,.04) 54%,rgba(3,10,20,.20)),
+ var(--scene)!important;
+ background-size:cover!important;
+ background-position:center!important;
 }
 .auth-root:before{
-  content:"";
-  position:absolute;
-  inset:0;
-  z-index:-2;
-  background:linear-gradient(90deg,rgba(3,10,20,.26),rgba(3,10,20,.04) 52%,rgba(3,10,20,.18));
-  pointer-events:none;
+ content:"";position:absolute;inset:0;z-index:-2;pointer-events:none;
+ background:linear-gradient(90deg,rgba(3,10,20,.26),rgba(3,10,20,.04) 52%,rgba(3,10,20,.18));
 }
 .auth-root:after{
-  content:"";
-  position:absolute;
-  inset:0;
-  z-index:-1;
-  background:
-    radial-gradient(circle at 50% 42%,rgba(255,190,67,.18),transparent 25%),
-    linear-gradient(180deg,transparent 64%,rgba(2,8,17,.18));
-  pointer-events:none;
+ content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+ background:
+ radial-gradient(circle at 50% 42%,rgba(255,190,67,.18),transparent 25%),
+ linear-gradient(180deg,transparent 64%,rgba(2,8,17,.18));
 }
 .auth-cinematic{
-  position:absolute;
-  inset:0;
-  z-index:1;
-  pointer-events:none;
-  overflow:hidden;
-  transition:opacity 1.25s ease,filter 1.25s ease;
+ position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden;
+ transition:opacity 1.25s ease,filter 1.25s ease;
 }
+
+/* 跳过按钮：保持可见、可聚焦 */
 .intro-skip{
-  position:absolute;right:max(20px,env(safe-area-inset-right));
-  bottom:max(20px,env(safe-area-inset-bottom));z-index:3;
-  min-height:44px;padding:10px 18px;border:1px solid rgba(255,255,255,.6);
-  border-radius:8px;background:rgba(4,10,18,.75);color:#fff;
+ position:absolute;right:max(20px,env(safe-area-inset-right));
+ bottom:max(20px,env(safe-area-inset-bottom));z-index:3;
+ min-height:44px;padding:10px 18px;border:1px solid rgba(255,255,255,.6);
+ border-radius:8px;background:rgba(4,10,18,.75);color:#fff;
 }
 .intro-skip:focus-visible{outline:3px solid var(--gold);outline-offset:4px}
+
+/* —— 第一幕：暗场、宽银幕黑边、渐晕 —— */
 .cinematic-shade{
-  position:absolute;
-  inset:0;
-  background:radial-gradient(circle at 50% 45%,transparent 0 17%,rgba(4,10,18,.16) 45%,rgba(4,10,18,.34) 100%);
+ position:absolute;inset:0;
+ background:radial-gradient(circle at 50% 45%,transparent 0 17%,rgba(4,10,18,.16) 45%,rgba(4,10,18,.34) 100%);
 }
+/* 暗场：从全黑渐亮 */
+.cinematic-shade:before{
+ content:"";position:absolute;inset:0;background:#02060c;opacity:0;pointer-events:none;
+}
+/* 宽银幕上下黑边：同一伪元素画两条 */
+.cinematic-shade:after{
+ content:"";position:absolute;inset:0;pointer-events:none;opacity:0;
+ background:
+ linear-gradient(#000,#000) top/100% 0 no-repeat,
+ linear-gradient(#000,#000) bottom/100% 0 no-repeat;
+}
+.auth-root.auth-intro-active .cinematic-shade:before{
+ animation:cnDawn 2.1s cubic-bezier(.3,.1,.2,1) forwards!important;
+}
+.auth-root.auth-intro-active .cinematic-shade:after{
+ animation:cnLetterbox 6.4s cubic-bezier(.65,0,.25,1) forwards!important;
+}
+
+/* —— 体积光束 + 尘埃：借用 .auth-cinematic 的伪元素，不需要新 DOM —— */
+.auth-cinematic:before{
+ content:"";position:absolute;top:-10%;bottom:-10%;left:-45%;width:55%;opacity:0;pointer-events:none;
+ background:linear-gradient(103deg,transparent 30%,var(--beam) 46%,rgba(255,255,255,.14) 50%,var(--beam) 54%,transparent 70%);
+ mix-blend-mode:screen;filter:blur(10px);transform:skewX(-8deg);
+}
+.auth-cinematic:after{
+ content:"";position:absolute;inset:0;opacity:0;pointer-events:none;
+ background-image:
+ radial-gradient(circle,rgba(var(--dust),.9) 0 1.2px,transparent 2.4px),
+ radial-gradient(circle,rgba(var(--dust),.6) 0 1px,transparent 2px),
+ radial-gradient(circle,rgba(var(--dust),.45) 0 2px,transparent 3.6px);
+ background-size:173px 211px,97px 131px,283px 317px;
+ background-position:0 0,40px 70px,120px 30px;
+ -webkit-mask-image:radial-gradient(ellipse at 50% 46%,#000 20%,transparent 78%);
+ mask-image:radial-gradient(ellipse at 50% 46%,#000 20%,transparent 78%);
+}
+.auth-root.auth-intro-active .auth-cinematic:before{
+ animation:cnBeam 3.4s cubic-bezier(.4,.1,.2,1) 1s forwards!important;
+}
+.auth-root.auth-intro-active .auth-cinematic:after{
+ animation:cnDustIn 1.6s ease 1.2s forwards,cnDustDrift 26s linear 1.2s infinite!important;
+}
+
+/* —— 第二幕：毛笔与金色笔迹 —— */
 .cinematic-brush{
-  position:absolute;
-  left:-32vw;
-  top:-18vh;
-  width:min(680px,46vw);
-  height:min(330px,30vw);
-  background-image:url("./chen-nan-ink.webp");
-  background-size:980px auto;
-  background-position:65% 1%;
-  background-repeat:no-repeat;
-  transform:rotate(16deg) scale(.28);
-  opacity:0;
-  filter:saturate(1.2) contrast(1.08) drop-shadow(0 18px 38px rgba(0,0,0,.48));
-  -webkit-mask-image:radial-gradient(ellipse at center,#000 35%,rgba(0,0,0,.92) 56%,transparent 78%);
-  mask-image:radial-gradient(ellipse at center,#000 35%,rgba(0,0,0,.92) 56%,transparent 78%);
-  will-change:left,top,opacity,transform;
+ position:absolute;left:-32vw;top:-18vh;
+ width:min(680px,46vw);height:min(330px,30vw);
+ background-image:url("./chen-nan-ink.webp");
+ background-size:980px auto;background-position:65% 1%;background-repeat:no-repeat;
+ transform:rotate(16deg) scale(.28);opacity:0;
+ filter:saturate(1.2) contrast(1.08) drop-shadow(0 18px 38px rgba(0,0,0,.48));
+ -webkit-mask-image:radial-gradient(ellipse at center,#000 35%,rgba(0,0,0,.92) 56%,transparent 78%);
+ mask-image:radial-gradient(ellipse at center,#000 35%,rgba(0,0,0,.92) 56%,transparent 78%);
+ will-change:left,top,opacity,transform;
 }
 .cinematic-trail{
-  position:absolute;
-  left:22%;
-  top:45%;
-  width:0;
-  height:4px;
-  border-radius:999px;
-  background:linear-gradient(90deg,transparent,var(--gold-strong),#fff2b8,var(--gold-strong),transparent);
-  box-shadow:0 0 16px var(--gold),0 0 42px rgba(255,185,54,.72);
-  transform:rotate(-8deg);
-  opacity:0;
-  will-change:width,opacity;
+ position:absolute;left:22%;top:45%;width:0;height:4px;border-radius:999px;
+ background:linear-gradient(90deg,transparent,var(--gold-strong),#fff2b8,var(--gold-strong),transparent);
+ box-shadow:0 0 16px var(--gold),0 0 42px rgba(255,185,54,.72);
+ transform:rotate(-8deg);opacity:0;will-change:width,opacity;
 }
+
+/* —— 第三幕：金环与 BTC —— */
 .cinematic-ring{
-  position:absolute;
-  left:50%;
-  top:43%;
-  width:240px;
-  height:240px;
-  margin:-120px;
-  border:3px solid rgba(255,206,104,.92);
-  border-radius:50%;
-  opacity:0;
-  transform:scale(.18) rotate(-28deg);
-  box-shadow:0 0 0 14px rgba(255,194,68,.05),0 0 46px rgba(255,188,55,.72),inset 0 0 36px rgba(255,195,77,.38);
-  will-change:opacity,transform;
+ position:absolute;left:50%;top:43%;width:240px;height:240px;margin:-120px;
+ border:3px solid rgba(255,206,104,.92);border-radius:50%;opacity:0;
+ transform:scale(.18) rotate(-28deg);
+ box-shadow:0 0 0 14px rgba(255,194,68,.05),0 0 46px rgba(255,188,55,.72),inset 0 0 36px rgba(255,195,77,.38);
+ will-change:opacity,transform;
 }
 .cinematic-ring:before,.cinematic-ring:after{
-  content:"";
-  position:absolute;
-  border-radius:50%;
-  inset:17px;
-  border:1px dashed rgba(255,220,148,.76);
+ content:"";position:absolute;border-radius:50%;inset:17px;border:1px dashed rgba(255,220,148,.76);
 }
-.cinematic-ring:after{
-  inset:34px;
-  border-style:solid;
-  border-color:rgba(255,201,95,.32);
-}
+.cinematic-ring:after{inset:34px;border-style:solid;border-color:rgba(255,201,95,.32)}
 .cinematic-btc{
-  position:absolute;
-  left:50%;
-  top:43%;
-  transform:translate(-50%,-50%) scale(.12) rotate(-8deg);
-  font:900 150px/1 Georgia,serif;
-  color:#ffe197;
-  opacity:0;
-  text-shadow:0 0 7px #fff5c7,0 0 24px #ffc451,0 0 72px rgba(255,170,32,.8);
-  will-change:opacity,transform;
+ position:absolute;left:50%;top:43%;
+ transform:translate(-50%,-50%) scale(.12) rotate(-8deg);
+ font:900 150px/1 Georgia,serif;color:#ffe197;opacity:0;
+ text-shadow:0 0 7px #fff5c7,0 0 24px #ffc451,0 0 72px rgba(255,170,32,.8);
+ will-change:opacity,transform;
 }
+
+/* —— 第四幕：品牌字 —— */
 .cinematic-brand{
-  position:absolute;
-  left:50%;
-  top:72%;
-  transform:translate(-50%,18px);
-  font:900 38px/1 "Kaiti SC","STKaiti","KaiTi","Songti SC",serif;
-  letter-spacing:.15em;
-  color:#fff;
-  opacity:0;
-  text-align:center;
-  text-shadow:0 3px 18px rgba(0,0,0,.5);
-  will-change:opacity,transform;
+ position:absolute;left:50%;top:72%;transform:translate(-50%,18px);
+ font:900 38px/1 "Kaiti SC","STKaiti","KaiTi","Songti SC",serif;
+ letter-spacing:.15em;color:#fff;opacity:0;text-align:center;
+ text-shadow:0 3px 18px rgba(0,0,0,.5);will-change:opacity,transform,filter;
 }
 .cinematic-brand small{
-  display:block;
-  margin-top:12px;
-  font:600 13px/1 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
-  letter-spacing:.42em;
-  color:rgba(255,255,255,.82);
+ display:block;margin-top:12px;
+ font:600 13px/1 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+ letter-spacing:.42em;color:rgba(255,255,255,.82);
 }
 
 /* JS 准备好资源后才添加 auth-intro-active；在此之前绝不偷跑。 */
 .auth-root.auth-intro-active .cinematic-brush{
-  animation:brushFlyIn 3.1s cubic-bezier(.18,.68,.22,1) .35s forwards!important;
+ animation:cnBrush 3.1s cubic-bezier(.18,.68,.22,1) .35s forwards!important;
 }
 .auth-root.auth-intro-active .cinematic-trail{
-  animation:goldTrail 2.2s cubic-bezier(.22,.68,.28,1) 2.15s forwards!important;
+ animation:cnTrail 2.2s cubic-bezier(.22,.68,.28,1) 2.15s forwards!important;
 }
 .auth-root.auth-intro-active .cinematic-ring{
-  animation:ringForm 1.85s cubic-bezier(.15,.82,.2,1) 3.65s forwards!important;
+ animation:cnRing 1.85s cubic-bezier(.15,.82,.2,1) 3.65s forwards!important;
 }
 .auth-root.auth-intro-active .cinematic-btc{
-  animation:btcForm 1.75s cubic-bezier(.15,.88,.2,1) 3.95s forwards!important;
+ animation:cnBtc 1.75s cubic-bezier(.15,.88,.2,1) 3.95s forwards,
+ cnBtcGlow 3.2s ease-in-out 5.7s infinite!important;
 }
 .auth-root.auth-intro-active .cinematic-brand{
-  animation:introBrand 1.15s ease 5.15s forwards!important;
+ animation:cnBrand 1.25s cubic-bezier(.2,.7,.2,1) 5.15s forwards!important;
 }
 .auth-intro-finish .auth-cinematic{
-  opacity:.18!important;
-  filter:blur(4px) brightness(.9)!important;
+ opacity:.18!important;
+ filter:blur(4px) brightness(.9)!important;
 }
-.auth-stage{
-  position:relative;
-  z-index:3;
-  width:min(1480px,calc(100vw - 42px));
-  min-height:min(820px,calc(100vh - 42px));
-  margin:auto;
-  display:grid;
-  place-items:center;
-  opacity:0;
-  transform:translateY(16px);
-  transition:opacity 1.05s ease,transform 1.05s cubic-bezier(.2,.72,.2,1);
-}
-.auth-stage-visible{opacity:1;transform:none}
 
-@keyframes brushFlyIn{
-  0%{left:-34vw;top:-22vh;opacity:0;transform:rotate(22deg) scale(.18)}
-  38%{opacity:1}
-  100%{left:35%;top:17%;opacity:1;transform:rotate(18deg) scale(.84)}
+/* 登录区：从景深里浮出（先虚焦、略缩小，再对焦） */
+.auth-stage{
+ position:relative;z-index:3;
+ width:min(1480px,calc(100vw - 42px));
+ min-height:min(820px,calc(100vh - 42px));
+ margin:auto;display:grid;place-items:center;
+ opacity:0;transform:translateY(22px) scale(.975);filter:blur(10px);
+ transition:opacity 1.15s ease,transform 1.15s cubic-bezier(.2,.72,.2,1),filter 1.15s ease!important;
 }
-@keyframes goldTrail{
-  0%{width:0;opacity:0}
-  20%{opacity:1}
-  100%{width:56%;opacity:.96}
+.auth-stage-visible{opacity:1;transform:none;filter:none}
+.auth-success .login-shell{transform:scale(.985);opacity:.2;filter:blur(5px)}
+
+@keyframes cnDawn{
+ 0%{opacity:1}
+ 55%{opacity:.62}
+ 100%{opacity:0}
 }
-@keyframes ringForm{
-  0%{opacity:0;transform:scale(.18) rotate(-30deg)}
-  70%{opacity:1}
-  100%{opacity:1;transform:scale(1) rotate(0)}
+@keyframes cnLetterbox{
+ 0%{opacity:1;background-size:100% 0,100% 0}
+ 22%{opacity:1;background-size:100% var(--bar),100% var(--bar)}
+ 80%{opacity:1;background-size:100% var(--bar),100% var(--bar)}
+ 100%{opacity:1;background-size:100% 0,100% 0}
 }
-@keyframes btcForm{
-  0%{opacity:0;transform:translate(-50%,-50%) scale(.12) rotate(-8deg)}
-  100%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(0)}
+@keyframes cnBeam{
+ 0%{opacity:0;left:-45%}
+ 18%{opacity:1}
+ 82%{opacity:.85}
+ 100%{opacity:0;left:105%}
 }
-@keyframes introBrand{
-  to{opacity:1;transform:translate(-50%,0)}
+@keyframes cnDustIn{to{opacity:.85}}
+@keyframes cnDustDrift{
+ to{background-position:0 -211px,40px -61px,120px -287px}
+}
+@keyframes cnBrush{
+ 0%{left:-34vw;top:-22vh;opacity:0;transform:rotate(22deg) scale(.18)}
+ 38%{opacity:1}
+ 100%{left:35%;top:17%;opacity:1;transform:rotate(18deg) scale(.84)}
+}
+@keyframes cnTrail{
+ 0%{width:0;opacity:0}
+ 20%{opacity:1}
+ 100%{width:56%;opacity:.96}
+}
+@keyframes cnRing{
+ 0%{opacity:0;transform:scale(.18) rotate(-30deg)}
+ 70%{opacity:1}
+ 100%{opacity:1;transform:scale(1) rotate(0)}
+}
+@keyframes cnBtc{
+ 0%{opacity:0;transform:translate(-50%,-50%) scale(.12) rotate(-8deg)}
+ 100%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(0)}
+}
+@keyframes cnBtcGlow{
+ 0%,100%{text-shadow:0 0 7px #fff5c7,0 0 24px #ffc451,0 0 72px rgba(255,170,32,.8)}
+ 50%{text-shadow:0 0 10px #fffae0,0 0 38px #ffd065,0 0 110px rgba(255,170,32,.95)}
+}
+@keyframes cnBrand{
+ 0%{opacity:0;transform:translate(-50%,18px);filter:blur(9px);letter-spacing:.38em}
+ 100%{opacity:1;transform:translate(-50%,0);filter:blur(0);letter-spacing:.15em}
 }
 
 @media(max-width:760px){
-  .cinematic-brush{width:520px;height:260px}
-  .cinematic-ring{width:190px;height:190px;margin:-95px}
-  .cinematic-btc{font-size:116px}
-  .cinematic-brand{top:67%;font-size:30px}
+ :root{--bar:6vh}
+ .cinematic-brush{width:520px;height:260px}
+ .cinematic-ring{width:190px;height:190px;margin:-95px}
+ .cinematic-btc{font-size:116px}
+ .cinematic-brand{top:67%;font-size:30px}
+ .auth-cinematic:before{width:90%;left:-95%}
 }
+
+/* 减少动态效果：保留旧版“快速显示”，并关掉光束、尘埃、黑边、模糊 */
 @media(prefers-reduced-motion:reduce){
-  .auth-root.auth-intro-active .cinematic-brush,
-  .auth-root.auth-intro-active .cinematic-trail,
-  .auth-root.auth-intro-active .cinematic-ring,
-  .auth-root.auth-intro-active .cinematic-btc,
-  .auth-root.auth-intro-active .cinematic-brand{
-    animation-duration:.01ms!important;
-    animation-delay:0ms!important;
-  }
+ .auth-root.auth-intro-active .cinematic-brush,
+ .auth-root.auth-intro-active .cinematic-trail,
+ .auth-root.auth-intro-active .cinematic-ring,
+ .auth-root.auth-intro-active .cinematic-btc,
+ .auth-root.auth-intro-active .cinematic-brand{
+ animation-duration:.01ms!important;
+ animation-delay:0ms!important;
+ animation-iteration-count:1!important;
+ }
+ .auth-root.auth-intro-active .cinematic-shade:before,
+ .auth-root.auth-intro-active .cinematic-shade:after,
+ .auth-root.auth-intro-active .auth-cinematic:before,
+ .auth-root.auth-intro-active .auth-cinematic:after{
+ animation:none!important;opacity:0!important;
+ }
+ .auth-stage{filter:none;transform:none;transition-duration:.01ms!important}
+ .auth-intro-finish .auth-cinematic,
+ .cinematic-brush,.cinematic-brand,
+ .auth-success .login-shell,.login-shell .auth-card{filter:none!important}
 }

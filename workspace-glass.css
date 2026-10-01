@@ -1,0 +1,101 @@
+/* 工作台景深层：独立于登录和业务模块，保留表格、编辑器的实色阅读面。 */
+:root{
+ --cn-glass-edge:rgba(255,255,255,.62);
+ --cn-depth-shadow:0 18px 48px rgba(22,58,88,.12);
+ --cn-scene-wash:rgba(236,247,255,.76);
+}
+html[data-theme="night"]{
+ --cn-glass-edge:rgba(255,222,156,.16);
+ --cn-depth-shadow:0 20px 50px rgba(0,0,0,.28);
+ --cn-scene-wash:rgba(4,11,20,.80);
+}
+html[data-theme="warm"]{
+ --cn-glass-edge:rgba(255,255,255,.72);
+ --cn-depth-shadow:0 18px 48px rgba(79,53,24,.12);
+ --cn-scene-wash:rgba(249,239,218,.80);
+}
+.app.app-ready{animation:none!important}
+.app.app-ready:before{filter:blur(5px) saturate(.82)!important;transform:scale(1.025);pointer-events:none}
+html[data-theme] .app.app-ready:after{
+ background:var(--cn-scene-wash)!important;
+ backdrop-filter:blur(4px)!important;
+}
+.app.app-ready>.sidebar{
+ background:var(--sidebar-bg)!important;
+ border-color:var(--cn-glass-edge)!important;
+ box-shadow:12px 0 40px rgba(0,0,0,.12),inset -1px 0 var(--cn-glass-edge)!important;
+ -webkit-backdrop-filter:blur(26px) saturate(1.12);
+ backdrop-filter:blur(26px) saturate(1.12)!important;
+}
+.app.app-ready .app-global-header{
+ background:var(--header-bg)!important;
+ border-color:var(--cn-glass-edge)!important;
+ box-shadow:0 10px 32px rgba(0,0,0,.08),inset 0 -1px var(--cn-glass-edge)!important;
+ -webkit-backdrop-filter:blur(24px) saturate(1.12);
+ backdrop-filter:blur(24px) saturate(1.12)!important;
+}
+.app.app-ready :is(.card,.panel,.group-card,.profile-row,.event,.detail-box,.batch-card,.offer-card){
+ background:var(--paper)!important;
+ border-color:var(--cn-glass-edge)!important;
+ box-shadow:var(--cn-depth-shadow),inset 0 1px var(--cn-glass-edge)!important;
+ -webkit-backdrop-filter:blur(18px) saturate(1.08);
+ backdrop-filter:blur(18px) saturate(1.08)!important;
+}
+.app.app-ready .metric{
+ background:linear-gradient(145deg,var(--paper),var(--accent-soft))!important;
+}
+/* 不支持背景模糊时，上面的实色表面仍可直接阅读。 */
+@supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+ .app.app-ready>.sidebar{background:color-mix(in srgb,var(--sidebar-bg) 88%,transparent)!important}
+ .app.app-ready .app-global-header{background:color-mix(in srgb,var(--header-bg) 92%,transparent)!important}
+ .app.app-ready :is(.card,.panel,.group-card,.profile-row,.event,.detail-box,.batch-card,.offer-card){
+  background:color-mix(in srgb,var(--paper) 92%,transparent)!important;
+ }
+ .app.app-ready .metric{
+  background:linear-gradient(145deg,color-mix(in srgb,var(--paper) 94%,transparent),color-mix(in srgb,var(--accent-soft) 88%,transparent))!important;
+ }
+}
+/* 只在 app-ready 被认证流程添加后播放；不变换 .app，避免改变固定导航的定位参照。 */
+.app.app-ready>.sidebar{animation:cnSidebarEnter .64s cubic-bezier(.2,.72,.2,1) both!important}
+.app.app-ready .app-global-header{animation:cnHeaderEnter .64s cubic-bezier(.2,.72,.2,1) .07s both!important}
+.app.app-ready>.main>.section{animation:cnWorkspaceEnter .76s cubic-bezier(.2,.72,.2,1) .12s backwards}
+.app.app-ready>.main>.section .dashboard>.metric{
+ animation:cnCardEnter .62s cubic-bezier(.2,.72,.2,1) .18s backwards;
+}
+.app.app-ready>.main>.section .dashboard>.metric:nth-child(2){animation-delay:.22s}
+.app.app-ready>.main>.section .dashboard>.metric:nth-child(3){animation-delay:.26s}
+.app.app-ready>.main>.section .dashboard>.metric:nth-child(4){animation-delay:.30s}
+.app.app-ready>.main>.section .dashboard>.metric:nth-child(5){animation-delay:.34s}
+.app.app-ready>.main>.section .dashboard>.metric:nth-child(6){animation-delay:.38s}
+.app.app-ready>.main>.section .dashboard>.metric:nth-child(7){animation-delay:.42s}
+.app.app-ready>.main>.section .dashboard>.metric:nth-child(8){animation-delay:.46s}
+.app.app-ready>.sidebar .nav button{color:var(--nav-ink)!important}
+.app.app-ready>.sidebar .nav button.active{color:var(--accent-ink)!important;background:var(--accent-soft)!important}
+.app.app-ready>.sidebar .brand-copy b{display:none!important}
+.app.app-ready>.sidebar :is(.brand-copy small,.side-note,.nav-collapse){color:var(--muted)!important}
+.app.app-ready :is(.header-brand span,.header-user small,.metric .label,.sub){color:var(--ink)!important}
+.app.app-ready .metric .trend{color:var(--accent-ink)!important}
+.app.app-ready :is(button,a,input,select,textarea):focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+@keyframes cnSidebarEnter{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:none}}
+@keyframes cnHeaderEnter{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+@keyframes cnWorkspaceEnter{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes cnCardEnter{from{opacity:0;transform:translateY(10px) scale(.99)}to{opacity:1;transform:none}}
+@media(hover:hover) and (pointer:fine){
+ .app.app-ready :is(.card,.group-card,.profile-row,.event,.batch-card,.offer-card):hover{
+  transform:translateY(-3px)!important;
+  box-shadow:0 22px 52px rgba(0,0,0,.14),inset 0 1px var(--cn-glass-edge)!important;
+ }
+}
+@media(max-width:760px){
+ .app.app-ready>.sidebar{border-radius:16px 16px 0 0!important;animation-name:cnHeaderEnter!important}
+ .app.app-ready :is(.card,.panel,.group-card,.profile-row,.event,.detail-box,.batch-card,.offer-card){
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)!important;
+ }
+ .app.app-ready>.main>.section{animation-duration:.5s}
+}
+@media(prefers-reduced-motion:reduce){
+ .app.app-ready>.sidebar,.app.app-ready .app-global-header,
+ .app.app-ready>.main>.section,.app.app-ready .dashboard>.metric{animation:none!important}
+ .app.app-ready:before{filter:none!important;transform:none}
+ .app.app-ready :is(.card,.group-card,.profile-row,.event,.metric,.batch-card,.offer-card):hover{transform:none!important}
+}
