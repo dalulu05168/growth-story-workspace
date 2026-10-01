@@ -9,7 +9,7 @@ async function workspaceVisuals(browser,url){
  assert.equal(new URL(url).hostname,'127.0.0.1','mock cloud responses must stay local');
  const people=JSON.parse(fs.readFileSync('data/people.json','utf8')).people;
  for(const reducedMotion of ['no-preference','reduce']){
-  const context=await browser.newContext({viewport:{width:1440,height:960},reducedMotion});
+  const context=await browser.newContext({serviceWorkers:"block",viewport:{width:1440,height:960},reducedMotion});
   const calls=[];
   await context.route('**/functions/v1/workspace-cloud',async route=>{
    const request=route.request().postDataJSON();calls.push(request.action);
@@ -39,7 +39,7 @@ async function workspaceVisuals(browser,url){
    await page.locator('#loginUser').fill('e2e_local_visual');
    await page.locator('#loginPassword').fill('local-fixture-password');
    await page.locator('#loginForm button[type=submit]').click();
-   await page.locator('.app.app-ready').waitFor({state:'visible'});
+   await page.locator('.app.app-ready').waitFor({state:'visible'}).catch(async error=>{console.error('WORKSPACE_LOGIN_DIAGNOSTIC',JSON.stringify({calls,errors,authError:await page.locator('#authError').textContent()}));throw error});
    const animation=await page.locator('.sidebar').evaluate(e=>getComputedStyle(e).animationName);
    assert.equal(animation,reducedMotion==='reduce'?'none':'cnSidebarEnter');
    assert.equal(await page.locator('.app').evaluate(e=>getComputedStyle(e).transform),'none');
