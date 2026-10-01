@@ -27,23 +27,8 @@ function brushLogo(extraClass=''){
 }
 window.ChenNanBrandMarkup=brushLogo;
 
-function themeSelect(className=''){
-  const current=window.ChenNanTheme?.get?.()||'night';
-  const buttons=window.ChenNanTheme?.buttons?.()||[
-    ['night','星空金黑'],['warm','暖光书卷'],['blue','通透蓝白']
-  ].map(([id,label])=>'<button type="button" class="theme-chip '+(id===current?'active':'')+'" data-theme-button="'+id+'" aria-pressed="'+(id===current?'true':'false')+'"><span class="theme-swatch"></span><b>'+label+'</b></button>').join('');
-  return '<div class="theme-control '+className+'"><span class="theme-control-label">切换主题</span><div class="theme-chip-group">'+buttons+'</div></div>';
-}
-
 function cinematicIntro(){
-  return '<div class="auth-cinematic" id="authCinematic" aria-hidden="true">'
-    +'<div class="cinematic-shade"></div>'
-    +'<div class="cinematic-brush"></div>'
-    +'<div class="cinematic-trail"></div>'
-    +'<div class="cinematic-ring"></div>'
-    +'<div class="cinematic-btc">₿</div>'
-    +'<div class="cinematic-brand">辰南撰写<small>笔尖上的比特币</small></div>'
-    +'</div>';
+  return '<div class="auth-cinematic" id="authCinematic" aria-hidden="true"><div class="cinematic-brand"></div></div>';
 }
 
 function nextPaint(){
@@ -72,7 +57,7 @@ function backgroundUrls(element){
 
 async function prepareIntroAssets(root){
   const jobs=[
-    imageReady('./cinematic-brush.svg'),
+    imageReady('./login-black-gold.webp'),
     ...backgroundUrls(root).map(imageReady)
   ];
   if(document.fonts?.ready)jobs.push(document.fonts.ready.catch(()=>{}));
@@ -202,30 +187,36 @@ async function showAuthCard(){
   }
 
   stage.innerHTML='<div class="login-shell">'
-    +themeSelect('auth-theme-control')
-    +'<div class="login-hero">'
-      +'<div class="hero-wordmark">'+brushLogo('brand-brush-hero')+'</div>'
-      +'<div class="hero-tagline">笔尖上的比特币</div>'
-      +'<div class="hero-en">CHENNAN · WRITING WORKSPACE</div>'
-      +'<h2>让人物拥有灵魂</h2>'
-      +'<p>人物档案 · 群组运营 · 事件记忆 · 文档创作 · 交易与资产</p>'
-      +'<div class="hero-theme-caption"><span></span><b>三套主题，随心切换</b></div>'
-    +'</div>'
+    +'<h1 class="login-accessible-brand">辰南撰写 · 笔尖上的比特币</h1>'
+    +'<div class="login-language"><img src="./icons/globe.svg" alt="">简体中文</div>'
     +'<div class="auth-card">'
-      +'<div class="auth-logo">'+brushLogo('brand-brush-small')+'</div>'
-      +'<div class="auth-tagline">笔尖上的比特币</div>'
-      +'<div class="auth-kicker">CHENNAN WRITING WORKSPACE</div>'
-      +'<h1 class="auth-title">欢迎回来，辰南撰写</h1>'
-      +'<p class="auth-sub">输入账户与密码，继续进入你的工作台</p>'
+      +'<h2 class="auth-title">欢迎回来</h2>'
+      +'<p class="auth-sub">从角色出发，继续构建你的故事世界</p>'
       +'<form id="loginForm">'
-        +'<div class="auth-field"><label for="loginUser">账户</label><div class="auth-input-wrap"><span class="auth-input-icon" aria-hidden="true">◎</span><input id="loginUser" name="user" autocomplete="username" placeholder="请输入账号" aria-describedby="authError" required></div></div>'
-        +'<div class="auth-field"><label for="loginPassword">密码</label><div class="auth-input-wrap"><span class="auth-input-icon" aria-hidden="true">◇</span><input id="loginPassword" type="password" name="password" autocomplete="current-password" placeholder="请输入密码" aria-describedby="authError" required></div></div>'
-        +'<button type="submit" class="auth-btn">进入工作台 <span>→</span></button>'
+        +'<div class="auth-field"><label for="loginUser">账号</label><div class="auth-input-wrap"><img class="auth-input-icon" src="./icons/user.svg" alt=""><input id="loginUser" name="user" autocomplete="username" placeholder="请输入账号" aria-describedby="authError" required></div></div>'
+        +'<div class="auth-field"><label for="loginPassword">密码</label><div class="auth-input-wrap"><img class="auth-input-icon" src="./icons/lock-key.svg" alt=""><input id="loginPassword" type="password" name="password" autocomplete="current-password" placeholder="请输入密码" aria-describedby="authError" required><button type="button" class="auth-password-toggle" aria-label="显示密码" aria-pressed="false"><img src="./icons/eye.svg" alt=""></button></div></div>'
+        +'<button type="submit" class="auth-btn">进入工作台 <img src="./icons/arrow-right.svg" alt=""></button>'
         +'<div class="auth-error" id="authError" role="alert"></div>'
       +'</form>'
-      +'<div class="auth-note"><span class="cloud-dot"></span> 云端数据同步 · 安全登录</div>'
+      +'<div class="auth-assist"><label><input type="checkbox" id="rememberAccount">记住账号</label><button type="button" id="passwordHelp" aria-expanded="false" aria-controls="authHelp">忘记密码？</button></div>'
+      +'<p id="authHelp" hidden>请联系管理员重置密码。账号密码由服务器验证。</p>'
+    +'</div>'
+    +'<div class="login-features" aria-label="工作台功能">'
+      +'<div><img src="./icons/users-four.svg" alt=""><span>多角色管理</span></div>'
+      +'<div><img src="./icons/chats.svg" alt=""><span>群组运营</span></div>'
+      +'<div><img src="./icons/chart-line-up.svg" alt=""><span>交易计划</span></div>'
+      +'<div><img src="./icons/chart-pie-slice.svg" alt=""><span>数据分析</span></div>'
     +'</div>'
   +'</div>';
+
+  try{const remembered=localStorage.getItem('chennan-login-account');if(remembered){byId('loginUser').value=remembered;byId('rememberAccount').checked=true}}catch{}
+  stage.querySelector('.auth-password-toggle').onclick=function(){
+    const visible=byId('loginPassword').type==='password';byId('loginPassword').type=visible?'text':'password';
+    this.setAttribute('aria-pressed',String(visible));this.setAttribute('aria-label',visible?'隐藏密码':'显示密码');
+    this.querySelector('img').src=visible?'./icons/eye-slash.svg':'./icons/eye.svg';
+  };
+  byId('passwordHelp').onclick=function(){const open=byId('authHelp').hidden;byId('authHelp').hidden=!open;this.setAttribute('aria-expanded',String(open))};
+  byId('rememberAccount').onchange=function(){if(!this.checked){try{localStorage.removeItem('chennan-login-account')}catch{}}};
 
   root?.classList.add('auth-form-ready');
   setTimeout(()=>{
@@ -233,7 +224,7 @@ async function showAuthCard(){
     stage.classList.add('auth-stage-visible');
     root.dataset.introPhase='login-ready';
     emitIntro('chennan:login-ready');
-  },root.dataset.introFast==='true'?0:1050);
+  },root.dataset.introFast==='true'?0:120);
   if(!cloud)byId('authError').textContent='登录服务未加载，请刷新页面重试';
 
   byId('loginForm').onsubmit=async function(e){
@@ -242,6 +233,7 @@ async function showAuthCard(){
     err.textContent='正在验证并同步云端数据…';
     btn.disabled=true;
     e.target.setAttribute('aria-busy','true');
+    try{if(byId('rememberAccount').checked)localStorage.setItem('chennan-login-account',String(f.get('user')||'').trim());else localStorage.removeItem('chennan-login-account')}catch{}
     try{
       const runtime=window.ChenNanCloud||await waitForCloudRuntime();
       if(!runtime)throw new Error('登录服务未加载，请刷新页面重试');
