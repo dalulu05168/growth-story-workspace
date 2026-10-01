@@ -1,23 +1,24 @@
 {
-  "sourceSha": "11682c51fc3e7138d6c71b616859e6398911a988",
+  "sourceSha": "2ab5b4631cfdd62fc01a53dbab20acf7ec33e7d2",
   "files": {
     "CNAME": "7f3352e8682740e6da414b7eb847d82c921ddf397bf3c175a9ae794ff8dd18f9",
-    "auth.js": "a5214870974f77f8ba09aa4898cd3beb21b9c707b8579e7d4c77d8f29f86d4a7",
+    "auth.js": "86bb379947c92f54a32c761098db6dd4197b4cc059ce1531da4722fa7fc03d9d",
     "chen-nan-ink.webp": "98900782322e07cdf812b46ba8235fd4855d0cb86a287aa6f49e03859c7f1efa",
     "cloud-sync.js": "d8ce9bfd764f04a246033b90a93be6269d75bb595cb7bf6e41425d341ac0d2c5",
     "data/people.json": "36fc325369b5db26fdb33bc5eab4f28a92fcfc5bc9c98185ce469bd76b17b1f0",
     "document-workspace.js": "dc6020633496f31627584745d9b37129e3e9a12fd1b0b71868aae7f6285d0333",
-    "index.html": "c099eb50bf7752ec350190a29e41b31a1db61a17e56f2d5108d268826cd2cc03",
-    "intro.css": "633a23e9d2d09250b97b2238dfb5d8a892ebc6c44185eb3847b2d47c4ee12744",
+    "index.html": "6d5d1c8af989e816901d4040cc5f486bd530b8fa45e149a3bc88ae6417b53aac",
+    "intro.css": "a25639beb7d3e1ad6913b8908377e460724c40818bdef0da1a77ef4049851961",
     "people-detail.js": "bb5326678af13e175fa160ae3d104443d835fa4d9f864771878dae1b762fbb6b",
     "scene-blue.webp": "9b6181c2a01e5e4f3d10e934259b4bc70464da87c65a3bcb6fe429040630c97f",
     "scene-night.webp": "fa57fca6374f1246d648994783881ba4ad70e8381e4f77c329253cdaff4fdc23",
     "scene-warm.webp": "d03c6e270a1a1f50e882b085b6d7d1fb7b2895058dc4a1e6f5f723b6ccc31e6c",
     "theme-system.js": "534507491e1bfa3c1a30e9c3386e6b8a2acf8dd45a29bcbaa7bbfe71db9d333a",
-    "theme-ui.js": "383cff943c54fa70570c982a09c16cf4e385ff1eaa1ee087b12cbbedf20d7309",
+    "theme-ui.js": "e09f2e87cd508b934f7051b6cb456d95371b45376dfc32d8b961d9452639ae9a",
     "trade-dashboard.js": "882b5dc7627ba54eea16459810ad60d3bd2b0fbe3126707f92af8ab9752c3a34",
     "trading-simulator.js": "579e06b6117d185a052de54f2e1ae607952dec53d2cd9ed9f3c43bdb16d8b113",
     "ui-shell.js": "3cfec31ae53fbb5d6aa93920dffdf72ec5c8c6abbb35db75878fc0e2de2c7e39",
-    "workspace-core.js": "f20a75581beb0f1d8026423398dbdbe1256d217f4cb32178c8cfc0c59409dc83"
+    "workspace-core.js": "f20a75581beb0f1d8026423398dbdbe1256d217f4cb32178c8cfc0c59409dc83",
+    "workspace-glass.css": "643ec623f4d3709add30ddb0a0ba2feb29db450bff88fae8d659e8b4c503f244"
   }
 }
