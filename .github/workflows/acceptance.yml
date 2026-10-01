@@ -64,7 +64,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        stage: [intro, prelogin, login, memory, navigation, business, security, offline]
+        stage: [intro, prelogin, login, memory, navigation, business, security, offline, desktop]
       max-parallel: 1
     name: browser-${{ matrix.stage }}
     steps:
@@ -87,6 +87,7 @@ jobs:
             business) node tests/business-e2e.cjs && node tests/planning-e2e.cjs ;;
             security) node tests/security-e2e.cjs ;;
             offline) node tests/offline-e2e.cjs ;;
+            desktop) node tests/desktop-e2e.cjs ;;
             *) node tests/current-e2e.cjs ;;
           esac
       - name: Revoke test account and delete synthetic data
