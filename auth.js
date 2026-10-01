@@ -238,7 +238,8 @@ async function showAuthCard(){
     try{
       const runtime=window.ChenNanCloud||await waitForCloudRuntime();
       if(!runtime)throw new Error('登录服务未加载，请刷新页面重试');
-      await runtime.login(String(f.get('user')||'').trim(),String(f.get('password')||''));
+      const result=await runtime.login(String(f.get('user')||'').trim(),String(f.get('password')||''));
+      if(result.requiresMfa){showMfaChallenge(result.challenge,runtime);return}
       root?.classList.add('auth-success');
       setTimeout(unlockApp,720);
     }catch(ex){
@@ -248,6 +249,14 @@ async function showAuthCard(){
       e.target.setAttribute('aria-busy','false');
     }
   };
+}
+
+function showMfaChallenge(challenge,runtime){
+ const stage=byId('authStage');
+ stage.innerHTML='<div class="login-shell"><div class="auth-card"><h2 class="auth-title">动态验证</h2><p class="auth-sub">输入验证器的6位验证码，或使用一次性恢复码。</p><form id="mfaForm"><div class="auth-field"><label for="mfaCode">验证码或恢复码</label><input id="mfaCode" name="code" autocomplete="one-time-code" placeholder="6位验证码 / 恢复码" required></div><button class="auth-btn" type="submit">验证并进入</button><div class="auth-error" id="mfaError" role="alert"></div></form><button type="button" id="mfaBack">返回登录</button></div></div>';
+ byId('mfaBack').onclick=()=>location.reload();
+ byId('mfaForm').onsubmit=async e=>{e.preventDefault();const button=e.target.querySelector('button'),value=byId('mfaCode').value.trim();button.disabled=true;try{await runtime.verifyMfa(challenge,/^\d{6}$/.test(value)?value:undefined,/^\d{6}$/.test(value)?undefined:value);unlockApp()}catch(error){byId('mfaError').textContent=error.message;button.disabled=false}};
+ byId('mfaCode').focus();
 }
 
 function unlockApp(){
