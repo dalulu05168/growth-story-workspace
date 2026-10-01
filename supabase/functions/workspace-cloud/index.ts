@@ -1,3 +1,4 @@
+import * as mfa from "./mfa.mjs";
 import { createClient } from "npm:@supabase/supabase-js@2.117.2";
 
 const corsHeaders = {
@@ -136,7 +137,7 @@ async function requireSession(req: Request) {
   const tokenHash = await sha256Hex(token);
   const { data: session, error } = await admin
     .from("workspace_sessions")
-    .select("id,account_id,expires_at")
+    .select("id,account_id,expires_at,mfa_verified")
     .eq("token_hash", tokenHash)
     .maybeSingle();
 
@@ -147,6 +148,8 @@ async function requireSession(req: Request) {
     await admin.from("workspace_sessions").delete().eq("id", session.id);
     return { error: json({ ok: false, error: "登录已过期，请重新登录" }, 401) };
   }
+  const { data: owner } = await admin.from("workspace_accounts").select("disabled,totp_enabled").eq("id",session.account_id).maybeSingle();
+  if(!owner||owner.disabled||owner.totp_enabled&&!session.mfa_verified)return {error:json({ok:false,error:"请完成动态验证后登录",code:"MFA_REQUIRED"},401)};
   await admin
     .from("workspace_sessions")
     .update({ last_seen_at: new Date().toISOString() })
@@ -192,7 +195,7 @@ Deno.serve(async (req) => {
 
     const { data: account, error: accountError } = await admin
       .from("workspace_accounts")
-      .select("id,username,display_name,password_salt,password_hash,password_iterations,disabled")
+      .select("id,username,display_name,password_salt,password_hash,password_iterations,disabled,totp_enabled")
       .eq("username", username)
       .maybeSingle();
 
@@ -231,6 +234,12 @@ Deno.serve(async (req) => {
       .eq("account_id", account.id)
       .lt("expires_at", new Date().toISOString());
 
+    if(account.totp_enabled){
+      const challenge=randomToken();
+      const {error}=await admin.from("workspace_login_challenges").insert({account_id:account.id,challenge_hash:await sha256Hex(challenge),purpose:"verify",expires_at:new Date(Date.now()+5*60*1000).toISOString()});
+      if(error)return json({ok:false,error:"创建动态验证失败"},500);
+      return json({ok:true,requiresMfa:true,challenge});
+    }
     const token = randomToken();
     const tokenHash = await sha256Hex(token);
     const expiresAt = new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString();
@@ -252,10 +261,55 @@ Deno.serve(async (req) => {
     });
   }
 
+  if(action==="mfa_verify"){
+    const hash=await sha256Hex(String(body.challenge||""));
+    const {data:c}=await admin.from("workspace_login_challenges").select("*").eq("challenge_hash",hash).maybeSingle();
+    if(!c||c.failed_count>=5||new Date(c.expires_at).getTime()<=Date.now())return json({ok:false,error:"动态验证已过期或尝试次数过多，请重新登录"},401);
+    const {data:a}=await admin.from("workspace_accounts").select("id,username,display_name,disabled,totp_secret,totp_last_step,recovery_hashes").eq("id",c.account_id).maybeSingle();
+    if(!a||a.disabled)return json({ok:false,error:"账户不可用"},401);
+    let step=null,recoveryHash=null;
+    try{
+      if(body.recoveryCode&&c.purpose==="verify"){
+        recoveryHash=await sha256Hex(String(body.recoveryCode).trim().toUpperCase());
+        if(!a.recovery_hashes.includes(recoveryHash))recoveryHash=null;
+      }else{
+        const seed=await mfa.open(c.purpose==="enroll"?c.encrypted_seed:a.totp_secret,Deno.env.get("WORKSPACE_MFA_KEY")||secretKey);
+        step=await mfa.verify(seed,String(body.code||""),c.purpose==="enroll"?-1:Number(a.totp_last_step));
+      }
+    }catch(error){console.error("MFA seed verification failed");return json({ok:false,error:"动态验证暂不可用，请联系管理员"},503)}
+    if(step===null&&recoveryHash===null){await admin.rpc("workspace_fail_mfa",{p_hash:hash});return json({ok:false,error:"验证码或恢复码错误，或验证码已经使用"},401)}
+    const recoveryCodes=c.purpose==="enroll"?Array.from({length:10},()=>crypto.randomUUID().replaceAll("-","").slice(0,20).toUpperCase()):null;
+    const recoveryHashes=recoveryCodes?await Promise.all(recoveryCodes.map(sha256Hex)):null;
+    const token=randomToken(),expiresAt=new Date(Date.now()+12*60*60*1000).toISOString();
+    const {data:sid,error}=await admin.rpc("workspace_complete_mfa",{p_challenge_hash:hash,p_step:step,p_recovery_hash:recoveryHash,p_token_hash:await sha256Hex(token),p_expires:expiresAt,p_recovery_hashes:recoveryHashes});
+    if(error)return json({ok:false,error:"完成动态验证失败"},500);
+    if(!sid)return json({ok:false,error:"验证已失效，请重新登录"},401);
+    return json({ok:true,token,expiresAt,account:{username:a.username,displayName:a.display_name||"辰南"},recoveryCodes});
+  }
+
   const auth = await requireSession(req);
   if (auth.error) return auth.error;
   const session = auth.session!;
 
+  if(action==="mfa_status"){
+    const {data:a,error}=await admin.from("workspace_accounts").select("totp_enabled,recovery_hashes").eq("id",session.account_id).single();
+    if(error)return json({ok:false,error:"读取安全设置失败"},500);
+    return json({ok:true,enabled:a.totp_enabled,recoveryRemaining:a.recovery_hashes.length});
+  }
+  if(action==="mfa_enroll"){
+    const {data:a}=await admin.from("workspace_accounts").select("username,password_salt,password_hash,password_iterations,totp_enabled").eq("id",session.account_id).single();
+    if(!a||a.totp_enabled)return json({ok:false,error:"账户已绑定验证器"},400);
+    const ipHash=await sha256Hex(requestIp(req));
+    const {data:attempt}=await admin.from("workspace_login_attempts").select("failed_count,locked_until").eq("username",a.username).eq("ip_hash",ipHash).maybeSingle();
+    if(attempt?.locked_until&&new Date(attempt.locked_until).getTime()>Date.now())return json({ok:false,error:"尝试次数过多，请稍后再试"},429);
+    if(!constantTimeEqual(await pbkdf2(String(body.password||""),a.password_salt,a.password_iterations),a.password_hash)){await recordFailure(a.username,ipHash,Number(attempt?.failed_count||0));return json({ok:false,error:"密码错误"},401)}
+    const seed=mfa.secret(),challenge=randomToken();
+    const encrypted=await mfa.seal(seed,Deno.env.get("WORKSPACE_MFA_KEY")||secretKey);
+    await admin.from("workspace_login_challenges").delete().eq("account_id",session.account_id).eq("purpose","enroll");
+    const {error}=await admin.from("workspace_login_challenges").insert({account_id:session.account_id,challenge_hash:await sha256Hex(challenge),purpose:"enroll",encrypted_seed:encrypted,expires_at:new Date(Date.now()+10*60*1000).toISOString()});
+    if(error)return json({ok:false,error:"绑定验证器失败"},500);
+    return json({ok:true,challenge,secret:seed,uri:"otpauth://totp/"+encodeURIComponent("辰南:"+a.username)+"?secret="+seed+"&issuer="+encodeURIComponent("辰南撰写")+"&algorithm=SHA1&digits=6&period=30"});
+  }
   if (action === "logout") {
     await admin.from("workspace_sessions").delete().eq("id", session.id);
     return json({ ok: true });

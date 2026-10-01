@@ -34,3 +34,22 @@ test('network failure has a readable error without caching credentials',async()=
   await assert.rejects(f.ctx.window.ChenNanCloud.login('invalid','invalid'),e=>e.code==='NETWORK_ERROR'&&/检查网络/.test(e.message));
   assert.equal(f.ctx.window.ChenNanCloud.hasSession(),false);
 });
+
+test('pending edits survive a new login without being overwritten by the same cloud version',async()=>{
+ const storage=new Map();const localStorage={getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)};
+ const first=fixture({localStorage});await first.ctx.window.ChenNanCloud.login('test','test');
+ first.ctx.db.dailyDocs['2026-09-29'].content='offline final sentence';first.ctx.save();
+ const second=fixture({localStorage});await second.ctx.window.ChenNanCloud.login('test','test');
+ assert.equal(second.ctx.db.dailyDocs['2026-09-29'].content,'offline final sentence');
+ await second.ctx.window.ChenNanCloud.flush();assert.equal(storage.has('chennan-pending-v2:test'),false);
+ await first.ctx.window.ChenNanCloud.logout();await second.ctx.window.ChenNanCloud.logout();
+});
+test('a conflicting remote version preserves the pending recovery snapshot',async()=>{
+ const storage=new Map();const localStorage={getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)};
+ storage.set('chennan-pending-v2:test',JSON.stringify({version:0,payload:{people:[],dailyDocs:{draft:{content:'must not disappear'}}}}));
+ const f=fixture({localStorage});await f.ctx.window.ChenNanCloud.login('test','test');
+ assert.equal(f.ctx.window.ChenNanCloud.pending().payload.dailyDocs.draft.content,'must not disappear');
+ assert.equal(f.ctx.db.dailyDocs['2026-09-29'].content,'existing');await f.ctx.window.ChenNanCloud.logout();
+});
+test('an MFA challenge does not issue a client session or load private data',async()=>{const f=fixture({fetch:async()=>({ok:true,json:async()=>({ok:true,requiresMfa:true,challenge:'opaque-test-challenge'})})});const result=await f.ctx.window.ChenNanCloud.login('test','test');assert.equal(result.requiresMfa,true);assert.equal(f.ctx.window.ChenNanCloud.hasSession(),false);assert.equal(f.refreshed(),0)});
+test('a previously authenticated workspace restores the pending draft when cloud is offline',async()=>{const storage=new Map(),localStorage={getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)};const f=fixture({localStorage});await f.ctx.window.ChenNanCloud.login('test','test');f.ctx.db.records=[{content:'offline recovery'}];f.ctx.save();const online=f.ctx.fetch;f.ctx.fetch=async()=>{throw Error('offline')};assert.equal(await f.ctx.window.ChenNanCloud.resume(),true);assert.equal(f.ctx.db.records[0].content,'offline recovery');f.ctx.fetch=online;await f.ctx.window.ChenNanCloud.logout()});

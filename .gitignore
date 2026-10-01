@@ -4,3 +4,5 @@ evidence/
 dist/
 
 assets/**/*-source.png
+
+supabase/.temp/

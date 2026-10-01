@@ -1,6 +1,7 @@
 /* Local-only visual acceptance. Exercise the login form against synthetic cloud responses. */
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
+const {contrastAudit}=require('./contrast-audit.cjs');
 async function settle(page){
  await page.evaluate(async()=>{await Promise.all(document.getAnimations().filter(a=>a.effect.getComputedTiming().iterations!==Infinity).map(a=>a.finished.catch(()=>{})))});
 }
@@ -14,7 +15,7 @@ async function workspaceVisuals(browser,url){
    const request=route.request().postDataJSON();calls.push(request.action);
    assert(['login','load'].includes(request.action),'visual tests may not modify cloud data');
    const body=request.action==='login'?{ok:true,token:'local-visual-session',account:{username:'e2e_local_visual'}}:
-    {ok:true,version:1,payload:{people,records:[],docs:[],dailyDocs:{},customGroups:[],meta:{},portfolio:{},tradeSim:{}}};
+    {ok:true,version:1,payload:{people,records:[],docs:[],dailyDocs:{},customGroups:[],meta:{},portfolio:{},tradeSim:{offers:[{id:'visual-offer',symbol:'SOTA',name:'Elbo EU',market:'美股',currency:'USD',unitPrice:32,minShares:300,discountPct:15,holdDays:3,participantCount:10}],recommendations:[]}}};
    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(body)});
   });
   try{
@@ -84,6 +85,7 @@ async function workspaceVisuals(browser,url){
     await page.locator('.nav [data-page="'+id+'"]').click();
     await page.locator('#'+id+'.active').waitFor({state:'visible'});await settle(page);
     assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'mobile page overflow '+id);
+    await contrastAudit(page);
    }
    for(const [width,height] of [[667,375],[852,393],[932,430],[1024,600],[1280,540]]){
     await page.setViewportSize({width,height});

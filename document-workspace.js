@@ -2,6 +2,7 @@
 (function(){
 'use strict';
 let activeDate=dateKey(), currentPersonId=null, autosaveTimer=null;
+const shownWarnings=new Set();
 const E=id=>document.getElementById(id), QA=s=>[...document.querySelectorAll(s)];
 const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const pname=p=>p?(p.name||p.frenchName||p.id):'未知人物';
@@ -44,7 +45,7 @@ function statements(text){
 const has=(t,a)=>a.some(x=>t.includes(x));
 function detect(p,content){
   const now=norm(content), issues=[], past=db.records.filter(r=>String(r.personId)===String(p.id)&&!(r.source==='document'&&r.docDate===activeDate)).map(r=>norm(r.content));
-  const opened=!!p.account?.opened,joined=!!p.crm?.joined_group,isVip=!!p.vip?.is_vip,activeHoldings=(db.portfolio?.holdings||[]).filter(x=>String(x.personId)===String(p.id)&&x.status!=='sold'),tradeHistory=(db.portfolio?.holdings||[]).filter(x=>String(x.personId)===String(p.id));
+  const opened=!!p.account?.opened&&(!p.account?.opened_date||p.account.opened_date<=activeDate),joined=!!p.crm?.joined_group&&(!p.crm?.group_joined_date||p.crm.group_joined_date<=activeDate),isVip=!!p.vip?.is_vip,activeHoldings=(db.portfolio?.holdings||[]).filter(x=>String(x.personId)===String(p.id)&&x.status!=='sold'),tradeHistory=(db.portfolio?.holdings||[]).filter(x=>String(x.personId)===String(p.id));
   if(opened&&has(now,['未开户','没有开户','从未开户','没有账户','从来没有开过账户']))issues.push('开户状态冲突：系统当前为已开户，文本却描述为未开户/没有账户。');
   if(!opened&&has(now,['已开户','有账户','账户已开','已经开户']))issues.push('开户状态冲突：系统当前为未开户，文本却描述为已开户。');
   if(joined&&has(now,['未入群','没有入群','从未入群','没进群','从来没有加入过群']))issues.push('入群状态冲突：系统当前为已入群，文本却描述为未入群。');
@@ -67,7 +68,10 @@ function detect(p,content){
   if(has(ps,['谨慎','审慎','风险敏感','慢热'])&&has(now,['毫不犹豫','完全相信','立刻决定','不考虑风险','马上全仓']))issues.push('性格差异：人物画像偏谨慎/风险敏感，但当前表现为无条件快速决策。');
   if(has(ps,['独立','自主','果断'])&&has(now,['完全依赖助理','没有主见','全部听助理']))issues.push('性格差异：人物画像偏独立自主，但当前表现为完全依赖他人。');
   if(db.records.some(r=>String(r.personId)===String(p.id)&&r.source!=='document'&&norm(r.content)===now))issues.push('重复记忆：历史记录中已有相同内容。');
-  return [...new Set(issues)];
+  const dated=window.ChenNanCharacterMemory?.inspect(p,content,activeDate,db.records)||[];
+  // Dated growth checks replace unconditional comparisons against all past attitudes.
+  const grounded=issues.filter(x=>!x.startsWith('态度变化：')&&!x.startsWith('经历冲突：历史中曾称'));
+  return [...new Set([...grounded,...dated])];
 }
 function allIssues(rows){return rows.flatMap(x=>detect(x.p,x.content).map(reason=>({p:x.p,reason,content:x.content})))}
 function issueText(xs){return xs.slice(0,10).map((x,i)=>(i+1)+'. '+pCode(x.p)+pcl(x.p)+' · '+pname(x.p)+'\n'+x.reason+'\n文本：'+x.content).join('\n\n')}
@@ -104,13 +108,14 @@ function setup(){
   bind();renderTabs();renderRank();loadEditor();renderMemory(null);
 }
 function bind(){
+  document.addEventListener('click',event=>{if(event.target.closest?.('.nav button,[data-day],#openDate'))E('growthNotice')?.close()},true);
   E('saveDaily').onclick=()=>saveDaily(true,false);E('docxExport').onclick=exportDocx;E('openDate').onclick=()=>setDate(E('dailyDatePicker').value);
   E('dailyTitle').oninput=schedule;E('dailyEditor').addEventListener('input',()=>{schedule();suggest();wordCount();renderWarnings()});E('dailyEditor').addEventListener('keyup',suggest);E('dailyEditor').addEventListener('keydown',keyDown);E('dailyEditor').addEventListener('click',()=>{const p=selectionPerson();if(p){currentPersonId=p.id;renderRank();renderMemory(p.id)}});
   QA('#wordToolbar [data-cmd]').forEach(b=>b.onclick=()=>{document.execCommand(b.dataset.cmd,false,null);E('dailyEditor').focus();schedule()});
   QA('#wordToolbar [data-block]').forEach(b=>b.onclick=()=>{document.execCommand('formatBlock',false,b.dataset.block);E('dailyEditor').focus();schedule()});
 }
 function loadEditor(){const d=cur();E('dailyTitle').value=d.title||'';E('dailyEditor').innerHTML=cleanHtml(d.html||textHtml(d.content||''));E('dailyStatus').textContent=d.updatedAt?'已保存 '+new Date(d.updatedAt).toLocaleTimeString('zh-CN',{hour12:false}):'新建内容';wordCount();renderWarnings()}
-function schedule(){E('dailyStatus').textContent='正在编辑…';clearTimeout(autosaveTimer);autosaveTimer=setTimeout(()=>saveDaily(false,true),900)}
+function schedule(){E('dailyStatus').textContent='正在编辑…';clearTimeout(autosaveTimer);autosaveTimer=setTimeout(()=>saveDaily(false,true),300)}
 function wordCount(){E('wordCount').textContent=E('dailyEditor').innerText.replace(/\s/g,'').length+' 字'}
 function saveDaily(showToast=false,silentWarnings=false){
   clearTimeout(autosaveTimer);
@@ -121,7 +126,7 @@ function saveDaily(showToast=false,silentWarnings=false){
   d.title=title;d.html=html;d.content=text;d.updatedAt=new Date().toISOString();
   db.records=db.records.filter(r=>!(r.source==='document'&&r.docDate===activeDate));
   rows.forEach(x=>db.records.push({id:'docmem-'+activeDate+'-'+x.p.id+'-'+h32(x.content),personId:x.p.id,date:activeDate,type:'发言记录',source:'document',docDate:activeDate,title:'每日文档 · '+(d.title||activeDate),content:x.content,topics:['文档记忆']}));
-  save();E('dailyStatus').textContent='本地已保存，等待云端 '+new Date().toLocaleTimeString('zh-CN',{hour12:false});renderRank();renderWarnings();if(currentPersonId)renderMemory(currentPersonId);if(showToast)toast('今日文档已保存到本地，正在同步云端');return true;
+  save();notifyGrowth(issues);E('dailyStatus').textContent='本地已保存，等待云端 '+new Date().toLocaleTimeString('zh-CN',{hour12:false});renderRank();renderWarnings();if(currentPersonId)renderMemory(currentPersonId);if(showToast)toast('今日文档已保存到本地，正在同步云端');return true;
 }
 function currentBlock(){const s=window.getSelection();if(!s||!s.rangeCount)return null;let n=s.anchorNode;if(n?.nodeType===3)n=n.parentElement;while(n&&n!==E('dailyEditor')&&n.parentElement!==E('dailyEditor'))n=n.parentElement;return n||null}
 function suggest(){const b=currentBlock(),box=E('personSuggest');if(!b||!box)return;const m=b.innerText.trim().match(/^(?:C\.)?0*(\d{1,3})$/i),p=m?byNumber(m[1]):null;if(p){box.className='doc-suggest show';box.innerHTML='Enter 插入：<b>'+esc(pCode(p)+pcl(p)+' · '+pname(p))+'</b>　发言 '+speechCount(p)+'次';currentPersonId=p.id;renderRank();renderMemory(p.id)}else box.className='doc-suggest'}
@@ -132,6 +137,14 @@ function renderMemory(pid){
   const p=pid?person(pid):null;if(!p){E('memoryPerson').innerHTML='<div class="empty">点击左侧人物，或输入编号查看记忆</div>';E('memoryTimeline').innerHTML='';E('personFrequency').textContent='未选择';return}
   E('personFrequency').textContent='发言 '+speechCount(p)+'次';E('memoryPerson').innerHTML='<div class="memory-person-card"><b>'+esc(pCode(p)+pcl(p)+' · '+pname(p))+'</b><small>'+esc(p.age||'--')+'岁 · '+esc(p.account?.status||'--')+' · '+(pVip(p)?esc(p.vip?.level||'VIP'):'非VIP')+'</small><p>'+esc(p.personality?.summary||'暂无性格描述')+'</p></div>';
   E('memoryTimeline').innerHTML=memRows(p).map(x=>'<div class="memory-row"><b>'+esc(x.d)+' · '+esc(x.t)+'</b><small>'+esc(x.k)+'</small><p>'+esc(x.x)+'</p></div>').join('')||'<div class="empty">暂无历史记忆</div>';
+}
+function notifyGrowth(issues){
+ if(!E('novel')?.classList.contains('active'))return;
+ const fresh=issues.filter(x=>!shownWarnings.has(activeDate+'|'+x.p.id+'|'+x.reason));if(!fresh.length)return;
+ fresh.forEach(x=>shownWarnings.add(activeDate+'|'+x.p.id+'|'+x.reason));
+ let box=E('growthNotice');if(!box){box=document.createElement('dialog');box.id='growthNotice';box.className='growth-notice';document.body.appendChild(box)}
+ box.innerHTML='<h3>人物成长与顺序提醒</h3><p>草稿已保存。请核对历史依据；若是回忆或正常成长，请在文中补充日期、原因。</p><div>'+fresh.slice(0,3).map(x=>'<p><b>'+esc(pCode(x.p)+' · '+pname(x.p))+'</b><br>'+esc(x.reason).replace(/\n/g,'<br>')+'</p>').join('')+'</div><button type="button" class="btn ghost">知道了，继续撰写</button>';
+ box.querySelector('button').onclick=()=>box.close();if(!box.open)box.show();
 }
 function renderWarnings(){const host=E('logicWarnings');if(!host)return;const is=allIssues(statements(E('dailyEditor')?.innerText||''));host.innerHTML=is.length?'<div class="logic-warning"><b>逻辑一致性提示 · '+is.length+'条</b><br>'+is.slice(0,3).map(x=>esc(pCode(x.p)+pcl(x.p)+'：'+x.reason)).join('<br>')+'</div>':''}
 

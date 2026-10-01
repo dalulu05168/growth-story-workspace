@@ -22,7 +22,7 @@ async function deploymentHash(){
   const files=[
     'index.html','intro.css','theme-system.js','auth.js','workspace-core.js','cloud-sync.js',
     'trade-dashboard.js','people-detail.js','trading-simulator.js','document-workspace.js',
-    'ui-shell.js','theme-ui.js','login-black-gold.webp','scene-night.webp','scene-warm.webp','scene-blue.webp'
+    'ui-shell.js','theme-ui.js','character-memory.js','security-ui.js'
   ];
   const mismatches=[];
   for(const file of files){

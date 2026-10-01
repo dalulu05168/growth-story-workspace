@@ -12,6 +12,14 @@ let saveTimer=null;
 let saving=null;
 let queued=false;
 let editGeneration=0, savedGeneration=0;
+let retryTimer=null, retryAttempt=0;
+const JOURNAL_PREFIX='chennan-pending-v2:';
+function journalKey(){const name=account().username;return name?JOURNAL_PREFIX+name:null}
+function cacheKey(){const key=journalKey();return key?key+':cache':null}
+function readJournal(){try{const key=journalKey();return key&&JSON.parse(localStorage.getItem?.(key)||'null')}catch(_){return null}}
+function writeJournal(){const key=journalKey();if(!key||!hydrated)return;try{localStorage.setItem(key,JSON.stringify({version:cloudVersion,payload:db,updatedAt:new Date().toISOString()}))}catch(error){document.dispatchEvent(new CustomEvent('chennan:cloud-error',{detail:{code:'LOCAL_STORAGE_FAILED'}}));throw error}}
+function retryLater(error){if(error?.status===401||error?.code==='VERSION_CONFLICT')return;clearTimeout(retryTimer);retryTimer=setTimeout(()=>flush().catch(()=>{}),Math.min(30000,1000*2**Math.min(retryAttempt++,5)));retryTimer?.unref?.()}
+
 const REQUEST_TIMEOUT_MS=15000;
 
 function getToken(){return sessionStorage.getItem(SESSION_KEY)||''}
@@ -69,7 +77,18 @@ async function ensureDefaultPeople(){
   if(list.length){db.people=list.map(normalizePerson);db.meta.defaultDatasetVersion=DEFAULT_DATASET_VERSION;db.meta.defaultDatasetName=src.dataset_name||'法国人物70位'}
 }
 async function hydrate(){
-  const result=await call('load');
+  const pending=readJournal();
+  let result;
+  try{result=await call('load')}catch(error){
+    if(error.status===401)throw error;
+    let cached;try{cached=JSON.parse(localStorage.getItem?.(cacheKey())||'null')}catch(_){}
+    const offline=pending||cached;
+    if(!getToken()||!offline?.payload)throw error;
+    db=normalizePayload(offline.payload);cloudVersion=Number(offline.version||0);hydrated=true;editGeneration=pending?1:0;savedGeneration=0;
+    render();window.ChenNanDocumentWorkspace?.refresh?.();
+    document.dispatchEvent(new CustomEvent('chennan:cloud-error',{detail:{code:'OFFLINE_RECOVERY'}}));
+    retryLater(error);return {offline:true};
+  }
   cloudVersion=Number(result.version||0);
   if(result.payload&&typeof result.payload==='object'){
     db=normalizePayload(result.payload);
@@ -77,11 +96,18 @@ async function hydrate(){
     await ensureDefaultPeople();
   }
   hydrated=true;editGeneration=0;savedGeneration=0;
+  if(pending?.payload){
+    if(Number(pending.version)===cloudVersion){db=normalizePayload(pending.payload);editGeneration=1;}
+    else {localStorage.setItem(journalKey()+':conflict',JSON.stringify(pending));document.dispatchEvent(new CustomEvent('chennan:cloud-error',{detail:{code:'RECOVERY_CONFLICT'}}));}
+  }
   localStorage.setItem(STORAGE_KEY,JSON.stringify(db));
+  if(cacheKey())localStorage.setItem(cacheKey(),JSON.stringify({version:cloudVersion,payload:db}));
   render();
   window.ChenNanDocumentWorkspace?.refresh?.();
   if(!result.payload){editGeneration++;await flush(true);}
-  document.dispatchEvent(new CustomEvent('chennan:cloud-ready',{detail:{version:cloudVersion,updatedAt:result.updatedAt||null}}));
+  document.dispatchEvent(new CustomEvent('chennan:cloud-ready',{detail:{version:cloudVersion,updatedAt:result.updatedAt||null,pending:editGeneration!==savedGeneration}}));
+  if(editGeneration!==savedGeneration)scheduleSave(0);
+  if(localStorage.getItem?.(journalKey()+':conflict'))document.dispatchEvent(new CustomEvent('chennan:cloud-error',{detail:{code:'RECOVERY_CONFLICT'}}));
   return result;
 }
 // Await in-flight writes before flushing newer edits. Never report a failed save as synced.
@@ -96,11 +122,15 @@ async function flush(force=false){
     try{
       const result=await call('save',{payload:snapshot,expectedVersion:cloudVersion});
       cloudVersion=Number(result.version);savedGeneration=generation;
+      retryAttempt=0;clearTimeout(retryTimer);
+      if(cacheKey())localStorage.setItem(cacheKey(),JSON.stringify({version:cloudVersion,payload:snapshot}));
+      if(editGeneration===generation){const key=journalKey();if(key)localStorage.removeItem(key)}else writeJournal();
       sessionStorage.setItem('chennan-cloud-version',String(cloudVersion));
       document.dispatchEvent(new CustomEvent('chennan:cloud-saved',{detail:{version:cloudVersion,updatedAt:result.updatedAt}}));
     }catch(err){
       console.error('Cloud save failed',err);
-      document.dispatchEvent(new CustomEvent('chennan:cloud-error',{detail:{code:err.code||'SAVE_FAILED'}}));
+      retryLater(err);
+      document.dispatchEvent(new CustomEvent('chennan:cloud-error',{detail:{code:err.status===401?'AUTH_EXPIRED':err.code||'SAVE_FAILED'}}));
       if(typeof toast==='function')toast(err.code==='VERSION_CONFLICT'?'云端有其他修改，本地内容尚未同步，请先导出备份再刷新':'云端保存失败，本地缓存仍保留，请重试');
       throw err;
     }
@@ -116,9 +146,11 @@ function scheduleSave(delay=450){
 }
 async function login(username,password){
   const data=await call('login',{username,password},false);
+  if(data.requiresMfa)return data;
   setToken(data.token);sessionStorage.setItem(ACCOUNT_KEY,JSON.stringify(data.account||{}));
   await hydrate();return data;
 }
+async function verifyMfa(challenge,code,recoveryCode){const data=await call('mfa_verify',{challenge,code,recoveryCode},false);setToken(data.token);sessionStorage.setItem(ACCOUNT_KEY,JSON.stringify(data.account||{}));await hydrate();return data}
 async function resume(){
   if(!getToken())return false;
   try{await hydrate();return true}catch(err){if(err.status===401){setToken('');sessionStorage.removeItem(ACCOUNT_KEY)}return false}
@@ -129,7 +161,7 @@ async function logout(){
     await flush(true);
     await call('logout');
   }
-  clearTimeout(saveTimer);setToken('');
+  clearTimeout(saveTimer);clearTimeout(retryTimer);setToken('');
   sessionStorage.removeItem(ACCOUNT_KEY);sessionStorage.removeItem('chennan-cloud-version');hydrated=false;
   localStorage.removeItem(STORAGE_KEY);
 }
@@ -137,7 +169,10 @@ async function logout(){
 function account(){try{return JSON.parse(sessionStorage.getItem(ACCOUNT_KEY)||'{}')}catch(_){return{}}}
 
 const localSave=save;
-save=function(){localSave();editGeneration++;scheduleSave()};
+save=function(){localSave();editGeneration++;writeJournal();scheduleSave()};
+window.addEventListener?.('online',()=>{retryAttempt=0;flush().catch(()=>{})});
+window.addEventListener?.('pagehide',()=>{window.ChenNanDocumentWorkspace?.saveDraft?.();if(editGeneration!==savedGeneration)writeJournal()});
+document.addEventListener?.('visibilitychange',()=>{if(document.visibilityState==='hidden'){window.ChenNanDocumentWorkspace?.saveDraft?.();flush().catch(()=>{})}});
 
-window.ChenNanCloud={login,resume,logout,hydrate,flush,hasSession:()=>!!getToken(),account,get version(){return cloudVersion},get hydrated(){return hydrated}};
+window.ChenNanCloud={login,verifyMfa,securityStatus:()=>call('mfa_status'),enrollMfa:password=>call('mfa_enroll',{password}),resume,logout,hydrate,flush,hasSession:()=>!!getToken(),account,pending:()=>readJournal(),exportPending:()=>{let pending;try{pending=JSON.parse(localStorage.getItem?.(journalKey()+':conflict')||'null')||readJournal()}catch(_){pending=readJournal()}if(!pending)return false;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(pending,null,2)],{type:'application/json'}));a.download='chennan-unsynced-'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);return true},get version(){return cloudVersion},get hydrated(){return hydrated}};
 })();
