@@ -25,7 +25,14 @@ async function sceneVisuals(browser,url){
    const getTransforms=()=>p.evaluate(()=>['.scene-brush','.scene-coin'].map(s=>getComputedStyle(document.querySelector(s)).transform));
    const first=await getTransforms(),lakeA=await p.locator('.scene-lake').screenshot();await p.waitForTimeout(1000);const next=await getTransforms(),lakeB=await p.locator('.scene-lake').screenshot();
    if(reducedMotion==='no-preference'){assert.notDeepEqual(next,first,'brush and bitcoin must continue moving at login');assert.notEqual(Buffer.compare(lakeA,lakeB),0,'lake pixels must change independently of object layers')}
-   else{assert.deepEqual(next,first);assert.equal(Buffer.compare(lakeA,lakeB),0,'reduced motion must freeze lake pixels')}
+   else{
+    assert.deepEqual(next,first);
+    const difference=await p.evaluate(async([a,b])=>{
+     const load=src=>new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=reject;im.src='data:image/png;base64,'+src});const images=await Promise.all([load(a),load(b)]),canvas=document.createElement('canvas');canvas.width=images[0].width;canvas.height=images[0].height;const ctx=canvas.getContext('2d',{willReadFrequently:true});const pixels=images.map(im=>{ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(im,0,0);return ctx.getImageData(0,0,canvas.width,canvas.height).data});let maximum=0,changed=0;for(let i=0;i<pixels[0].length;i+=4){let d=0;for(let c=0;c<3;c++)d=Math.max(d,Math.abs(pixels[0][i+c]-pixels[1][i+c]));maximum=Math.max(maximum,d);if(d)changed++}return{maximum,changed,total:canvas.width*canvas.height};
+    },[lakeA.toString('base64'),lakeB.toString('base64')]);
+    // WebKit can dither a few composited edge pixels by one 8-bit level even with frozen transforms and time.
+    assert(difference.maximum<=1&&difference.changed<=difference.total*.001,'reduced motion must freeze scene pixels: '+JSON.stringify(difference));
+   }
    await p.locator('#loginUser').fill('e2e_local_scene');await p.locator('#loginPassword').fill('fixture');await p.locator('#loginForm button[type=submit]').click();await p.locator('#authRoot').waitFor({state:'hidden'});assert.equal(await p.locator('#authRoot').getAttribute('data-scene-state'),'disposed');
    assert.equal(await p.locator('.cn-brand-image:visible,.cn-header-logo:visible').count(),1,'one visible brand logo');assert.equal(await p.locator('.brand-copy small:visible,.header-brand span:visible').count(),0,'no duplicate brand title or subtitle');
    await p.locator('.nav [data-page=people]').click();assert.equal(await p.locator('.people-data-table tbody tr:first-child td:first-child').innerText(),'C.01');assert.equal(await p.locator('.people-data-table .person-portrait').count(),70);

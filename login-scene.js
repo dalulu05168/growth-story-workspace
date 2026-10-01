@@ -14,6 +14,9 @@ function waterFallback(canvas,root,reduced){
 window.ChenNanScene={mount(root){
  const canvas=root.querySelector('.scene-lake');if(!canvas)return;
  const reduced=matchMedia('(prefers-reduced-motion: reduce)');
+ // WebKitGTK/WPE can crash its GPU process on large animated textures; the 2D renderer retains independent lake motion.
+ const linuxWebKit=(/Linux/.test(navigator.platform)||/Linux/.test(navigator.userAgent))&&/AppleWebKit/.test(navigator.userAgent)&&!/Chrome|Chromium|Edg|OPR/.test(navigator.userAgent);
+ if(linuxWebKit){waterFallback(canvas,root,reduced);return}
  const gl=canvas.getContext('webgl',{alpha:false,antialias:false,powerPreference:'low-power'});
  if(!gl){waterFallback(canvas,root,reduced);return}
  const shader=(kind,source)=>{const s=gl.createShader(kind);gl.shaderSource(s,source);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)){gl.deleteShader(s);return null}return s};
