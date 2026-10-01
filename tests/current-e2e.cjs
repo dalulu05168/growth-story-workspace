@@ -22,7 +22,7 @@ async function deploymentHash(){
   const files=[
     'index.html','intro.css','theme-system.js','auth.js','workspace-core.js','cloud-sync.js',
     'trade-dashboard.js','people-detail.js','trading-simulator.js','document-workspace.js',
-    'ui-shell.js','theme-ui.js','chen-nan-ink.webp','scene-night.webp','scene-warm.webp','scene-blue.webp'
+    'ui-shell.js','theme-ui.js','cinematic-brush.svg','scene-night.webp','scene-warm.webp','scene-blue.webp'
   ];
   const mismatches=[];
   for(const file of files){
@@ -123,10 +123,10 @@ async function intro(page){
   assert.ok(ready.at>complete.at,'login must reveal only after the cinematic sequence completes');
 
   const resource=await page.evaluate(()=>performance.getEntriesByType('resource')
-    .filter(x=>/scene-night\.webp|chen-nan-ink\.webp/.test(x.name))
+    .filter(x=>/scene-night\.webp|cinematic-brush\.svg/.test(x.name))
     .map(x=>({name:x.name,duration:x.duration,transferSize:x.transferSize})));
   assert.ok(resource.some(x=>x.name.includes('scene-night.webp')),'night scene must load as an external image asset');
-  assert.ok(resource.some(x=>x.name.includes('chen-nan-ink.webp')),'brush image must load before/for intro');
+  assert.ok(resource.some(x=>x.name.includes('cinematic-brush.svg')),'brush image must load before/for intro');
 
   console.log(JSON.stringify({intro:'PASS',duration,events,resource}));
 }
