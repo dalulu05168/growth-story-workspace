@@ -72,7 +72,7 @@ function backgroundUrls(element){
 
 async function prepareIntroAssets(root){
   const jobs=[
-    imageReady('./chen-nan-ink.webp'),
+    imageReady('./cinematic-brush.svg'),
     ...backgroundUrls(root).map(imageReady)
   ];
   if(document.fonts?.ready)jobs.push(document.fonts.ready.catch(()=>{}));
