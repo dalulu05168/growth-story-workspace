@@ -41,7 +41,7 @@ async function workspaceVisuals(browser,url){
    await page.locator('#loginForm button[type=submit]').click();
    await page.locator('.app.app-ready').waitFor({state:'visible'}).catch(async error=>{console.error('WORKSPACE_LOGIN_DIAGNOSTIC',JSON.stringify({calls,errors,authError:await page.locator('#authError').textContent()}));throw error});
    const animation=await page.locator('.sidebar').evaluate(e=>getComputedStyle(e).animationName);
-   assert.equal(animation,reducedMotion==='reduce'?'none':'cnSidebarEnter');
+   assert.equal(animation,'none','the unified workspace sidebar should remain stable after login');
    assert.equal(await page.locator('.app').evaluate(e=>getComputedStyle(e).transform),'none');
    await settle(page);
    for(const theme of ['reference']){
