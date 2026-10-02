@@ -57,7 +57,7 @@ async function run(){
     await page.locator('#rememberAccount').uncheck();
     assert.equal(await page.evaluate(()=>localStorage.getItem('chennan-login-account')),null);
     await page.locator('#passwordHelp').click();assert.equal(await page.locator('#authHelp').isVisible(),true);
-    console.log('PASS fixed black-gold theme, password visibility, account-only memory and password help');
+    console.log('PASS fixed reference theme, password visibility, account-only memory and password help');
     for(const [width,height] of [[1280,720],[1366,768],[1440,900],[1920,1080]]){
       await page.setViewportSize({width,height});
       const size=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,width:innerWidth}));
