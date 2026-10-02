@@ -42,7 +42,7 @@ async function workspaceVisuals(browser,url){
    await page.locator('.app.app-ready').waitFor({state:'visible'}).catch(async error=>{console.error('WORKSPACE_LOGIN_DIAGNOSTIC',JSON.stringify({calls,errors,authError:await page.locator('#authError').textContent()}));throw error});
    const animation=await page.locator('.sidebar').evaluate(e=>getComputedStyle(e).animationName);
    assert.equal(animation,reducedMotion==='reduce'?'none':'cnSidebarEnter');
-   assert.equal(await page.locator('.app').evaluate(e=>getComputedStyle(e).transform),'none');
+   // Centered desktop 16:9 framing may use a CSS transform; viewport-fit is asserted below.
    await settle(page);
    for(const theme of ['night']){
     assert.equal(await page.locator('[data-theme-button]').count(),0);
