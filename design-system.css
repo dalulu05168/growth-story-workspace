@@ -1843,7 +1843,7 @@ dialog.growth-notice{
 }
 .app.app-ready #trades .trade-summary-card span{display:block!important;color:#68716d!important;font-size:8px!important}
 .app.app-ready #trades .trade-summary-card strong{display:block!important;color:#111514!important;font-size:18px!important;margin-top:3px!important}
-.app.app-ready #trades .trade-summary-card small{display:block!important;color:#8a938e!important;font-size:7.5px!important;margin-top:2px!important}
+.app.app-ready #trades .trade-summary-card small{display:block!important;color:#43534a!important;font-size:11px!important;margin-top:2px!important}
 .app.app-ready #trades .trade-tabs{margin:0 0 8px!important}
 .app.app-ready #trades .trade-plan-table{
   border:1px solid var(--cn-line-strong)!important;
