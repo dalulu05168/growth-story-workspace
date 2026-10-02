@@ -1423,3 +1423,51 @@ dialog.growth-notice{
     height:auto!important;max-height:none!important;
   }
 }
+
+
+/* France 70 persona secondary detail */
+.app.app-ready #fr70PersonDetailPage .cn-memory-detail-list{
+  display:grid!important;
+  gap:6px!important;
+  max-height:420px!important;
+  overflow:auto!important;
+}
+.app.app-ready #fr70PersonDetailPage .cn-memory-detail-row{
+  padding:8px 9px!important;
+  border:1px solid var(--cn-line-soft)!important;
+  border-radius:8px!important;
+  background:#fafbfa!important;
+}
+.app.app-ready #fr70PersonDetailPage .cn-memory-detail-row>div{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:8px!important;
+}
+.app.app-ready #fr70PersonDetailPage .cn-memory-detail-row b{
+  color:#161b18!important;
+  font-size:9px!important;
+}
+.app.app-ready #fr70PersonDetailPage .cn-memory-detail-row small{
+  color:var(--cn-muted)!important;
+  font-size:7.5px!important;
+}
+.app.app-ready #fr70PersonDetailPage .cn-memory-detail-row p{
+  margin:5px 0 0!important;
+  color:#4f5a54!important;
+  font-size:9px!important;
+  line-height:1.55!important;
+}
+.app.app-ready .cn-json-preview{
+  max-height:520px!important;
+  margin:0!important;
+  padding:12px!important;
+  overflow:auto!important;
+  border:1px solid var(--cn-line-soft)!important;
+  border-radius:8px!important;
+  background:#f7f9f8!important;
+  color:#25302b!important;
+  font:500 9px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace!important;
+  white-space:pre-wrap!important;
+  word-break:break-word!important;
+}
