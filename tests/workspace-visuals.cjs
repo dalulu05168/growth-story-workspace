@@ -84,7 +84,8 @@ async function workspaceVisuals(browser,url){
    for(const id of ['overview','people','groups','records','novel','topics','trades','tradeRecommend','holdingsV2','france70chat']){
     await page.locator('.nav [data-page="'+id+'"]').click();
     await page.locator('#'+id+'.active').waitFor({state:'visible'});await settle(page);
-    assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'mobile page overflow '+id);
+    const overflow=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,width:innerWidth,offenders:[...document.querySelectorAll('.app.app-ready *')].filter(e=>e.getClientRects().length&&e.getBoundingClientRect().right>innerWidth+2).slice(0,12).map(e=>({tag:e.tagName,id:e.id,cls:String(e.className).slice(0,80),right:Math.round(e.getBoundingClientRect().right),width:Math.round(e.getBoundingClientRect().width)}))}));
+    assert(overflow.scroll<=overflow.width+1,'mobile page overflow '+id+' '+JSON.stringify(overflow));
     await contrastAudit(page);
    }
    for(const [width,height] of [[667,375],[852,393],[932,430],[1024,600],[1280,540]]){
