@@ -1,4 +1,4 @@
-/* 辰南统一设计系统运行时 v1.0 · 2026-10-03 */
+/* 辰南统一设计系统运行时 v2.0 · 2026-10-03 */
 (function(){
 'use strict';
 
@@ -61,6 +61,12 @@ const PAGE_META={
   topics:{eyebrow:'CONSISTENCY CHECK',title:'一致性检查',sub:'汇总人物数据规则、主题标签与逻辑检查信息，辅助保持长期内容一致。'}
 };
 
+const SECONDARY_PARENT={
+  personDetailPage:'people',
+  groupDetailPage:'groups',
+  recordDetailPage:'records'
+};
+
 function normalizePrimaryHeader(section){
   if(!section||!PAGE_META[section.id])return;
   const meta=PAGE_META[section.id];
@@ -109,25 +115,70 @@ function normalizeEmptyStates(root=document){
   $$('.empty',root).forEach(node=>{
     node.dataset.uiEmpty='true';
     if(!node.getAttribute('role'))node.setAttribute('role','status');
+    if(node.tagName==='TD'||node.dataset.uiEmptyStructured==='1')return;
+    if(node.children.length===0){
+      const raw=(node.textContent||'暂无内容').trim()||'暂无内容';
+      node.innerHTML='<span class="cn-empty-icon" aria-hidden="true">◇</span><b class="cn-empty-title">暂无内容</b><span class="cn-empty-desc"></span>';
+      const desc=node.querySelector('.cn-empty-desc');if(desc)desc.textContent=raw;
+      node.dataset.uiEmptyStructured='1';
+    }
   });
 }
-
-function normalizeModals(root=document){
-  $$('.modal',root).forEach(m=>m.dataset.uiSurface='modal');
-  $$('dialog',root).forEach(d=>d.dataset.uiSurface='dialog');
+function modalEyebrow(title){
+  const t=String(title||'');
+  if(/小组|分组/.test(t))return'GROUP SETTINGS';
+  if(/记录|事件|发言/.test(t))return'RECORD EDITOR';
+  if(/股票|交易|买入|卖出|持仓/.test(t))return'TRANSACTION DETAIL';
+  if(/人物|资金|盈利|参与/.test(t))return'PERSON SETTINGS';
+  return'DETAIL EDITOR';
 }
-
+function normalizeModals(root=document){
+  $$('.modal',root).forEach(m=>{
+    m.dataset.uiSurface='modal';
+    const title=m.querySelector('#modalTitle,h2');
+    if(title&&!m.querySelector('.cn-modal-eyebrow')){
+      const eye=document.createElement('div');
+      eye.className='cn-modal-eyebrow';
+      eye.textContent=modalEyebrow(title.textContent);
+      title.before(eye);
+    }else if(title&&m.querySelector('.cn-modal-eyebrow')){
+      m.querySelector('.cn-modal-eyebrow').textContent=modalEyebrow(title.textContent);
+    }
+  });
+  $$('dialog',root).forEach(d=>{
+    d.dataset.uiSurface='dialog';
+    const h=d.querySelector('h2,h3');
+    if(h&&!d.querySelector('.cn-modal-eyebrow')){
+      const eye=document.createElement('div');eye.className='cn-modal-eyebrow';eye.textContent='WORKSPACE NOTICE';h.before(eye);
+    }
+  });
+}
 function removeGroupPortraitLeaks(){
   $$('#groups .balanced-member-avatar,#groups .balanced-member .person-portrait').forEach(n=>n.remove());
 }
-
-function normalizeDetailPage(){
-  const sec=$('#personDetailPage');
-  if(!sec)return;
-  const head=sec.querySelector('.detail-head');
-  if(head)head.classList.add('cn-page-header');
-  const eyebrow=sec.querySelector('.detail-head .eyebrow');
+function normalizeDetailPages(){
+  Object.keys(SECONDARY_PARENT).forEach(id=>{
+    const sec=$('#'+id);if(!sec)return;
+    sec.dataset.uiPageType='detail';
+    sec.dataset.uiParent=SECONDARY_PARENT[id];
+    sec.classList.add('cn-secondary-page');
+    const head=sec.querySelector('.detail-head');
+    if(head)head.classList.add('cn-page-header');
+  });
+  const person=$('#personDetailPage');
+  const eyebrow=person?.querySelector('.detail-head .eyebrow');
   if(eyebrow&&eyebrow.textContent!=='PERSON PROFILE')eyebrow.textContent='PERSON PROFILE';
+}
+function syncSecondaryNav(){
+  const active=$('.main>.section.active');if(!active)return;
+  const parent=active.dataset.uiParent||SECONDARY_PARENT[active.id];
+  if(!parent)return;
+  $$('.sidebar .nav button[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===parent));
+}
+function normalizeSurfaceRoles(root=document){
+  $$('.section>.card,.section>.panel,.section>.grid>.card,.section>.grid>.panel',root).forEach(x=>x.dataset.uiSurface='parent');
+  $$('.profile-row,.candidate-card,.holding-person-card,.trade-item,.doc-item,.event,.balanced-member,.fr70-memory-row',root).forEach(x=>x.dataset.uiSurface='leaf');
+  $$('.trade-tabs,.fr70-seg,.daily-tabs',root).forEach(x=>x.dataset.uiControl='segmented');
 }
 
 function normalizeAll(root=document){
@@ -137,8 +188,10 @@ function normalizeAll(root=document){
   normalizeTables(root);
   normalizeEmptyStates(root);
   normalizeModals(root);
-  normalizeDetailPage();
+  normalizeDetailPages();
+  normalizeSurfaceRoles(root);
   removeGroupPortraitLeaks();
+  syncSecondaryNav();
 }
 normalizeAll();
 
@@ -177,10 +230,11 @@ document.addEventListener('keydown',event=>{
     return;
   }
 
-  if(active.id==='personDetailPage'){
+  const parent=active.dataset.uiParent||SECONDARY_PARENT[active.id];
+  if(parent){
     event.preventDefault();
-    if(typeof window.go==='function')window.go('people');
-    else document.querySelector('.nav button[data-page="people"]')?.click();
+    if(typeof window.go==='function')window.go(parent);
+    else document.querySelector('.nav button[data-page="'+parent+'"]')?.click();
     return;
   }
 
@@ -199,18 +253,29 @@ document.addEventListener('click',event=>{
 
 /* Expose a tiny QA helper without touching business data. */
 window.ChenNanDesignSystem={
-  version:'1.0.0',
+  version:'2.0.0',
+  expectedPrimary:['overview','people','groups','tradeRecommend','holdingsV2','trades','records','novel','france70chat','topics'],
+  expectedSecondary:['personDetailPage','groupDetailPage','recordDetailPage'],
   audit(){
     const sections=$$('.main>.section').map(s=>({
       id:s.id,
-      hasHeader:!!(s.querySelector(':scope > .topbar')||s.id==='personDetailPage'),
+      pageType:s.dataset.uiPageType||'unknown',
+      parent:s.dataset.uiParent||null,
+      hasHeader:!!(s.querySelector(':scope > .topbar,.detail-head')),
       cards:s.querySelectorAll('.card,.panel').length,
       tables:s.querySelectorAll('table').length,
-      empties:s.querySelectorAll('.empty').length
+      empties:s.querySelectorAll('.empty').length,
+      modals:s.querySelectorAll('.modal').length
     }));
-    return {version:this.version,sections};
+    const ids=new Set(sections.map(x=>x.id));
+    return {
+      version:this.version,
+      primary:this.expectedPrimary.map(id=>({id,present:ids.has(id)})),
+      secondary:this.expectedSecondary.map(id=>({id,present:ids.has(id)})),
+      sections
+    };
   },
   refresh:normalizeAll
-};
+}
 
 })();
