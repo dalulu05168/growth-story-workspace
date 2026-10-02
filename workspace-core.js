@@ -160,7 +160,6 @@ function ensureTenBalancedGroups(){
   db.meta=db.meta&&typeof db.meta==='object'?db.meta:{};
   db.meta.balancedGroupVersion=version;
   db.meta.balancedGroupSignature=signature;
-  save();
   return true;
 }
 
