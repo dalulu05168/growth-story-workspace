@@ -1,5 +1,5 @@
-/* 辰南撰写 · 概览页最终设计稿（2026-10-03）
-   只调整导航、全局头部与概览页表现；不改变人物、交易、持仓、云同步业务数据。 */
+/* 辰南撰写 · 全工作台统一设计稿（2026-10-03）
+   按已确认的白灰金色 UI 统一全部内部页面；只调整视觉与布局，不改变人物、交易、持仓、云同步业务数据。 */
 (function(){
 'use strict';
 
@@ -46,18 +46,13 @@ if(logout){
   nav.appendChild(logout);
 }
 
-/* 顶部：搜索 + 同步/账户 + 概览操作按钮同行。 */
+/* 全部内部页面取消顶部“搜索 / 同步 / 管理员”整排；页面直接从标题与主体开始。 */
 const header=$('.app-global-header');
 const overviewTop=$('#overview .topbar');
-const overviewActions=overviewTop?.querySelector('.actions');
-if(header){
-  header.classList.add('design-header');
-  $('.header-brand',header)?.remove();
-  if(overviewActions){
-    overviewActions.classList.add('overview-header-actions');
-    header.appendChild(overviewActions);
-  }
-}
+const overviewActions=overviewTop?.querySelector('.actions')||$('.overview-header-actions');
+if(header)header.classList.remove('design-header');
+if(overviewTop&&overviewActions&&overviewActions.parentElement!==overviewTop)overviewTop.appendChild(overviewActions);
+if(overviewActions)overviewActions.classList.add('overview-header-actions');
 
 /* 标题行：去掉旧介绍，改成设计稿中的实时资料状态。 */
 if(overviewTop){
@@ -388,6 +383,206 @@ html,body{background:var(--ov-bg)!important}
 }
 `;
 document.head.appendChild(st);
+
+
+/* 全部内部模块统一为已确认的白灰金色体系。 */
+const unifiedOld=$('#chennanUnifiedWorkspaceDesign');if(unifiedOld)unifiedOld.remove();
+const unifiedStyle=document.createElement('style');
+unifiedStyle.id='chennanUnifiedWorkspaceDesign';
+unifiedStyle.textContent=\`
+html[data-theme="night"],html[data-theme="warm"],html[data-theme="light"]{
+ color-scheme:light!important;
+ --bg:#eef1f2!important;--paper:#fbfcfb!important;--ink:#111412!important;--muted:#68716d!important;
+ --line:#dde1df!important;--accent:#c08a1c!important;--accent-ink:#9b680b!important;--accent-soft:#fbf2d9!important;
+ --green:#0b8e56!important;--red:#b54b4b!important;--blue:#516b84!important;
+ --header-bg:#fbfcfb!important;--sidebar-bg:#fafbfa!important;--nav-ink:#1e2320!important;
+ --cn-glass-edge:#dde1df!important;--cn-depth-shadow:0 8px 24px rgba(55,65,60,.055)!important
+}
+html,body{background:#eef1f2!important;color:#111412!important}
+.app.app-ready{background:linear-gradient(135deg,#edf1f3,#f4f5f4)!important;color:#111412!important}
+.app.app-ready:before,.app.app-ready:after{display:none!important}
+.app.app-ready .app-global-header{display:none!important}
+.app.app-ready>.main{background:transparent!important;padding-top:8px!important;padding-bottom:22px!important}
+.app.app-ready .section{max-width:none!important;color:#111412!important}
+.app.app-ready .section .topbar{
+ min-height:94px!important;margin:0 0 14px!important;padding:16px 20px!important;
+ display:flex!important;align-items:center!important;justify-content:space-between!important;gap:18px!important;
+ background:rgba(252,253,252,.96)!important;border:1px solid rgba(255,255,255,.96)!important;
+ border-radius:16px!important;box-shadow:0 8px 24px rgba(55,65,60,.055)!important
+}
+.app.app-ready .section .topbar>div:first-child{min-width:0!important}
+.app.app-ready .section .eyebrow{color:#b47b10!important;font-size:10px!important;font-weight:800!important;letter-spacing:.16em!important}
+.app.app-ready .section .page-title{
+ margin:4px 0 5px!important;color:#111412!important;font-size:28px!important;line-height:1.2!important;
+ font-weight:820!important;letter-spacing:-.022em!important
+}
+.app.app-ready .section .sub{margin:0!important;color:#68716d!important;font-size:12px!important;line-height:1.6!important}
+.app.app-ready .section :is(h2,h3){color:#151916!important;text-shadow:none!important;letter-spacing:0!important}
+.app.app-ready .section h2{font-size:17px!important;font-weight:780!important}
+.app.app-ready .section h3{font-size:14px!important;font-weight:740!important}
+.app.app-ready .section :is(.muted,.meta,small){color:#737c78!important;text-shadow:none!important}
+.app.app-ready .section .actions,.app.app-ready .section .button-row{gap:9px!important}
+.app.app-ready .section .btn{
+ min-height:38px!important;padding:8px 14px!important;border-radius:9px!important;
+ font-size:12px!important;font-weight:700!important;box-shadow:none!important
+}
+.app.app-ready .section .btn.primary{
+ background:linear-gradient(135deg,#e4b13d,#b77b12)!important;color:#fff!important;border:1px solid #b98017!important
+}
+.app.app-ready .section .btn.primary:hover{filter:brightness(.98)!important;transform:translateY(-1px)}
+.app.app-ready .section .btn.ghost{
+ background:#fff!important;color:#1a1e1b!important;border:1px solid #dfe2df!important
+}
+.app.app-ready .section .btn.danger{background:#fff2f1!important;color:#a74646!important;border:1px solid #efd8d5!important}
+.app.app-ready .section .link-btn{color:#8f620d!important;font-size:12px!important;font-weight:720!important}
+.app.app-ready .section :is(.input,.select,textarea,input:not([type=checkbox]):not([type=radio]),select){
+ background:#fff!important;color:#171b18!important;border:1px solid #d8ddda!important;
+ border-radius:9px!important;min-height:40px!important;font-size:13px!important;box-shadow:none!important
+}
+.app.app-ready .section input::placeholder,.app.app-ready .section textarea::placeholder{color:#9ba39f!important}
+.app.app-ready .section :is(.input,.select,textarea,input,select):focus{
+ border-color:#d2ac59!important;box-shadow:0 0 0 3px rgba(217,177,87,.14)!important;outline:none!important
+}
+.app.app-ready .section :is(.card,.panel,.group-card,.profile-row,.event,.detail-box,.batch-card,.offer-card,.candidate-card,.mini-person,.person-mini,.person-buy-card,.holding-person,.holding-person-card,.offer-stat,.offer-row,.detail-line,.check-box,.member-picker,.doc-item,.custom-group,.trade-mini,.memory-person-card,.memory-row,.fr70-card,.fr70-stat,.fr70-bubble,.fr70-history button,.fr70-memory-row){
+ background:#fbfcfb!important;color:#151916!important;border:1px solid #dfe3e0!important;
+ box-shadow:0 6px 20px rgba(55,65,60,.045)!important;backdrop-filter:none!important
+}
+.app.app-ready .section :is(.card,.panel){border-radius:14px!important;padding:18px!important}
+.app.app-ready .section :is(.group-card,.profile-row,.event,.detail-box,.batch-card,.offer-card,.candidate-card,.holding-person-card,.person-buy-card,.custom-group,.fr70-card,.fr70-stat){border-radius:12px!important}
+.app.app-ready .section .panel-head{margin-bottom:14px!important;gap:12px!important}
+.app.app-ready .section .toolbar{gap:10px!important;margin-bottom:12px!important}
+.app.app-ready .section .notice{
+ background:#fff8e8!important;color:#735a24!important;border:1px solid #f0dfb7!important;border-radius:10px!important;
+ padding:10px 12px!important;font-size:11px!important
+}
+.app.app-ready .section .notice.success{background:#eef8f2!important;color:#316e53!important;border-color:#d5ebdf!important}
+.app.app-ready .section .notice.warn{background:#fff6e6!important;color:#805c18!important;border-color:#efdfbd!important}
+.app.app-ready .section :is(.status,.tag,.type,.count,.sort-badge,.pill){
+ background:#f2f4f2!important;color:#59615d!important;border:1px solid #dfe3df!important;border-radius:999px!important;
+ padding:3px 8px!important;font-size:10px!important
+}
+.app.app-ready .section :is(.status.vip,.vip-badge,.vip-chip){
+ background:#fff1c9!important;color:#8b5c05!important;border-color:#e5c874!important;font-weight:800!important
+}
+.app.app-ready .section :is(.status.good,.pill.good,.stock-ready){background:#edf8f2!important;color:#0b7f4f!important;border-color:#cfe8db!important}
+.app.app-ready .section :is(.status.warn,.stock-soon){background:#fff5df!important;color:#96640a!important;border-color:#ead7a5!important}
+.app.app-ready .section :is(.danger,.profit-neg){color:#ad4d4d!important}
+.app.app-ready .section .profit-pos{color:#0b8e56!important}
+
+/* 人物库 / 通用表格 */
+.app.app-ready #peopleList:before{color:#777f7b!important;font-size:11px!important;margin-bottom:8px!important}
+.app.app-ready .section .table-wrap,.app.app-ready .people-table-wrap{border:1px solid #dfe3e0!important;border-radius:11px!important;background:#fff!important}
+.app.app-ready .section :is(table,.mini-table,.people-data-table){
+ width:100%;background:#fff!important;color:#1c211e!important;border-spacing:0!important
+}
+.app.app-ready .section :is(table,.mini-table,.people-data-table) :is(th,td){
+ background:#fff!important;color:#313733!important;border-bottom:1px solid #ecefec!important;padding:11px 12px!important;
+ font-size:12px!important;text-shadow:none!important
+}
+.app.app-ready .section :is(table,.mini-table,.people-data-table) th{
+ background:#f5f6f5!important;color:#68716d!important;font-size:10px!important;font-weight:800!important;letter-spacing:.035em!important
+}
+.app.app-ready .people-data-table tbody tr:hover td{background:#fffaf0!important}
+.app.app-ready .people-data-table .table-avatar{
+ width:42px!important;height:42px!important;min-width:42px!important;background:#f1f3f1!important;border:1px solid #d7dcd8!important;box-shadow:none!important
+}
+.app.app-ready .people-data-table .table-name{color:#171b18!important;font-size:13px!important;font-weight:760!important}
+.app.app-ready .people-data-table tr.is-vip .table-name{color:#8b610d!important}
+.app.app-ready .people-data-table tr.relation-old:not(.is-vip) .table-name,
+.app.app-ready .people-data-table tr.relation-new:not(.is-vip) .table-name{color:#171b18!important}
+.app.app-ready .person-category{background:#f3f4f2!important;color:#505753!important;border-color:#d8ddda!important}
+.app.app-ready [data-category="老女"],.app.app-ready [data-category="老男"]{background:#fff3d6!important;color:#805a10!important;border-color:#e5cd91!important}
+.app.app-ready [data-category="新女"],.app.app-ready [data-category="新男"]{background:#f1f3f1!important;color:#4d5551!important;border-color:#d9deda!important}
+.app.app-ready :is(.avatar,.gender-avatar,.detail-avatar){background:#f2f4f2!important;border:1px solid #d8ddda!important;box-shadow:none!important}
+
+/* 分组 / 交易 / 持仓 */
+.app.app-ready .section .group-grid{gap:12px!important}
+.app.app-ready .section .system-group-open{background:#fff!important;color:#1a1f1b!important;padding:16px!important;min-height:118px!important}
+.app.app-ready .section .system-group-open strong{color:#a86f0c!important;font-size:26px!important}
+.app.app-ready .section .system-group-open:hover{background:#fff9ec!important}
+.app.app-ready .section :is(.offer-stat,.detail-line,.trade-mini,.person-buy-card,.holding-person-card){background:#fff!important}
+.app.app-ready .section .offer-row.active{background:#fff7e7!important;border-color:#dfbd6a!important}
+.app.app-ready .section .candidate-card.bought{background:#eff8f3!important;border-color:#cce7d9!important}
+.app.app-ready .section .candidate-card.rejected{background:#f7f7f6!important;opacity:.82}
+.app.app-ready .section .hold-chart{
+ background:repeating-linear-gradient(to top,#fff 0,#fff 43px,#e8ebe9 44px,#e8ebe9 45px)!important;
+ border:1px solid #dfe3e0!important;border-radius:11px!important
+}
+.app.app-ready .section .hold-bar{background:#d5a43b!important;box-shadow:none!important}
+.app.app-ready .section .hold-bar.ready{background:#59a47f!important}
+.app.app-ready .section .hold-bar.soon{background:#e0ad4b!important}
+.app.app-ready .section .hold-bar-count,.app.app-ready .section .hold-bar-label b{color:#202522!important}
+.app.app-ready .section .hold-bar-label{color:#7a827e!important}
+
+/* 撰写 / 记忆 */
+.app.app-ready .section :is(.rich-editor,.editor,.editor-area,[contenteditable=true]){
+ background:#fff!important;color:#171b18!important;border-color:#dfe3e0!important;font-size:14px!important;line-height:1.8!important
+}
+.app.app-ready .section .word-toolbar{background:#f7f8f7!important;border-color:#dfe3e0!important}
+.app.app-ready .section .word-toolbar button{background:#fff!important;color:#4f5954!important;border-color:#e1e5e2!important}
+.app.app-ready .section .person-token{background:#fff1ca!important;color:#875d0a!important}
+.app.app-ready .section .logic-warning{background:#fff3ef!important;color:#94544c!important}
+.app.app-ready .section .memory-row{border-left:2px solid #d3aa52!important}
+
+/* France 70 */
+.app.app-ready #france70chat .fr70-seg{background:#f3f4f2!important;border-color:#dde1df!important}
+.app.app-ready #france70chat .fr70-seg button{color:#6d7571!important}
+.app.app-ready #france70chat .fr70-seg button.active{background:#fff!important;color:#8d620d!important}
+.app.app-ready #france70chat .fr70-bubble{background:#fff!important}
+.app.app-ready #france70chat .fr70-note{background:#fff7e5!important;color:#6f603f!important;border-color:#ecd8a6!important}
+.app.app-ready #france70chat .fr70-history button:hover,.app.app-ready #france70chat .fr70-memory-row:hover{background:#fff8e8!important;border-color:#ddbd72!important}
+
+/* 弹窗与通用阅读面 */
+.app.app-ready .modal{background:#fbfcfb!important;color:#171b18!important;border:1px solid #dfe3e0!important;box-shadow:0 22px 60px rgba(40,48,43,.16)!important}
+.app.app-ready .modal-wrap{background:rgba(33,38,35,.24)!important}
+.app.app-ready .field label{color:#626c67!important}
+.app.app-ready .empty{color:#8a928e!important}
+
+/* 概览操作按钮回到标题卡，不再占用一整条顶部工具栏。 */
+.app.app-ready #overview .overview-titlebar{padding-right:330px!important}
+.app.app-ready #overview .overview-titlebar .overview-header-actions{
+ position:absolute!important;right:22px!important;top:50%!important;transform:translateY(-50%)!important;
+ display:flex!important;align-items:center!important;gap:9px!important;z-index:2!important
+}
+.app.app-ready #overview .overview-titlebar .overview-header-actions .btn{height:42px!important;min-height:42px!important}
+.app.app-ready #overview .overview-titlebar .overview-header-actions .btn.ghost{background:#fff!important;color:#171b18!important;border:1px solid #e3dfd5!important}
+.app.app-ready #overview .overview-titlebar .overview-header-actions .btn.primary{background:linear-gradient(135deg,#e4b13d,#b77b12)!important;color:#fff!important}
+
+/* 细滚动条，避免右侧出现醒目的黑色滚动轨。 */
+.app.app-ready *{scrollbar-width:thin;scrollbar-color:#c9ceca transparent}
+.app.app-ready *::-webkit-scrollbar{width:7px;height:7px}
+.app.app-ready *::-webkit-scrollbar-track{background:transparent}
+.app.app-ready *::-webkit-scrollbar-thumb{background:#c9ceca;border-radius:99px}
+.app.app-ready *::-webkit-scrollbar-thumb:hover{background:#adb5b0}
+
+@media(hover:hover) and (pointer:fine){
+ .app.app-ready .section :is(.card,.group-card,.profile-row,.event,.batch-card,.offer-card,.candidate-card,.holding-person-card,.fr70-stat):hover{
+  transform:translateY(-2px)!important;border-color:#e0c77f!important;box-shadow:0 10px 26px rgba(55,65,60,.075)!important
+ }
+}
+@media(max-width:1250px) and (min-width:901px){
+ .app.app-ready #overview .overview-titlebar{padding-right:20px!important}
+ .app.app-ready #overview .overview-titlebar .overview-header-actions{
+  position:static!important;transform:none!important;margin-top:12px!important;justify-content:flex-start!important
+ }
+}
+@media(max-width:900px){
+ .app.app-ready>.main{padding-top:12px!important}
+ .app.app-ready .section .topbar{min-height:0!important;padding:14px!important}
+ .app.app-ready .section .page-title{font-size:24px!important}
+ .app.app-ready #overview .overview-titlebar{padding-right:14px!important}
+ .app.app-ready #overview .overview-titlebar .overview-header-actions{
+  position:static!important;transform:none!important;margin-top:12px!important;flex-wrap:wrap!important
+ }
+}
+@media(max-width:700px){
+ .app.app-ready .section .topbar{align-items:flex-start!important;flex-direction:column!important}
+ .app.app-ready .section .actions{width:100%!important}
+ .app.app-ready .section .actions .btn{flex:1 1 auto!important}
+ .app.app-ready .section :is(.card,.panel){padding:14px!important}
+}
+\`;
+document.head.appendChild(unifiedStyle);
 
 /* 概览离开后，顶部操作按钮隐藏；返回概览恢复。 */
 function syncHeaderActions(){
