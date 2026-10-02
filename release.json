@@ -1,5 +1,5 @@
 {
-  "sourceSha": "9964d89082a450f45930e4aa5b35bc5a3073244d",
+  "sourceSha": "1847fc9b3e36cfefc048eed65eb11ae2d4abad7e",
   "files": {
     "CNAME": "7f3352e8682740e6da414b7eb847d82c921ddf397bf3c175a9ae794ff8dd18f9",
     "assets/brand/chennan-logo.jpg": "f9cddb9644e71f715628511ec375b9baa7d24ba3d8b3ab0b934d87e047a1d982",
@@ -28,19 +28,19 @@
     "icons/lock-key.svg": "d8bdf1b9399f973662e000036b09da5b4ff581ecfcb67299ba99169f0e2f79fe",
     "icons/user.svg": "fc75ff764c4c7e35dc54ad7b2df491de9c04a6e5f56fac342cf7359d1d4f89f0",
     "icons/users-four.svg": "75730ed755c47c39d6b41352c53a8c1fa1226c586ce89e1b1249b4f74457ffd1",
-    "index.html": "33bbfbefa7a8249ae85f6e0555ac7e72458a4080222092a9902f441685a9cfa0",
+    "index.html": "3f3e734e5aa66dd566400a0fdff7420aff0be0fb658583eda073f0ec206bc18c",
     "intro.css": "304cff3b731e36a67867433663ff64234087f0a76263ed08ad8ffbf03c24696b",
     "login-scene.js": "24cfba757f095beef098f7ac6aea5f9ff790ed4dc4ce2b58f0ba97c201e83f25",
     "offline-register.js": "f3dce74ae3114047f66e2fd302555ac5ae6dc7bbeead759884670dc6a41c9681",
     "offline-worker.js": "ec360274695ec997aaa3f36cb7d27f002a8deb29d9df6559c834ce16ec28144b",
-    "people-detail.js": "e96a861c0903a6e0d916d6d050ae0732ac9b83d33edcdbc6b629314da7c0759d",
+    "people-detail.js": "4ed56b6a6d8cd00c897a5fa70f6ea73b6d9010c07febed8d19bb83de6e405cee",
     "security-ui.js": "5bb64abf6dd1db87d7d16c063629d4eeb59fd0eb957c18aaa9ce937477c84772",
     "theme-system.js": "682adea186383ce423c4cfff609d502e6e247bec38a9cf13ea73a1f4f19f8077",
-    "theme-ui.js": "4f03790385f3cfff942668458fae0c41cdcfbca0c7ddf0669f1953471d64280c",
+    "theme-ui.js": "f29e91acfb36bf7bc83985d643635be42ceb5f7bfdb2b258e98dc8a2249b3fd8",
     "trade-dashboard.js": "d2cec99c2054318d2e2177e5e8fde56abe33624a63ad9ce6eed7abd685e0e242",
-    "trading-simulator.js": "0f93316ab4b0b5f5c8bff98dbb9eb39327fd3beec146bcb6a3268871c321fece",
+    "trading-simulator.js": "4e7a35a1d311e22752d68863630d4e1a22cfc7a7ca34f0234fdd7b1cd96d973f",
     "ui-shell.js": "1ec4b60390a2166a5431170d0dbedfc48bf75f3c5da345ac0d6c3dfa5fcd6094",
-    "workspace-core.js": "b2842b18fe9d670715a1ce78c517ced1bb5581e247e7adc3e90dff2acb082e88",
+    "workspace-core.js": "d4f3f414e0ce8d55ed77929088acdb7bea6db0e0b57986d37e289c2a9b04e776",
     "workspace-glass.css": "5235d207a83429962c20059ea3469ec870159c66984a01b47c31ce4f7d5a32be"
   }
 }
