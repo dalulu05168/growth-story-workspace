@@ -193,7 +193,7 @@ function renderStockChart(stocks){
   return stocks.map(stock=>{
     const state=batchStatus(stock),height=Math.round(stock.count/max*180);
     const label=(stock.symbol||'未填写代码')+' · '+stock.name+' · '+(stock.market||'未填写市场')+' · '+stock.currency+' · '+stock.count+' 人 · '+state.label;
-    return '<div class="hold-bar-wrap" role="listitem" aria-label="'+h(label)+'"><span class="hold-bar-count">'+stock.count+' 人</span><div class="hold-bar '+state.key+'" style="height:'+height+'px" aria-hidden="true"></div><div class="hold-bar-label"><b>'+h(stock.symbol||'未填写代码')+'</b><span>'+h(stock.market||'未填写市场')+' · '+h(stock.currency)+'</span><span>'+h(state.label)+'</span></div></div>';
+    return '<div class="hold-bar-wrap" role="listitem" aria-label="'+h(label)+'" data-tooltip="'+h((stock.symbol||'未填写代码')+' · '+(stock.name||'未填写名称')+'｜'+(stock.market||'未填写市场')+' · '+stock.currency+'｜当前 '+stock.count+' 人｜'+state.label)+'"><span class="hold-bar-count">'+stock.count+' 人</span><div class="hold-bar '+state.key+'" style="height:'+height+'px" aria-hidden="true"></div><div class="hold-bar-label"><b>'+h(stock.symbol||'未填写代码')+'</b><span>'+h(stock.market||'未填写市场')+' · '+h(stock.currency)+'</span><span>'+h(state.label)+'</span></div></div>';
   }).join('');
 }
 function renderHoldings(){
