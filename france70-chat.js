@@ -265,6 +265,68 @@ function renderStats(){
   q('#fr70MemoryCount').textContent=count;
   q('#fr70PeopleMem').textContent=Object.keys(s.memory).length;
 }
+function ensureFrance70PersonDetailPage(){
+  var sec=q('#fr70PersonDetailPage');
+  if(sec)return sec;
+  sec=document.createElement('section');
+  sec.id='fr70PersonDetailPage';
+  sec.className='section';
+  sec.dataset.uiParent='france70chat';
+  sec.innerHTML='<div id="fr70PersonDetailContent"></div>';
+  var base=q('#france70chat');
+  if(base&&base.parentNode)base.parentNode.insertBefore(sec,base.nextSibling);
+  else q('.main')?.appendChild(sec);
+  return sec;
+}
+function memoryRowsFor(personId){
+  var m=ensureState().memory[personId]||{};
+  var rows=[];
+  [['recent','近期记忆'],['medium','中期记忆'],['long','长期记忆']].forEach(function(pair){
+    (m[pair[0]]||[]).forEach(function(x){
+      rows.push({layer:pair[1],at:x.at||'',topic:x.topic||'general',summary:x.summary_zh||x.summary||'--',evidence:x.evidence_fr||''});
+    });
+  });
+  return rows.sort(function(a,b){return String(b.at).localeCompare(String(a.at))});
+}
+function openFrance70PersonDetail(id){
+  var p=personById(id);if(!p)return;
+  ensureFrance70PersonDetailPage();
+  var state=ensureState().memory[id]||{},rows=memoryRowsFor(id),profile=p.novel_profile||{},host=q('#fr70PersonDetailContent');
+  if(!host)return;
+  var recent=(state.recent||[]).length,medium=(state.medium||[]).length,long=(state.long||[]).length;
+  host.innerHTML=
+    '<div class="detail-head cn-page-header"><div class="detail-identity"><div class="cn-detail-mark">F70</div><div>'+
+      '<div class="eyebrow">FRANCE 70 PERSONA</div><h1 class="page-title">'+esc(p.name||id)+'</h1>'+
+      '<p class="sub">'+esc(id)+' · '+esc(profile.style_label_zh||profile.group_role||'人物档案')+'</p></div></div>'+
+      '<div class="actions"><button class="btn ghost" id="fr70DetailBack">← 返回 France 70</button></div></div>'+
+    '<div class="cn-detail-kpis">'+
+      '<div class="card cn-detail-kpi"><span>近期记忆</span><strong>'+recent+'</strong></div>'+
+      '<div class="card cn-detail-kpi"><span>中期记忆</span><strong>'+medium+'</strong></div>'+
+      '<div class="card cn-detail-kpi"><span>长期记忆</span><strong>'+long+'</strong></div>'+
+      '<div class="card cn-detail-kpi"><span>记忆总数</span><strong>'+rows.length+'</strong></div>'+
+      '<div class="card cn-detail-kpi"><span>意见主题</span><strong>'+Object.keys(state.opinions||{}).length+'</strong></div>'+
+    '</div>'+
+    '<div class="cn-two-column-detail">'+
+      '<div class="card panel"><div class="panel-head"><h2>人设与发言风格</h2><span class="muted">v6.1 主档</span></div>'+
+        '<div class="cn-rule-list">'+
+          '<div><span>群组角色</span><b>'+esc(profile.group_role||'--')+'</b></div>'+
+          '<div><span>风格标签</span><b>'+esc(profile.style_label_zh||'--')+'</b></div>'+
+          '<div><span>说话节奏</span><b>'+esc(profile.speech_rhythm_zh||profile.speech_rhythm||'--')+'</b></div>'+
+          '<div><span>表达倾向</span><b>'+esc(profile.expression_tendency_zh||profile.expression_tendency||'--')+'</b></div>'+
+        '</div>'+
+        '<div class="panel-head" style="margin-top:12px"><h2>动态记忆</h2><span class="muted">'+rows.length+' 条</span></div>'+
+        '<div class="cn-memory-detail-list">'+(rows.length?rows.slice(0,40).map(function(x){
+          return '<div class="cn-memory-detail-row"><div><b>'+esc(x.layer)+' · '+esc(x.topic)+'</b><small>'+esc(x.at?new Date(x.at).toLocaleString():'--')+'</small></div><p>'+esc(x.summary)+'</p></div>';
+        }).join(''):'<div class="empty">暂无动态记忆</div>')+'</div>'+
+      '</div>'+
+      '<div class="card panel"><div class="panel-head"><h2>结构化人物数据</h2><span class="muted">只读</span></div>'+
+        '<pre class="cn-json-preview">'+esc(JSON.stringify({id:p.id,name:p.name,novel_profile:p.novel_profile||{},memory:state},null,2))+'</pre>'+
+      '</div>'+
+    '</div>';
+  go('fr70PersonDetailPage');
+  q('#fr70DetailBack').onclick=function(){go('france70chat')};
+}
+
 function renderMemoryList(){
   var box=q('#fr70MemoryList');if(!box)return;
   var s=ensureState();
@@ -278,6 +340,7 @@ function renderMemoryList(){
     var summary=r.latest&&r.latest.summary_zh?String(r.latest.summary_zh):'已有历史记忆';
     return '<button class="fr70-memory-row" type="button" data-fr70-person="'+esc(r.id)+'"><b>'+esc(r.name)+'</b><span>'+r.total+' 条</span><small>'+esc(summary.slice(0,92))+(summary.length>92?'…':'')+'</small></button>';
   }).join('');
+  box.querySelectorAll('[data-fr70-person]').forEach(function(b){b.onclick=function(){openFrance70PersonDetail(b.dataset.fr70Person)}});
 }
 function exportMemory(){
   var s=ensureState();
@@ -320,5 +383,5 @@ async function init(){
 document.addEventListener('chennan:cloud-ready',function(){init()},{once:true});
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){if(window.ChenNanCloud&&window.ChenNanCloud.hydrated)init()},{once:true});
 else if(window.ChenNanCloud&&window.ChenNanCloud.hydrated)init();
-window.France70Chat={init:init,buildPrompt:buildPrompt,saveResult:saveResult};
+window.France70Chat={init:init,buildPrompt:buildPrompt,saveResult:saveResult,openPersonDetail:openFrance70PersonDetail};
 })();
