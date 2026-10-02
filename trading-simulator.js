@@ -14,6 +14,8 @@ function nm(p){return p?(p.name||p.frenchName||p.id):'未知人物'}
 function sex(p){return p?.gender||pGender(p)||''}
 function rel(p){return pRelationName(p)||''}
 function vip(p){return !!p?.vip?.is_vip}
+function vipLevel(p){return vip(p)?String(p?.vip?.level||'VIP').toUpperCase():''}
+function vipBadge(p){const level=vipLevel(p);if(!level)return'';const n=(level.match(/\d+/)||['x'])[0];return '<span class="vip-level vip-level-'+h(n)+'">'+h(level)+'</span>'}
 function opened(p){return !!p?.account?.opened}
 function initials(p){return nm(p).split(/\s+/).map(x=>x[0]).join('').slice(0,2).toUpperCase()}
 function money(v,currency='USD'){const n=Number(v||0).toLocaleString('en-US',{maximumFractionDigits:2});return currency==='EUR'?'€'+n:currency==='CNY'?'¥'+n:currency==='HKD'?'HK$'+n:'$'+n}
@@ -101,7 +103,7 @@ function renderRecommend(){
   if(!activeOfferId&&offers[0])activeOfferId=offers[0].id;
   const o=offer(activeOfferId),rec=o?recommendationFor(o.id):null;
   body.innerHTML='<div class="topbar"><div><div class="eyebrow">SIMULATED TRADE RECOMMENDATION</div><h1 class="page-title">人物交易列表</h1><p class="sub">设定模拟股票条件，一键从主看板“今日待买”人员优先推荐，再由用户逐一邀请或拒绝。</p></div><button class="btn primary" id="newOffer">＋ 新建股票计划</button></div>'+
-  '<div class="grid"><div class="card panel"><div class="panel-head"><h2>股票计划</h2><span class="muted">'+offers.length+' 个计划</span></div><div class="offer-list">'+(offers.map(x=>'<div class="offer-row '+(x.id===activeOfferId?'active':'')+'"><div><b>'+h(x.symbol)+' · '+h(x.name)+'</b><div class="muted">'+h(x.market||'美股')+' · 折扣 '+h(x.discountPct)+'% · 单价 '+money(x.unitPrice,x.currency||'USD')+' · 最低 '+h(x.minShares)+'股 · 持有'+h(x.holdDays)+'天 · '+h(x.participantCount)+'人</div></div><div class="button-row"><button class="btn ghost small" data-offer-open="'+h(x.id)+'">打开</button><button class="btn ghost small" data-offer-edit="'+h(x.id)+'">编辑</button></div></div>').join('')||'<div class="empty">还没有股票计划</div>')+'</div></div>'+
+  '<div class="grid"><div class="card panel"><div class="panel-head"><h2>股票计划</h2><span class="muted">'+offers.length+' 个计划</span></div><div class="offer-list">'+(offers.map(x=>'<div class="offer-row '+(x.id===activeOfferId?'active':'')+'"><div><b class="stock-title">'+h(x.symbol)+' · '+h(x.name)+'</b><div class="muted">'+h(x.market||'美股')+' · 折扣 '+h(x.discountPct)+'% · 单价 '+money(x.unitPrice,x.currency||'USD')+' · 最低 '+h(x.minShares)+'股 · 持有'+h(x.holdDays)+'天 · '+h(x.participantCount)+'人</div></div><div class="button-row"><button class="btn ghost small" data-offer-open="'+h(x.id)+'">打开</button><button class="btn ghost small" data-offer-edit="'+h(x.id)+'">编辑</button></div></div>').join('')||'<div class="empty">还没有股票计划</div>')+'</div></div>'+
   '<div class="card panel"><div class="panel-head"><h2>当前计划</h2><span class="muted">模拟交易</span></div>'+(o?offerInfo(o):'<div class="empty">请先新建股票计划</div>')+'</div></div>'+
   (o?'<div class="card panel" style="margin-top:18px"><div class="panel-head"><h2>推荐购买人物</h2><div class="button-row"><span class="muted">主页面今日待买：'+todayPlans().length+' 人</span><button class="btn primary" id="recommendPeople">一键推荐购买人物</button></div></div>'+(rec?renderCandidates(o,rec):'<div class="empty">点击“一键推荐购买人物”生成名单</div>')+'</div>':'');
   bindRecommend();
@@ -112,7 +114,7 @@ function offerInfo(o){
 function stat(k,v){return'<div class="offer-stat"><span>'+h(k)+'</span><b>'+h(v)+'</b></div>'}
 function renderCandidates(o,rec){
   const people=rec.candidates.map(c=>({c,p:person(c.personId)})).filter(x=>x.p);
-  return '<div class="candidate-grid">'+people.map(({c,p})=>{const cls=c.status==='invited'?'invited':c.status==='rejected'?'rejected':c.status==='bought'?'bought':'',fs=fundingState(p,o),no=pCode(p),labelLine=no+(genderRelationLabel(p)||'')+' · '+nm(p);return '<div class="candidate-card '+cls+'"><div class="gender-avatar '+(sex(p)==='女'?'f':'m')+'">'+pAvatar(p)+'</div><div><b>'+h(labelLine)+'</b><div class="meta">VIP：'+(vip(p)?h(p.vip?.level||'是'):'否')+'　组长：'+h(leaderFor(p))+'</div><div class="meta">已参与联系次数：'+contactCount(p)+'　推荐来源：'+h(c.source)+'</div><div class="meta">最低资金：'+h(money(fs.need,o.currency||'USD'))+'　'+(fs.known?(fs.ok?'资金满足':'资金不足'):'该币种资金待确认')+'</div><div class="meta">当前状态：'+h(c.status==='pending'?'待确认':c.status==='invited'?'已邀请':c.status==='rejected'?'已拒绝':'已确认买入')+'</div></div><div class="actions">'+(c.status==='pending'?'<button class="btn danger small" data-reject="'+h(p.id)+'">拒绝</button><button class="btn primary small" data-invite="'+h(p.id)+'" '+(!fs.ok?'disabled':'')+'>邀请</button>':'')+(c.status==='invited'?'<button class="btn ghost small" data-reject="'+h(p.id)+'">拒绝</button><button class="btn primary small" data-confirm-buy="'+h(p.id)+'">确认买入</button>':'')+(c.status==='rejected'?'<button class="btn ghost small" data-invite="'+h(p.id)+'" '+(!fs.ok?'disabled':'')+'>重新邀请</button>':'')+(c.status==='bought'?'<span class="pill good">已形成持仓</span>':'')+'</div></div>'}).join('')+'</div>';
+  return '<div class="candidate-grid">'+people.map(({c,p})=>{const cls=c.status==='invited'?'invited':c.status==='rejected'?'rejected':c.status==='bought'?'bought':'',fs=fundingState(p,o),no=pCode(p),labelLine=no+(genderRelationLabel(p)||'')+' · '+nm(p);return '<div class="candidate-card '+cls+'"><div class="gender-avatar '+(sex(p)==='女'?'f':'m')+'">'+pAvatar(p)+'</div><div><b>'+h(labelLine)+'</b><div class="candidate-meta-line"><span class="meta-label">VIP</span>'+(vip(p)?vipBadge(p):'<span class="vip-none">—</span>')+'<span class="meta-divider">·</span><span class="meta-label">组长</span><span class="meta-value">'+h(leaderFor(p))+'</span></div><div class="meta">已参与联系次数：'+contactCount(p)+'　推荐来源：'+h(c.source)+'</div><div class="meta">最低资金：'+h(money(fs.need,o.currency||'USD'))+'　'+(fs.known?(fs.ok?'资金满足':'资金不足'):'该币种资金待确认')+'</div><div class="meta">当前状态：'+h(c.status==='pending'?'待确认':c.status==='invited'?'已邀请':c.status==='rejected'?'已拒绝':'已确认买入')+'</div></div><div class="actions">'+(c.status==='pending'?'<button class="btn danger small" data-reject="'+h(p.id)+'">拒绝</button><button class="btn primary small" data-invite="'+h(p.id)+'" '+(!fs.ok?'disabled':'')+'>邀请</button>':'')+(c.status==='invited'?'<button class="btn ghost small" data-reject="'+h(p.id)+'">拒绝</button><button class="btn primary small" data-confirm-buy="'+h(p.id)+'">确认买入</button>':'')+(c.status==='rejected'?'<button class="btn ghost small" data-invite="'+h(p.id)+'" '+(!fs.ok?'disabled':'')+'>重新邀请</button>':'')+(c.status==='bought'?'<span class="pill good">已形成持仓</span>':'')+'</div></div>'}).join('')+'</div>';
 }
 function bindRecommend(){
   el('newOffer')?.addEventListener('click',()=>editOffer());
@@ -208,8 +210,42 @@ function renderHoldings(){
 }
 function renderBatches(bs){
   if(!bs.length)return'<div class="empty">暂无持仓记录</div>';
-  return bs.map(b=>{const st=batchStatus(b),next=Math.min(...b.rows.map(x=>new Date(x.plannedSellAt).getTime())),left=remaining(next-Date.now()),total=b.rows.reduce((sum,x)=>sum+(Number(x.buyPrice)||0)*(Number(x.quantity)||0),0),canSell=b.rows.some(x=>holdingStatus(x).key==='ready');
-    return'<div class="batch-card"><div class="batch-top"><div><b class="'+(st.key==='ready'?'stock-ready':st.key==='soon'?'stock-soon':'stock-holding')+'">'+h(b.symbol||'--')+' · '+h(b.name||'')+'</b><div class="muted">买入时间 '+h(dt(b.buyAt))+' · '+b.rows.length+' 人 · 本批投入 '+money(total,b.currency||'USD')+' · '+h(left)+'</div></div><button class="btn '+(st.key==='ready'?'primary':'ghost')+' small" data-sell-batch="'+h(b.key)+'" '+(canSell?'':'disabled')+'>卖出</button></div><div class="person-mini-grid">'+b.rows.map(x=>{const p=person(x.personId),hs=holdingStatus(x);return'<div class="person-mini"><div class="gender-avatar '+(sex(p)==='女'?'f':'m')+'">'+pAvatar(p)+'</div><div><b>'+h(pCode(p)+(genderRelationLabel(p)||'')+' · '+nm(p))+'</b><small class="muted">'+h(x.quantity)+' 股 · '+h(x.currency||b.currency||'USD')+' · 买入价 '+h(money(x.buyPrice,x.currency||b.currency||'USD'))+'<br>最早卖出 '+h(dt(x.plannedSellAt))+'<br>'+h(hs.label)+' · '+h(remaining(hs.left))+'</small></div></div>'}).join('')+'</div></div>';
+  return bs.map(b=>{
+    const st=batchStatus(b),next=Math.min(...b.rows.map(x=>new Date(x.plannedSellAt).getTime())),
+      left=remaining(next-Date.now()),
+      total=b.rows.reduce((sum,x)=>sum+(Number(x.buyPrice)||0)*(Number(x.quantity)||0),0),
+      canSell=b.rows.some(x=>holdingStatus(x).key==='ready'),
+      stateClass=st.key==='ready'?'ready':st.key==='soon'?'soon':'holding';
+    return '<div class="batch-card holding-batch">'+
+      '<div class="batch-top holding-batch-head"><div class="holding-batch-title">'+
+        '<div class="stock-title-row"><b class="stock-title">'+h(b.symbol||'--')+' · '+h(b.name||'')+'</b><span class="holding-state '+stateClass+'">'+h(st.label)+'</span></div>'+
+        '<div class="batch-summary-grid">'+
+          '<span><em>买入时间</em><strong>'+h(dt(b.buyAt))+'</strong></span>'+
+          '<span><em>持仓人数</em><strong>'+b.rows.length+' 人</strong></span>'+
+          '<span><em>本批投入</em><strong>'+h(money(total,b.currency||'USD'))+'</strong></span>'+
+          '<span><em>下一节点</em><strong>'+h(left)+'</strong></span>'+
+        '</div>'+
+      '</div><button class="btn '+(st.key==='ready'?'primary':'ghost')+' small" data-sell-batch="'+h(b.key)+'" '+(canSell?'':'disabled')+'>卖出</button></div>'+
+      '<div class="holding-person-grid">'+b.rows.map(x=>{
+        const p=person(x.personId),hs=holdingStatus(x),currency=x.currency||b.currency||'USD',
+          amount=(Number(x.buyPrice)||0)*(Number(x.quantity)||0),
+          personState=hs.key==='ready'?'ready':hs.key==='soon'?'soon':'holding';
+        return '<div class="holding-person-card">'+
+          '<div class="gender-avatar '+(sex(p)==='女'?'f':'m')+'">'+pAvatar(p)+'</div>'+
+          '<div class="holding-person-content">'+
+            '<div class="holding-person-head"><b>'+h(pCode(p)+(genderRelationLabel(p)||'')+' · '+nm(p))+'</b>'+(vip(p)?vipBadge(p):'')+'</div>'+
+            '<div class="holding-info-grid">'+
+              '<div><span>买入股数</span><strong>'+h(x.quantity)+' 股</strong></div>'+
+              '<div><span>买入价</span><strong>'+h(money(x.buyPrice,currency))+'</strong></div>'+
+              '<div><span>买入金额</span><strong>'+h(money(amount,currency))+'</strong></div>'+
+              '<div><span>买入时间</span><strong>'+h(dt(x.buyAt||b.buyAt))+'</strong></div>'+
+              '<div><span>最早卖出</span><strong>'+h(dt(x.plannedSellAt))+'</strong></div>'+
+              '<div><span>持仓状态</span><strong class="holding-state-text '+personState+'">'+h(hs.label)+' · '+h(remaining(hs.left))+'</strong></div>'+
+            '</div>'+
+          '</div>'+
+        '</div>';
+      }).join('')+'</div>'+
+    '</div>';
   }).join('');
 }
 function openSellBatch(key){
