@@ -10,10 +10,11 @@ const core=read('workspace-core.js');
 const people=read('people-detail.js');
 
 test('统一设计系统已作为最终样式层加载',()=>{
-  assert.match(index,/design-system\.css\?v=20261003-unified-2/);
-  assert.match(index,/design-system\.js\?v=20261003-unified-2/);
+  assert.match(index,/design-system\.css\?v=20261003-module-rebuild-5/);
+  assert.match(index,/design-system\.js\?v=20261003-final-system-4/);
   assert(index.lastIndexOf('design-system.js')>index.lastIndexOf('overview-final.js'));
   assert.match(runtime,/ensureStylesheetLast/);
+  for(const legacy of ['workspace-glass.css','ui-shell.js','theme-ui.js'])assert(!index.includes(legacy),'legacy UI must not load: '+legacy);
 });
 
 test('设计 tokens 与通用组件标准存在',()=>{
@@ -43,6 +44,6 @@ test('分组页固定10个均衡小组且不再输出头像',()=>{
 
 test('母版视觉规则覆盖主要工作区',()=>{
   for(const id of ['#trades','#tradeRecommend','#holdingsV2','#records','#novel','#france70chat','#topics','#groups'])assert(css.includes(id),id);
-  assert.match(css,/Parent modules never jump/);
+  assert.match(css,/Parent surface \/ leaf surface motion contract/);
   assert.match(css,/Desktop 16:9 rhythm/);
 });
