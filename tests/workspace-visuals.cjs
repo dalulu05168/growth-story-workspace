@@ -74,11 +74,18 @@ async function workspaceVisuals(browser,url){
    }
    for(const width of [375,390,414,430,768,1366,1440,1920]){
     await page.setViewportSize({width,height:960});await settle(page);
-    const layout=await page.evaluate(()=>({width:innerWidth,height:innerHeight,scroll:document.documentElement.scrollWidth,
-     frame:document.querySelector('.app').getBoundingClientRect().toJSON(),side:document.querySelector('.sidebar').getBoundingClientRect().toJSON(),header:document.querySelector('.app-global-header').getBoundingClientRect().toJSON()}));
+    const layout=await page.evaluate(()=>{const side=document.querySelector('.sidebar'),header=document.querySelector('.app-global-header');return {width:innerWidth,height:innerHeight,scroll:document.documentElement.scrollWidth,
+     frame:document.querySelector('.app').getBoundingClientRect().toJSON(),side:side.getBoundingClientRect().toJSON(),header:header.getBoundingClientRect().toJSON(),
+     sidePosition:getComputedStyle(side).position,headerPosition:getComputedStyle(header).position}});
     assert(layout.scroll<=width+1,'workspace overflow '+width);
     if(width>900){assert(Math.abs(layout.frame.width/layout.frame.height-16/9)<.01,'desktop frame must be 16:9');assert(layout.frame.left>=0&&layout.frame.right<=width+1,'frame fits viewport');assert(layout.frame.top>=0&&layout.frame.bottom<=layout.height+1,'frame height fits viewport')}
-    if(width<=760){assert(Math.abs(layout.side.bottom-layout.height)<2,'bottom nav not fixed to viewport');assert(Math.abs(layout.header.top)<2,'header not fixed to viewport')}
+    if(width<=760){
+     const bottomGap=layout.height-layout.side.bottom;
+     assert.equal(layout.sidePosition,'fixed','bottom nav must use fixed positioning');
+     assert(bottomGap>=0&&bottomGap<=24,'bottom nav safe inset out of range: '+bottomGap);
+     assert.equal(layout.headerPosition,'sticky','mobile header must remain sticky');
+     assert(layout.header.top>=0&&layout.header.top<=20,'mobile header safe inset out of range: '+layout.header.top);
+    }
    }
    await page.setViewportSize({width:390,height:844});
    for(const id of ['overview','people','groups','records','novel','topics','trades','tradeRecommend','holdingsV2']){
