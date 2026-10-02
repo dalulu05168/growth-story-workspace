@@ -1673,6 +1673,14 @@ overviewReadabilityStyle.textContent=`
 .app.app-ready #overview .cn-empty-title{color:#26352d!important}
 .app.app-ready #overview .cn-empty-desc{color:#43534a!important}
 .app.app-ready #groups .muted,.app.app-ready #groups .balanced-group-head small{color:#4d5b52!important}
+.app.app-ready #novel .writing-summary-card small,
+.app.app-ready #novel .speech-head small,
+.app.app-ready #novel #dailyStatus,
+.app.app-ready #novel .editor-foot,
+.app.app-ready #novel .editor-foot *{color:#43534a!important}
+.app.app-ready #novel .speech-row :is(b,.speech-name,.person-category,em){color:#35443b!important}
+.app.app-ready #novel .speech-row .speech-name{font-size:11px!important}
+.app.app-ready #novel :is(.muted,.cn-empty-icon,.cn-empty-title,.cn-empty-desc){color:#43534a!important}
 @media(max-width:900px){
  .app.app-ready>.main,
  .app.app-ready #people,
