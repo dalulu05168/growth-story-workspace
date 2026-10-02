@@ -1386,7 +1386,7 @@ body{font:14px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","M
   --border:#d5d9d5;
   --border-strong:#bcc3be;
   --dark:#222523;
-  --gold-deep:#9a7424;
+  --gold-deep:#74510f;
   --gold-soft:#e8d18f;
   --success:#557568;
   --danger:#b8645c;
@@ -1620,7 +1620,7 @@ body{font:14px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","M
 ){
   min-height:116px!important;padding:24px!important;
   display:grid!important;place-items:center!important;align-content:center!important;gap:8px!important;
-  text-align:center!important;color:#777e79!important;
+  text-align:center!important;color:#565e59!important;
   border:1px dashed #cbd0cc!important;border-radius:14px!important;background:#f6f7f4!important;
 }
 .app.app-ready :is(
