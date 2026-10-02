@@ -4,6 +4,7 @@
 var V6_URL='./data/france70-v6.1.json';
 var canon=null,lastSelected=[];
 var q=function(s){return document.querySelector(s)};
+function workflowStep(n){document.querySelectorAll('.fr70-step').forEach(function(el,i){el.classList.toggle('current',i===n-1);el.classList.toggle('complete',i<n-1)})}
 var esc=function(v){return String(v==null?'':v).replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]})};
 function ensureState(){
   db.meta=db.meta&&typeof db.meta==='object'?db.meta:{};
@@ -142,6 +143,7 @@ function buildPrompt(){
     return '<span>'+esc(p.name)+' · '+esc(n.style_label_zh||n.group_role||'')+'</span>';
   }).join('');
   q('#fr70PromptStatus').textContent='已选 '+selected.people.length+' 人 · '+selected.topics.join(' / ')+' · 问句目标25%-35%';
+  workflowStep(2);
 }
 async function copyPrompt(){
   if(!q('#fr70Prompt').value)buildPrompt();
@@ -237,7 +239,7 @@ function saveResult(){
     qa:{questionRatio:report.questionRatio,semicolons:report.semicolons,warnings:report.warnings}
   };
   s.sessions.unshift(sess);s.sessions=s.sessions.slice(0,60);
-  save();renderSession(sess);renderHistory();renderMemoryList();renderStats();
+  save();renderSession(sess);renderHistory();renderMemoryList();renderStats();workflowStep(3);
   toast('已保存 '+messages.length+' 条发言、'+events.length+' 条动态记忆'+(report.warnings.length?'；QA有提醒':''));
 }
 function personById(id){return canon.people.find(function(p){return p.id===id})||db.people.find(function(p){return p.id===id})}
@@ -305,6 +307,7 @@ async function init(){
     await loadCanon();ensureState();
     q('#fr70KindAssistant').onclick=function(){setKind('assistant')};
     q('#fr70KindProfessor').onclick=function(){setKind('professor')};
+    q('#fr70Source').addEventListener('input',function(){workflowStep(1)});
     q('#fr70Build').onclick=buildPrompt;
     q('#fr70Copy').onclick=copyPrompt;
     q('#fr70Import').onclick=saveResult;
