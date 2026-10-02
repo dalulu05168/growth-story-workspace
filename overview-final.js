@@ -736,8 +736,86 @@ rectStyle.textContent=`
  .app.app-ready #overview .overview-group-total small{font-size:8px!important}
  .app.app-ready #overview .overview-group-total>i{width:24px!important;height:24px!important;font-size:16px!important}
 
- /* 交易计划已有独立模块，桌面概览不重复堆叠同一份名单。 */
- .app.app-ready #overview #tradeOverview{display:none!important}
+
+ /* 底部新增：左侧持仓组合，右侧待卖出股票与时间。 */
+ .app.app-ready #overview #tradeOverview{
+  display:grid!important;grid-template-columns:minmax(0,1.25fr) minmax(350px,.9fr)!important;
+  gap:9px!important;margin-top:9px!important
+ }
+ .app.app-ready #overview #tradeOverview .overview-bottom-panel{
+  height:164px!important;min-height:164px!important;padding:11px!important;
+  border-radius:12px!important;overflow:hidden!important
+ }
+ .app.app-ready #overview #tradeOverview .panel-head{
+  min-height:24px!important;margin:0 0 6px!important
+ }
+ .app.app-ready #overview #tradeOverview .panel-head h2{
+  font-size:14px!important;margin:0!important
+ }
+ .app.app-ready #overview #tradeOverview .panel-head .link-btn{
+  font-size:9px!important
+ }
+ .app.app-ready #overview .hold-chart-overview{
+  display:grid!important;gap:5px!important
+ }
+ .app.app-ready #overview .hold-chart-row{
+  display:grid!important;grid-template-columns:112px minmax(0,1fr) 34px!important;
+  gap:8px!important;align-items:center!important;min-height:17px!important
+ }
+ .app.app-ready #overview .hold-chart-label{
+  min-width:0!important;display:flex!important;align-items:center!important;gap:5px!important
+ }
+ .app.app-ready #overview .hold-chart-label b{
+  flex:0 0 auto!important;font-size:9px!important;color:#171b18!important;
+  line-height:1.2!important
+ }
+ .app.app-ready #overview .hold-chart-label small{
+  min-width:0!important;font-size:8px!important;color:#7a827e!important;
+  white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important
+ }
+ .app.app-ready #overview .hold-chart-track{
+  height:7px!important;border-radius:99px!important;background:#ecefea!important;overflow:hidden!important
+ }
+ .app.app-ready #overview .hold-chart-fill{
+  display:block!important;height:100%!important;border-radius:99px!important;
+  background:linear-gradient(90deg,#ddb956,#b88015)!important
+ }
+ .app.app-ready #overview .hold-chart-count{
+  text-align:right!important;font-size:9px!important;font-weight:700!important;color:#313733!important
+ }
+ .app.app-ready #overview .overview-sell-list{
+  display:grid!important;gap:5px!important
+ }
+ .app.app-ready #overview .overview-sell-item{
+  min-height:24px!important;padding:4px 7px!important;display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;gap:8px!important;align-items:center!important;
+  border:1px solid #e6e9e5!important;border-radius:7px!important;background:#fff!important
+ }
+ .app.app-ready #overview .overview-sell-item.hot{
+  background:#fff8e8!important;border-color:#e6cb87!important
+ }
+ .app.app-ready #overview .overview-sell-main{
+  min-width:0!important;display:flex!important;align-items:center!important;gap:6px!important
+ }
+ .app.app-ready #overview .overview-sell-main b{
+  flex:0 0 auto!important;font-size:9px!important;color:#181c19!important
+ }
+ .app.app-ready #overview .overview-sell-main small{
+  min-width:0!important;font-size:8px!important;color:#76807a!important;
+  white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important
+ }
+ .app.app-ready #overview .overview-sell-time{
+  display:flex!important;align-items:center!important;gap:7px!important;white-space:nowrap!important
+ }
+ .app.app-ready #overview .overview-sell-time strong{
+  font-size:8px!important;color:#222724!important;font-weight:650!important
+ }
+ .app.app-ready #overview .overview-sell-time span{
+  font-size:8px!important;color:#9c690d!important
+ }
+ .app.app-ready #overview #tradeOverview .overview-empty{
+  padding:38px 8px!important;font-size:10px!important
+ }
 
  /* 页面边缘滚动条不外露；其他长页面在内容区内部滚动。 */
  .app.app-ready>.main,.app.app-ready>.main>.section{scrollbar-gutter:auto!important}
