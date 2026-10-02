@@ -380,6 +380,110 @@ body{font:14px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","M
 @media(prefers-reduced-motion:reduce){
   .section.active,.app.app-ready{transition:none!important}
 }
+
+/* ===== Final layout specification · 16:9 desktop / fluid mobile ===== */
+:root,html[data-theme="reference"]{
+  --ui-4:4px;--ui-8:8px;--ui-12:12px;--ui-16:16px;--ui-20:20px;--ui-24:24px;--ui-32:32px;--ui-40:40px;
+  --type-xs:10px;--type-sm:12px;--type-md:14px;--type-lg:18px;--type-xl:clamp(30px,2.45vw,42px);
+  --card-radius:18px;--control-radius:12px;--frame-radius:28px;
+}
+.app.app-ready .section>*{min-width:0}
+.app.app-ready .topbar>*{min-width:0}
+.app.app-ready .page-title{font-size:var(--type-xl)!important;font-weight:630!important;line-height:1.08!important}
+.app.app-ready .eyebrow{font-size:var(--type-xs)!important;line-height:1.4!important}
+.app.app-ready .sub{font-size:var(--type-sm)!important}
+.app.app-ready :is(.panel h2,.panel-head h2){font-size:var(--type-lg)!important;line-height:1.25!important}
+.app.app-ready :is(.panel h3,.field>label,.metric .label){font-size:var(--type-sm)!important}
+.app.app-ready :is(.btn,.input,.select,textarea,button){letter-spacing:0!important}
+.app.app-ready .metric strong{font-variant-numeric:tabular-nums lining-nums!important}
+.app.app-ready :is(.card,.panel,.metric,.group-card,.custom-group,.profile-row,.event,.detail-card,.batch-card,.offer-card,.candidate-card,.person-buy-card,.holding-person,.memory-person-card){
+  border-radius:var(--card-radius)!important;
+}
+.app.app-ready :is(.input,.select,textarea,input:not([type=checkbox]):not([type=radio]),select,.btn){
+  border-radius:var(--control-radius)!important;
+}
+.app.app-ready :is(.dashboard,.group-grid,.custom-groups,.grid,.detail-columns,.novel-layout,.fr70-layout){
+  align-items:stretch!important;
+}
+.app.app-ready :is(.dashboard,.group-grid,.custom-groups)>*{min-width:0}
+.app.app-ready .card>.panel-head:first-child,
+.app.app-ready .panel>.panel-head:first-child{padding-bottom:0!important}
+.app.app-ready .toolbar{gap:12px!important}
+.app.app-ready .button-row,.app.app-ready .actions{gap:10px!important}
+.app.app-ready :is(.panel,.card){scroll-margin-top:108px}
+
+/* Full desktop application frame: true 16:9 canvas centered in viewport. */
+@media(min-width:1180px) and (min-aspect-ratio:4/3){
+  html,body{width:100%;height:100%;overflow:hidden!important}
+  body{display:grid!important;place-items:center!important;padding:0!important}
+  .app.app-ready{
+    position:fixed!important;
+    left:50%!important;top:50%!important;
+    transform:translate(-50%,-50%)!important;
+    width:min(calc(100vw - 32px),calc((100vh - 32px) * 16 / 9))!important;
+    height:min(calc(100vh - 32px),calc((100vw - 32px) * 9 / 16))!important;
+    min-height:0!important;
+    border-radius:var(--frame-radius)!important;
+    overflow:hidden!important;
+    border:1px solid rgba(255,255,255,.55)!important;
+    box-shadow:0 30px 90px rgba(38,43,40,.16),inset 0 1px rgba(255,255,255,.66)!important;
+  }
+  .app.app-ready>.sidebar{
+    position:absolute!important;
+    height:auto!important;
+  }
+  .app.app-ready>.main{
+    position:absolute!important;
+    top:0!important;right:0!important;bottom:0!important;
+    height:100%!important;min-height:0!important;
+    overflow-y:auto!important;overflow-x:hidden!important;
+    scrollbar-gutter:stable!important;
+    overscroll-behavior:contain!important;
+    padding-bottom:48px!important;
+  }
+  .app.app-ready .app-global-header{top:18px!important}
+  .app.app-ready .section{padding-bottom:28px!important}
+}
+
+/* Wide desktop spacing and edge alignment */
+@media(min-width:1440px){
+  .app.app-ready>.main{padding-left:38px!important;padding-right:38px!important}
+  .app.app-ready .topbar{margin-bottom:40px!important}
+  .app.app-ready .dashboard{gap:22px!important}
+  .app.app-ready .grid,.app.app-ready .detail-columns,.app.app-ready .novel-layout,.app.app-ready .fr70-layout{gap:26px!important}
+}
+
+/* Laptop / tablet: fluid full viewport, no forced crop */
+@media(min-width:761px) and (max-width:1179px){
+  html,body{min-height:100%;overflow-x:hidden!important}
+  .app.app-ready{position:relative!important;transform:none!important;width:100%!important;height:auto!important;min-height:100vh!important;border-radius:0!important;overflow:visible!important}
+}
+
+/* Mobile refinement: 4-column max content rhythm, safe-area aware bottom dock */
+@media(max-width:760px){
+  html,body{width:100%;min-height:100%;overflow-x:hidden!important}
+  .app.app-ready{position:relative!important;transform:none!important;width:100%!important;height:auto!important;min-height:100dvh!important;border-radius:0!important;overflow:visible!important}
+  .app.app-ready>.main{padding-bottom:calc(104px + env(safe-area-inset-bottom))!important}
+  .app.app-ready>.sidebar{bottom:calc(10px + env(safe-area-inset-bottom))!important}
+  .app.app-ready .topbar{gap:18px!important}
+  .app.app-ready .page-title{font-size:30px!important;line-height:1.12!important}
+  .app.app-ready .sub{font-size:12px!important;line-height:1.7!important}
+  .app.app-ready :is(.card,.panel,.detail-card){border-radius:16px!important}
+  .app.app-ready .dashboard{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .app.app-ready .dashboard>*{min-width:0!important}
+  .app.app-ready :is(.input,.select,textarea,input:not([type=checkbox]):not([type=radio]),select){font-size:16px!important}
+}
+
+/* Edge alignment: cards in the same grid share visual baselines. */
+.app.app-ready .dashboard>.metric,
+.app.app-ready .group-grid>.group-card,
+.app.app-ready .custom-groups>.custom-group{height:100%!important}
+.app.app-ready .panel-head>:first-child,
+.app.app-ready .topbar>:first-child{min-width:0}
+.app.app-ready .panel-head{align-items:center!important}
+.app.app-ready .metric{display:flex!important;flex-direction:column!important;justify-content:center!important}
+.app.app-ready .metric .trend{margin-top:auto!important}
+
 `;
 document.head.appendChild(st);
 })();
