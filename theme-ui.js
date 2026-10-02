@@ -484,6 +484,210 @@ body{font:14px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","M
 .app.app-ready .metric{display:flex!important;flex-direction:column!important;justify-content:center!important}
 .app.app-ready .metric .trend{margin-top:auto!important}
 
+
+/* ===== Final contrast + portrait restoration ===== */
+:root,html[data-theme="reference"]{
+  --text-primary:#101311;
+  --text-strong:#181c19;
+  --text-secondary:#4b534e;
+  --text-muted:#666e69;
+  --text-faint:#858c87;
+  --deep-gold:#8a6419;
+  --deep-gold-strong:#74510f;
+  --deep-gold-bg:#eee5cf;
+  --deep-gold-border:#cdbb8d;
+  --green-strong:#3f6f5e;
+  --red-strong:#8b4f4d;
+}
+
+/* Primary readable text is true near-black. */
+.app.app-ready :is(
+  .page-title,h1,h2,h3,
+  .card,.panel,
+  .person b,.table-name,.event-title,
+  .metric strong,.detail-kpi strong,
+  .group-card b,.group-card strong,
+  .custom-group h3,
+  .holding-person b,.candidate-card b,
+  .person-mini b,.mini-person b,
+  .fr70-meta b,.fr70-bubble p,.fr70-stat b,
+  .fr70-history b,.fr70-memory-row b
+){
+  color:var(--text-primary)!important;
+}
+
+/* Normal body/content copy: dark enough to read, never washed-out grey. */
+.app.app-ready :is(
+  p,li,td,
+  .event p,
+  .members-preview,
+  .detail-line,
+  .check-box,
+  .notice,
+  .fr70-note
+){
+  color:var(--text-secondary)!important;
+}
+
+/* Secondary descriptions only. */
+.app.app-ready :is(
+  .sub,.muted,.meta,
+  .person small,.table-name small,
+  .leader,.date,
+  .metric .label,
+  .fr70-meta span,.fr70-history small,.fr70-memory-row small
+){
+  color:var(--text-muted)!important;
+}
+
+/* Never let generic small-tag rules wash out semantic text. */
+.app.app-ready small{color:var(--text-muted)!important}
+.app.app-ready .eyebrow{
+  color:var(--deep-gold)!important;
+  font-weight:720!important;
+}
+.app.app-ready .header-brand b,
+.app.app-ready .header-user b{
+  color:var(--text-primary)!important;
+}
+.app.app-ready .header-kicker,
+.app.app-ready .header-user small{
+  color:var(--text-muted)!important;
+}
+
+/* Deep yellow is reserved for VIP / highlighted identity / warning emphasis. */
+.app.app-ready :is(.status.vip,.vip-badge,[data-vip="true"]){
+  color:var(--deep-gold-strong)!important;
+  background:var(--deep-gold-bg)!important;
+  border-color:var(--deep-gold-border)!important;
+  font-weight:700!important;
+}
+.app.app-ready .status.warn{
+  color:var(--deep-gold-strong)!important;
+  background:#f1e9d7!important;
+  border-color:#d6c59d!important;
+}
+.app.app-ready [data-category="老男"]{
+  color:var(--deep-gold-strong)!important;
+  border-color:#baa36c!important;
+  background:#eee5cf!important;
+}
+.app.app-ready .metric .trend{
+  color:var(--green-strong)!important;
+  font-weight:650!important;
+}
+.app.app-ready .profit-pos{color:var(--green-strong)!important}
+.app.app-ready :is(.danger,.profit-neg){color:var(--red-strong)!important}
+.app.app-ready .link-btn{color:#385e70!important;font-weight:700!important}
+.app.app-ready .link-btn.danger{color:var(--red-strong)!important}
+
+/* Inputs and tables must use black/dark text, not low-contrast grey. */
+.app.app-ready :is(
+  .input,.select,textarea,
+  input:not([type=checkbox]):not([type=radio]),select,
+  .rich-editor,.editor,.editor-area,[contenteditable=true]
+){
+  color:var(--text-primary)!important;
+}
+.app.app-ready :is(input,textarea)::placeholder{color:#8a918d!important}
+.app.app-ready .people-data-table :is(td,th){color:var(--text-strong)!important}
+.app.app-ready .people-data-table th{
+  color:#4c544f!important;
+  font-weight:720!important;
+}
+.app.app-ready .mini-table :is(td,th){color:var(--text-strong)!important}
+
+/* Restore all 70 fictional portrait sprites explicitly at final cascade layer. */
+.app.app-ready .person-portrait{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  min-width:100%!important;
+  min-height:100%!important;
+  border-radius:inherit!important;
+  background-image:url('./assets/people/avatar-atlas.webp')!important;
+  background-repeat:no-repeat!important;
+  background-size:1000% 700%!important;
+  background-position:var(--portrait-x) var(--portrait-y)!important;
+  background-color:#dfe2de!important;
+  opacity:1!important;
+  visibility:visible!important;
+  filter:none!important;
+}
+
+/* Portrait containers: fixed geometry, never collapse in flex/grid. */
+.app.app-ready :is(.avatar,.gender-avatar,.detail-avatar,.table-avatar){
+  display:block!important;
+  position:relative!important;
+  overflow:hidden!important;
+  flex:0 0 auto!important;
+  padding:0!important;
+  background:#dfe2de!important;
+  border:1px solid rgba(34,39,36,.18)!important;
+  border-radius:50%!important;
+  box-shadow:0 3px 10px rgba(35,40,37,.08)!important;
+  opacity:1!important;
+  visibility:visible!important;
+}
+.app.app-ready .avatar{
+  width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;
+}
+.app.app-ready .gender-avatar{
+  width:48px!important;height:48px!important;min-width:48px!important;min-height:48px!important;
+}
+.app.app-ready .table-avatar{
+  width:42px!important;height:42px!important;min-width:42px!important;min-height:42px!important;
+}
+.app.app-ready .detail-avatar{
+  width:82px!important;height:82px!important;min-width:82px!important;min-height:82px!important;
+}
+
+/* Header administrator avatar remains visible on desktop and mobile. */
+.app.app-ready .header-user{display:flex!important;align-items:center!important}
+.app.app-ready .user-avatar{
+  display:grid!important;
+  place-items:center!important;
+  width:36px!important;height:36px!important;min-width:36px!important;
+  border-radius:50%!important;
+  background:#292a2b!important;
+  color:#d5b86f!important;
+  font-weight:800!important;
+  opacity:1!important;
+  visibility:visible!important;
+}
+
+/* Make portrait rows align cleanly with the text baseline. */
+.app.app-ready .profile-row{
+  align-items:center!important;
+  min-height:70px!important;
+}
+.app.app-ready .table-person{
+  display:inline-flex!important;
+  align-items:center!important;
+  gap:10px!important;
+}
+.app.app-ready .detail-identity{
+  display:flex!important;
+  align-items:center!important;
+  gap:18px!important;
+}
+.app.app-ready .candidate-card{
+  align-items:center!important;
+}
+
+/* Mobile keeps real portraits visible; only administrator label may collapse. */
+@media(max-width:760px){
+  .app.app-ready :is(.avatar,.table-avatar){
+    width:40px!important;height:40px!important;min-width:40px!important;min-height:40px!important;
+  }
+  .app.app-ready .gender-avatar{
+    width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;
+  }
+  .app.app-ready .user-avatar{
+    width:34px!important;height:34px!important;min-width:34px!important;
+  }
+}
+
 `;
 document.head.appendChild(st);
 })();
