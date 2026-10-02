@@ -14,6 +14,7 @@ nav.querySelectorAll('button[data-page]').forEach(b=>{const span=b.querySelector
 /* Mobile navigation: 4 primary modules + one explicit More panel.
    No feature is hidden behind horizontal scrolling. */
 (function setupMobileModules(){
+  nav.classList.add('mobile-nav-enhanced');
   const primaryPages=new Set(['overview','people','novel','france70chat']);
   const moduleMeta={
     groups:['分组管理','系统分组、自定义小组、成员管理'],
