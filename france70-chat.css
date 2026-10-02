@@ -90,3 +90,17 @@ html[data-theme="night"] .app.app-ready #france70chat .fr70-history button:hover
   .app.app-ready #france70chat.section-entering .fr70-stats,
   .app.app-ready #france70chat.section-entering .fr70-layout>div>.card{animation:none!important}
 }
+
+
+.fr70-qa{margin-top:12px}
+.fr70-memory-list{display:grid;gap:9px;max-height:440px;overflow:auto;padding-right:2px}
+.fr70-memory-row{width:100%;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;text-align:left;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--paper);color:var(--ink);transition:.18s ease}
+.fr70-memory-row b{font-size:12px;color:var(--ink)}
+.fr70-memory-row span{font-size:10px;color:var(--accent-ink)}
+.fr70-memory-row small{grid-column:1/-1;color:var(--muted);font-size:10px;line-height:1.55}
+.fr70-memory-row:hover{background:var(--accent-soft);border-color:var(--accent)}
+html[data-theme="night"] .app.app-ready #france70chat .fr70-memory-row{background:#141c28!important;border-color:#334052!important;color:#f1f4f8!important}
+html[data-theme="night"] .app.app-ready #france70chat .fr70-memory-row b{color:#f1f4f8!important}
+html[data-theme="night"] .app.app-ready #france70chat .fr70-memory-row span{color:#efd08a!important}
+html[data-theme="night"] .app.app-ready #france70chat .fr70-memory-row small{color:#b5c0d0!important}
+html[data-theme="night"] .app.app-ready #france70chat .fr70-memory-row:hover{background:#202d40!important;border-color:#b9975d!important}
