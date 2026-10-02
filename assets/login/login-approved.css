@@ -1,0 +1,91 @@
+/* Approved login visual override: matches the selected 辰南 koi-gate design. */
+#authRoot{background:linear-gradient(115deg,#f3f4f2 0%,#f7f7f4 63%,#f1f0ec 100%)!important}
+#authRoot .cinematic-brand{
+  left:0!important;top:0!important;width:67%!important;height:100%!important;
+  background:#f4f5f2!important;overflow:hidden!important
+}
+#authRoot .cinematic-brand:before{
+  content:"";position:absolute;z-index:3;inset:-1.2%;
+  background:url("https://gcdn.picsart.com/editing-temp/d2866204-6fbd-4f83-8f4a-b5f8192aaabb.png") left center/cover no-repeat;
+  transform:scale(1.012);transform-origin:48% 48%;
+  filter:saturate(.98) contrast(1.015);
+  animation:cnApprovedArtBreath 10s ease-in-out infinite alternate
+}
+#authRoot .cinematic-brand:after{
+  content:"";display:block!important;position:absolute;z-index:8;top:0;right:-1px;bottom:0;width:21%;
+  background:linear-gradient(90deg,transparent 0%,rgba(246,246,243,.58) 48%,#f5f4f0 94%)!important;
+  pointer-events:none
+}
+#authRoot .scene-koi-art,#authRoot .scene-brand-copy{display:none!important}
+#authRoot .scene-lake{opacity:0!important}
+#authRoot .scene-haze{
+  z-index:5!important;left:2%!important;right:5%!important;bottom:-8%!important;height:37%!important;
+  opacity:.36!important;filter:blur(18px)!important;
+  background:radial-gradient(ellipse at 45% 54%,rgba(255,255,255,.95),transparent 55%),linear-gradient(180deg,transparent,rgba(255,255,255,.72))!important
+}
+#authRoot .cinematic-brand .scene-particles{z-index:6!important}
+#authRoot .cinematic-brand .scene-particles i{box-shadow:0 0 14px rgba(196,139,42,.58)!important}
+#authRoot .auth-cinematic:after{
+  content:"";position:absolute;z-index:7;left:45.5%;top:3.8%;width:22vw;height:22vw;max-width:360px;max-height:360px;
+  border-radius:50%;background:radial-gradient(circle,rgba(255,232,160,.42),rgba(230,178,72,.13) 36%,transparent 70%);
+  filter:blur(5px);animation:cnApprovedPortal 4.2s ease-in-out infinite;pointer-events:none
+}
+#authRoot .login-topline{right:4.6vw!important;top:3.7vh!important;color:#555a55!important}
+#authRoot .login-language{
+  right:5.2vw!important;top:11.8vh!important;z-index:15!important;
+  border:1px solid #dedbd4!important;background:rgba(255,255,255,.74)!important;color:#343834!important
+}
+#authRoot .login-shell .auth-card{
+  right:4.2vw!important;top:9.2vh!important;width:clamp(430px,33.2vw,570px)!important;
+  padding:clamp(52px,4.2vw,72px) clamp(30px,2.45vw,44px) clamp(27px,2vw,38px)!important;
+  border:1px solid rgba(190,139,54,.58)!important;border-radius:25px!important;
+  background:linear-gradient(145deg,rgba(255,255,255,.94),rgba(249,248,244,.88))!important;
+  box-shadow:0 26px 74px rgba(66,54,31,.12),inset 0 1px 0 rgba(255,255,255,.95)!important;
+  backdrop-filter:blur(21px) saturate(112%)!important;-webkit-backdrop-filter:blur(21px) saturate(112%)!important
+}
+#authRoot .auth-kicker{display:none!important}
+#authRoot .auth-title{
+  margin:0 0 8px!important;font-size:clamp(36px,3.15vw,54px)!important;line-height:1.05!important;
+  color:#111412!important;font-family:"STKaiti","KaiTi",serif!important
+}
+#authRoot .auth-title em{color:#b27b25!important}
+#authRoot .auth-sub{margin:0 0 31px!important;color:#5e635e!important;font-size:clamp(12px,1vw,16px)!important;letter-spacing:.18em!important}
+#authRoot .auth-field{margin-bottom:15px!important}
+#authRoot .auth-field input{
+  height:58px!important;min-height:58px!important;border-radius:13px!important;
+  border:1px solid #d8d7d2!important;background:rgba(255,255,255,.86)!important;color:#171917!important
+}
+#authRoot .auth-field input:focus{border-color:#bd8730!important;box-shadow:0 0 0 4px rgba(189,135,48,.10)!important}
+#authRoot .auth-btn{
+  height:60px!important;min-height:60px!important;margin-top:10px!important;border-radius:13px!important;
+  background:linear-gradient(110deg,#a96f24 0%,#bd8530 36%,#87551d 68%,#d5aa4f 100%)!important;
+  box-shadow:0 11px 28px rgba(165,111,34,.21),inset 0 1px 0 rgba(255,240,193,.48)!important
+}
+#authRoot .auth-assist{margin-top:15px!important;color:#555b56!important}
+#authRoot .auth-security-note{margin-top:18px!important;padding-top:15px!important}
+#authRoot .login-features{
+  left:4.4vw!important;right:4.4vw!important;bottom:1.9vh!important;height:74px!important;
+  background:linear-gradient(180deg,transparent,rgba(249,248,245,.80))!important
+}
+#authRoot .login-features>div{padding:0 22px!important}
+#authRoot .intro-skip{background:rgba(255,255,255,.82)!important;color:#5b4b2e!important;border-color:rgba(171,125,48,.48)!important}
+@keyframes cnApprovedArtBreath{0%{transform:scale(1.012) translate3d(0,0,0)}100%{transform:scale(1.027) translate3d(-.35%,-.22%,0)}}
+@keyframes cnApprovedPortal{0%,100%{opacity:.46;transform:scale(.97)}50%{opacity:.92;transform:scale(1.035)}}
+@media(max-width:1100px){
+ #authRoot .cinematic-brand{width:62%!important}
+ #authRoot .login-shell .auth-card{right:2.5vw!important;width:clamp(405px,38vw,475px)!important}
+ #authRoot .login-language{right:3.7vw!important}
+}
+@media(max-width:820px){
+ #authRoot{overflow:auto!important}
+ #authRoot .cinematic-brand{width:100%!important;height:43vh!important;min-height:315px!important}
+ #authRoot .cinematic-brand:before{background-position:42% 43%;background-size:cover}
+ #authRoot .cinematic-brand:after{width:100%!important;height:26%!important;top:auto!important;bottom:0!important;background:linear-gradient(180deg,transparent,#f4f4f0)!important}
+ #authRoot .auth-cinematic:after{left:58%;top:2%;width:42vw;height:42vw}
+ #authRoot .login-language{top:43.5vh!important;right:20px!important}
+ #authRoot .login-shell{min-height:920px!important;padding-top:40vh!important}
+ #authRoot .login-shell .auth-card{position:relative!important;top:auto!important;right:auto!important;width:calc(100% - 28px)!important;max-width:520px!important;margin:68px auto 0!important;padding:58px 22px 26px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ #authRoot .cinematic-brand:before,#authRoot .auth-cinematic:after{animation:none!important}
+}
