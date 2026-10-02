@@ -64,7 +64,8 @@ const PAGE_META={
 const SECONDARY_PARENT={
   personDetailPage:'people',
   groupDetailPage:'groups',
-  recordDetailPage:'records'
+  recordDetailPage:'records',
+  fr70PersonDetailPage:'france70chat'
 };
 
 function normalizePrimaryHeader(section){
@@ -255,7 +256,7 @@ document.addEventListener('click',event=>{
 window.ChenNanDesignSystem={
   version:'2.0.0',
   expectedPrimary:['overview','people','groups','tradeRecommend','holdingsV2','trades','records','novel','france70chat','topics'],
-  expectedSecondary:['personDetailPage','groupDetailPage','recordDetailPage'],
+  expectedSecondary:['personDetailPage','groupDetailPage','recordDetailPage','fr70PersonDetailPage'],
   audit(){
     const sections=$$('.main>.section').map(s=>({
       id:s.id,
