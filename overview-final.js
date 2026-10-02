@@ -1607,6 +1607,61 @@ groupFixStyle.textContent=`
 `;
 document.head.appendChild(groupFixStyle);
 
+
+/* 分组页 hover 最终规则：任何整块容器都不浮起，仅单个人员行浮起。 */
+const groupsHoverFinalOld=$('#chennanGroupsHoverFinal20261003');if(groupsHoverFinalOld)groupsHoverFinalOld.remove();
+const groupsHoverFinalStyle=document.createElement('style');
+groupsHoverFinalStyle.id='chennanGroupsHoverFinal20261003';
+groupsHoverFinalStyle.textContent=`
+@media(hover:hover) and (pointer:fine){
+ .app.app-ready #groups :is(
+  .balanced-groups-panel,
+  .balanced-group-card,
+  .card,
+  .panel,
+  .custom-group,
+  .group-card
+ ),
+ .app.app-ready #groups :is(
+  .balanced-groups-panel,
+  .balanced-group-card,
+  .card,
+  .panel,
+  .custom-group,
+  .group-card
+ ):hover{
+  transform:none!important;
+  translate:none!important;
+  scale:1!important;
+  filter:none!important;
+ }
+ .app.app-ready #groups .balanced-groups-panel,
+ .app.app-ready #groups .balanced-groups-panel:hover{
+  border-color:#d7dcd9!important;
+  box-shadow:
+   inset 1px 1px 0 rgba(255,255,255,.96),
+   inset -1px -1px 0 rgba(168,175,171,.08),
+   0 4px 12px rgba(52,62,56,.03)!important
+ }
+ .app.app-ready #groups .balanced-group-card,
+ .app.app-ready #groups .balanced-group-card:hover{
+  border-color:#d9dedb!important;
+  box-shadow:
+   inset 1px 1px 0 rgba(255,255,255,.96),
+   inset -1px -1px 0 rgba(168,175,171,.08),
+   0 4px 12px rgba(52,62,56,.03)!important
+ }
+ .app.app-ready #groups .balanced-member:hover{
+  transform:translateY(-1px)!important;
+  filter:none!important;
+  background:#f7f9fa!important;
+  border-color:#cbd4cf!important;
+  box-shadow:0 3px 8px rgba(45,55,49,.07)!important
+ }
+}
+`;
+document.head.appendChild(groupsHoverFinalStyle);
+
 /* 概览离开后，顶部操作按钮隐藏；返回概览恢复。 */
 function syncHeaderActions(){
  const active=$('.section.active');
