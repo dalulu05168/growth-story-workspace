@@ -279,13 +279,44 @@ function fillSelect(){
 }
 function renderRecords(){
   const ps=$('#recordPerson').value||'all',ty=$('#recordType').value||'all',q=($('#recordSearch').value||'').toLowerCase();
-  const rs=db.records.filter(r=>(ps==='all'||String(r.personId)===String(ps))&&(ty==='all'||r.type===ty)&&(`${r.title} ${r.content} ${(r.topics||[]).join(' ')}`).toLowerCase().includes(q)).sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+  const all=[...db.records].sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+  const rs=all.filter(r=>(ps==='all'||String(r.personId)===String(ps))&&(ty==='all'||r.type===ty)&&(`${r.title} ${r.content} ${(r.topics||[]).join(' ')}`).toLowerCase().includes(q));
+  const summary=$('#recordSummary');
+  if(summary){
+    const important=all.filter(r=>r.type==='重要事件').length,talk=all.filter(r=>r.type==='发言记录').length,contact=all.filter(r=>r.type==='联系记录').length;
+    const people=new Set(all.map(r=>String(r.personId||'')).filter(Boolean)).size;
+    summary.innerHTML=
+      '<div class="card record-summary-card"><span>全部记录</span><strong>'+all.length+'</strong><small>当前工作区记录</small></div>'+
+      '<div class="card record-summary-card"><span>重要事件</span><strong>'+important+'</strong><small>关键事实与变化</small></div>'+
+      '<div class="card record-summary-card"><span>发言记录</span><strong>'+talk+'</strong><small>历史发言与观点</small></div>'+
+      '<div class="card record-summary-card"><span>联系记录</span><strong>'+contact+'</strong><small>跟进与沟通</small></div>'+
+      '<div class="card record-summary-card"><span>涉及人物</span><strong>'+people+'</strong><small>已有历史人物</small></div>';
+  }
   $('#allTimeline').innerHTML=rs.map(eventHTML).join('')||'<div class="empty">没有匹配记录</div>';
   document.querySelectorAll('.view-record').forEach(b=>b.onclick=()=>renderRecordDetail(b.dataset.id));
-  document.querySelectorAll('.edit-record').forEach(b=>b.onclick=()=>openRecord(b.dataset.id)); // record-edit-rebind
+  document.querySelectorAll('.edit-record').forEach(b=>b.onclick=()=>openRecord(b.dataset.id));
 }
 function topicCounts(){const m={};db.records.forEach(r=>(r.topics||[]).forEach(t=>{if(t)m[t]=(m[t]||0)+1}));return Object.entries(m).sort((a,b)=>b[1]-a[1])}
-function renderTopics(){const ts=topicCounts();$('#allTopics').innerHTML=ts.length?`<h3>已使用主题</h3><div class="tags" style="margin-top:10px">${ts.map(([t,n])=>`<span class="tag"># ${esc(t)} · ${n}</span>`).join('')}</div>`:'<div class="empty">暂未填写主题标签</div>'}
+function renderTopics(){
+  const ts=topicCounts();
+  const summary=$('#consistencySummary');
+  if(summary){
+    const categories={
+      newMale:db.people.filter(p=>pRelationCode(p)==='NEW'&&pGender(p)==='男').length,
+      newFemale:db.people.filter(p=>pRelationCode(p)==='NEW'&&pGender(p)==='女').length,
+      oldMale:db.people.filter(p=>pRelationCode(p)==='OLD'&&pGender(p)==='男').length,
+      oldFemale:db.people.filter(p=>pRelationCode(p)==='OLD'&&pGender(p)==='女').length
+    };
+    const groupOk=Array.isArray(db.customGroups)&&db.customGroups.length===10&&db.customGroups.every(g=>(g.members||[]).length===7);
+    summary.innerHTML=
+      '<div class="card consistency-summary-card"><span>人物总数</span><strong>'+db.people.length+'</strong><small>主人物库</small></div>'+
+      '<div class="card consistency-summary-card"><span>均衡小组</span><strong>'+db.customGroups.length+'</strong><small>'+(groupOk?'10×7 结构正常':'需要检查')+'</small></div>'+
+      '<div class="card consistency-summary-card"><span>新客户</span><strong>'+(categories.newMale+categories.newFemale)+'</strong><small>男 '+categories.newMale+' / 女 '+categories.newFemale+'</small></div>'+
+      '<div class="card consistency-summary-card"><span>老客户</span><strong>'+(categories.oldMale+categories.oldFemale)+'</strong><small>男 '+categories.oldMale+' / 女 '+categories.oldFemale+'</small></div>'+
+      '<div class="card consistency-summary-card"><span>主题标签</span><strong>'+ts.length+'</strong><small>来自人物记录</small></div>';
+  }
+  $('#allTopics').innerHTML=ts.length?'<div class="topic-summary-list">'+ts.map(([t,n])=>'<div class="topic-summary-row"><span># '+esc(t)+'</span><b>'+n+'</b></div>').join('')+'</div>':'<div class="empty">暂未填写主题标签</div>';
+}
 function bindDynamic(){
   document.querySelectorAll('.edit-person').forEach(b=>b.onclick=()=>openPerson(b.dataset.id));
   document.querySelectorAll('.view-person').forEach(b=>b.onclick=()=>viewPerson(b.dataset.id));
