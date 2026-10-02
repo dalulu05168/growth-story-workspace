@@ -34,7 +34,7 @@ function svgIcon(inner){
   return '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">'+inner+'</svg>';
 }
 function normalizeNavIcons(){
-  $('.sidebar .nav button[data-page]').forEach(btn=>{
+  document.querySelectorAll('.sidebar .nav button[data-page]').forEach(btn=>{
     const icon=btn.querySelector('i'),inner=NAV_ICONS[btn.dataset.page];
     if(icon&&inner&&icon.dataset.uiIcon!==btn.dataset.page){
       icon.innerHTML=svgIcon(inner);
