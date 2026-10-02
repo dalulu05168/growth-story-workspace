@@ -1471,3 +1471,550 @@ dialog.growth-notice{
   white-space:pre-wrap!important;
   word-break:break-word!important;
 }
+
+
+/* ===== V3 FULL MODULE LAYOUTS ===== */
+/* Groups: 10 cards remain 5x2, but information is readable and complete. */
+.app.app-ready #groups .balanced-groups-grid{
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  gap:10px!important;
+}
+.app.app-ready #groups .balanced-group-card{
+  padding:12px!important;
+  min-height:0!important;
+}
+.app.app-ready #groups .balanced-group-head h3{
+  font-size:14px!important;
+  color:#111514!important;
+}
+.app.app-ready #groups .balanced-group-head small{
+  font-size:8.5px!important;
+}
+.app.app-ready #groups .balanced-group-total{
+  height:26px!important;
+  min-width:42px!important;
+  font-size:9px!important;
+}
+.app.app-ready #groups .balanced-composition{
+  gap:5px!important;
+}
+.app.app-ready #groups .balanced-composition span{
+  min-height:27px!important;
+  padding:5px 3px!important;
+  font-size:8.5px!important;
+  color:#4f5a54!important;
+}
+.app.app-ready #groups .balanced-member-head,
+.app.app-ready #groups .balanced-member{
+  display:grid!important;
+  grid-template-columns:42px minmax(0,1fr) 34px 38px!important;
+  gap:7px!important;
+  align-items:center!important;
+}
+.app.app-ready #groups .balanced-member-head{
+  padding:0 7px!important;
+  color:#7a847f!important;
+  font-size:7.5px!important;
+  min-height:18px!important;
+}
+.app.app-ready #groups .balanced-members{
+  gap:4px!important;
+}
+.app.app-ready #groups .balanced-member{
+  min-height:30px!important;
+  height:30px!important;
+  padding:0 7px!important;
+}
+.app.app-ready #groups .balanced-member-code{
+  font-size:8.5px!important;
+  color:#111514!important;
+}
+.app.app-ready #groups .balanced-member-name{
+  font-size:9px!important;
+  color:#111514!important;
+  font-weight:700!important;
+}
+.app.app-ready #groups .balanced-member-type{
+  font-size:8px!important;
+  color:#606a65!important;
+  justify-self:start!important;
+}
+.app.app-ready #groups .balanced-member-vip{
+  font-size:8px!important;
+  color:#5a4a23!important;
+  justify-self:end!important;
+}
+.app.app-ready #groups .balanced-group-actions .btn{
+  height:32px!important;
+  min-height:32px!important;
+  font-size:9px!important;
+}
+
+/* Person transaction page */
+.app.app-ready #tradeRecommend .trade-recommend-top{
+  display:grid!important;
+  grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr)!important;
+  gap:10px!important;
+  margin-bottom:10px!important;
+}
+.app.app-ready #tradeRecommend .trade-plan-panel,
+.app.app-ready #tradeRecommend .trade-current-panel,
+.app.app-ready #tradeRecommend .trade-recommend-people{
+  padding:14px!important;
+}
+.app.app-ready #tradeRecommend .trade-plan-list{
+  display:grid!important;
+  gap:7px!important;
+}
+.app.app-ready #tradeRecommend .trade-plan-row{
+  min-height:64px!important;
+  padding:9px 10px!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  gap:10px!important;
+  align-items:center!important;
+  border:1px solid var(--cn-line-soft)!important;
+  border-radius:9px!important;
+  background:#fff!important;
+}
+.app.app-ready #tradeRecommend .trade-plan-row.active{
+  border-color:#d6c28e!important;
+  background:#fbf8ef!important;
+}
+.app.app-ready #tradeRecommend .trade-plan-title{
+  display:flex!important;
+  align-items:center!important;
+  gap:7px!important;
+}
+.app.app-ready #tradeRecommend .trade-plan-title b{
+  color:#111514!important;
+  font-size:12px!important;
+}
+.app.app-ready #tradeRecommend .trade-plan-title span{
+  color:#39433e!important;
+  font-size:10px!important;
+  font-weight:650!important;
+}
+.app.app-ready #tradeRecommend .trade-plan-meta{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  gap:4px 8px!important;
+  margin-top:5px!important;
+}
+.app.app-ready #tradeRecommend .trade-plan-meta span{
+  color:#68716d!important;
+  font-size:8.5px!important;
+}
+.app.app-ready #tradeRecommend .trade-plan-actions{
+  display:flex!important;
+  gap:8px!important;
+}
+.app.app-ready #tradeRecommend .trade-current-title{
+  display:flex!important;
+  gap:8px!important;
+  align-items:baseline!important;
+  margin-bottom:10px!important;
+}
+.app.app-ready #tradeRecommend .trade-current-title b{
+  font-size:18px!important;
+  color:#111514!important;
+}
+.app.app-ready #tradeRecommend .trade-current-title span{
+  font-size:11px!important;
+  color:#46504b!important;
+}
+.app.app-ready #tradeRecommend .offer-grid{
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:7px!important;
+}
+.app.app-ready #tradeRecommend .offer-stat{
+  min-height:68px!important;
+  padding:9px 10px!important;
+  border-color:var(--cn-line-soft)!important;
+}
+.app.app-ready #tradeRecommend .offer-stat span{
+  font-size:8px!important;
+}
+.app.app-ready #tradeRecommend .offer-stat b{
+  font-size:12px!important;
+}
+.app.app-ready #tradeRecommend .trade-recommend-people{
+  min-height:250px!important;
+}
+.app.app-ready #tradeRecommend .trade-recommend-head-actions{
+  display:flex!important;
+  align-items:center!important;
+  gap:6px!important;
+  flex-wrap:wrap!important;
+}
+.app.app-ready #tradeRecommend .trade-summary-chip{
+  min-height:28px!important;
+  padding:5px 8px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  border:1px solid var(--cn-line-soft)!important;
+  border-radius:999px!important;
+  color:#53605a!important;
+  font-size:8px!important;
+  background:#f7f8f7!important;
+}
+.app.app-ready #tradeRecommend .trade-candidate-table{
+  display:grid!important;
+  border:1px solid var(--cn-line-strong)!important;
+  border-radius:10px!important;
+  overflow:hidden!important;
+}
+.app.app-ready #tradeRecommend .trade-candidate-head,
+.app.app-ready #tradeRecommend .trade-candidate-row{
+  display:grid!important;
+  grid-template-columns:minmax(180px,1.4fr) 70px 58px 110px minmax(120px,.9fr) 90px 150px!important;
+  gap:8px!important;
+  align-items:center!important;
+}
+.app.app-ready #tradeRecommend .trade-candidate-head{
+  min-height:34px!important;
+  padding:0 10px!important;
+  background:#f1f3f2!important;
+  color:#111514!important;
+  font-size:8px!important;
+  font-weight:800!important;
+  border-bottom:1px solid var(--cn-line-strong)!important;
+}
+.app.app-ready #tradeRecommend .trade-candidate-row{
+  min-height:54px!important;
+  padding:6px 10px!important;
+  background:#fff!important;
+  border-bottom:1px solid var(--cn-line-soft)!important;
+  color:#26302b!important;
+  font-size:8.5px!important;
+}
+.app.app-ready #tradeRecommend .trade-candidate-row:last-child{border-bottom:0!important}
+.app.app-ready #tradeRecommend .trade-candidate-row.invited{background:#fbf9f2!important}
+.app.app-ready #tradeRecommend .trade-candidate-row.rejected{background:#fafafa!important;opacity:.78!important}
+.app.app-ready #tradeRecommend .trade-candidate-row.bought{background:#f3f8f5!important}
+.app.app-ready #tradeRecommend .trade-candidate-person{
+  display:grid!important;
+  grid-template-columns:34px minmax(0,1fr)!important;
+  gap:7px!important;
+  align-items:center!important;
+}
+.app.app-ready #tradeRecommend .trade-candidate-avatar{
+  width:32px!important;height:32px!important;
+  display:block!important;
+  overflow:hidden!important;
+  border-radius:50%!important;
+  background:#eef1ef!important;
+}
+.app.app-ready #tradeRecommend .trade-candidate-avatar .person-portrait{
+  width:100%!important;height:100%!important;
+}
+.app.app-ready #tradeRecommend .trade-candidate-person b{
+  color:#111514!important;font-size:9px!important;
+}
+.app.app-ready #tradeRecommend .trade-candidate-person small,
+.app.app-ready #tradeRecommend .trade-candidate-row small{
+  display:block!important;
+  margin-top:2px!important;
+  color:#7a847f!important;
+  font-size:7.5px!important;
+}
+.app.app-ready #tradeRecommend .trade-candidate-actions{
+  display:flex!important;
+  justify-content:flex-end!important;
+  align-items:center!important;
+  gap:6px!important;
+}
+.app.app-ready #tradeRecommend .fund-ok{color:#4f7f68!important}
+.app.app-ready #tradeRecommend .fund-bad{color:#8f2f2f!important}
+.app.app-ready #tradeRecommend .fund-wait{color:#6c756f!important}
+.app.app-ready #tradeRecommend .candidate-state{
+  font-size:8px!important;
+  font-weight:700!important;
+  color:#59635e!important;
+}
+.app.app-ready #tradeRecommend .candidate-state-bought{color:#4f7f68!important}
+.app.app-ready #tradeRecommend .candidate-state-rejected{color:#8f2f2f!important}
+
+/* Holdings */
+.app.app-ready #holdingsV2 .holding-kpis,
+.app.app-ready #records .record-summary-grid,
+.app.app-ready #novel .writing-summary-grid,
+.app.app-ready #topics .consistency-summary-grid{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:8px!important;
+  margin-bottom:10px!important;
+}
+.app.app-ready #records .record-summary-grid,
+.app.app-ready #topics .consistency-summary-grid{
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+}
+.app.app-ready :is(
+ #holdingsV2 .holding-kpi,
+ #records .record-summary-card,
+ #novel .writing-summary-card,
+ #topics .consistency-summary-card
+){
+  min-height:76px!important;
+  padding:10px 12px!important;
+}
+.app.app-ready :is(
+ #holdingsV2 .holding-kpi,
+ #records .record-summary-card,
+ #novel .writing-summary-card,
+ #topics .consistency-summary-card
+) span{
+  display:block!important;
+  color:#68716d!important;
+  font-size:8.5px!important;
+}
+.app.app-ready :is(
+ #holdingsV2 .holding-kpi,
+ #records .record-summary-card,
+ #novel .writing-summary-card,
+ #topics .consistency-summary-card
+) strong{
+  display:block!important;
+  margin-top:4px!important;
+  color:#111514!important;
+  font-size:18px!important;
+  line-height:1.15!important;
+}
+.app.app-ready :is(
+ #holdingsV2 .holding-kpi,
+ #records .record-summary-card,
+ #novel .writing-summary-card,
+ #topics .consistency-summary-card
+) small{
+  display:block!important;
+  margin-top:3px!important;
+  color:#8a938e!important;
+  font-size:7.5px!important;
+}
+.app.app-ready #holdingsV2 .holding-main-grid{
+  display:grid!important;
+  grid-template-columns:minmax(0,1.35fr) minmax(330px,.65fr)!important;
+  gap:10px!important;
+  margin-bottom:10px!important;
+}
+.app.app-ready #holdingsV2 .holding-chart-panel,
+.app.app-ready #holdingsV2 .holding-next-panel,
+.app.app-ready #holdingsV2 .holding-detail-panel{
+  padding:13px!important;
+}
+.app.app-ready #holdingsV2 .holding-next-list{
+  display:grid!important;
+  gap:6px!important;
+}
+.app.app-ready #holdingsV2 .holding-next-row{
+  min-height:48px!important;
+  padding:7px 8px!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  align-items:center!important;
+  gap:8px!important;
+  border:1px solid var(--cn-line-soft)!important;
+  border-radius:8px!important;
+  background:#fff!important;
+}
+.app.app-ready #holdingsV2 .holding-next-row>div:last-child{text-align:right!important}
+.app.app-ready #holdingsV2 .holding-next-row b{font-size:9px!important;color:#111514!important}
+.app.app-ready #holdingsV2 .holding-next-row small,
+.app.app-ready #holdingsV2 .holding-next-row span{
+  display:block!important;font-size:7.5px!important;color:#737e78!important;margin-top:2px!important;
+}
+.app.app-ready #holdingsV2 .holding-next-row strong{
+  display:block!important;font-size:8px!important;color:#2c3530!important;
+}
+
+/* Trade plan */
+.app.app-ready #trades .trade-summary-grid{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:8px!important;
+  margin-bottom:8px!important;
+}
+.app.app-ready #trades .trade-summary-card{
+  min-height:70px!important;
+  padding:9px 11px!important;
+}
+.app.app-ready #trades .trade-summary-card span{display:block!important;color:#68716d!important;font-size:8px!important}
+.app.app-ready #trades .trade-summary-card strong{display:block!important;color:#111514!important;font-size:18px!important;margin-top:3px!important}
+.app.app-ready #trades .trade-summary-card small{display:block!important;color:#8a938e!important;font-size:7.5px!important;margin-top:2px!important}
+.app.app-ready #trades .trade-tabs{margin:0 0 8px!important}
+.app.app-ready #trades .trade-plan-table{
+  border:1px solid var(--cn-line-strong)!important;
+  border-radius:10px!important;
+  overflow:hidden!important;
+}
+.app.app-ready #trades .trade-plan-table-head,
+.app.app-ready #trades .trade-plan-table-row{
+  display:grid!important;
+  grid-template-columns:minmax(125px,.8fr) minmax(150px,1fr) 70px 80px minmax(145px,1fr) 90px 170px!important;
+  gap:8px!important;
+  align-items:center!important;
+}
+.app.app-ready #trades .trade-plan-table-head{
+  min-height:34px!important;
+  padding:0 10px!important;
+  background:#f1f3f2!important;
+  color:#111514!important;
+  font-size:8px!important;
+  font-weight:800!important;
+}
+.app.app-ready #trades .trade-plan-table-row{
+  min-height:52px!important;
+  padding:6px 10px!important;
+  border-top:1px solid var(--cn-line-soft)!important;
+  background:#fff!important;
+  color:#28312c!important;
+  font-size:8.5px!important;
+}
+.app.app-ready #trades .trade-plan-table-row.due{background:#fbf8ef!important}
+.app.app-ready #trades .trade-plan-table-row.overdue{background:#fbf2f1!important}
+.app.app-ready #trades .trade-plan-table-row b{display:block!important;color:#111514!important;font-size:9px!important}
+.app.app-ready #trades .trade-plan-table-row small{display:block!important;color:#7b8580!important;font-size:7.5px!important;margin-top:2px!important}
+.app.app-ready #trades .trade-table-actions{
+  display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:6px!important;white-space:nowrap!important;
+}
+.app.app-ready #trades .unholding-grid{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:7px!important;
+}
+.app.app-ready #trades .unholding-row{
+  min-height:58px!important;
+  padding:8px 10px!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) 90px 130px!important;
+  gap:10px!important;
+  align-items:center!important;
+  border:1px solid var(--cn-line-soft)!important;
+  border-radius:8px!important;
+  background:#fff!important;
+}
+.app.app-ready #trades .unholding-row b{font-size:9px!important;color:#111514!important}
+.app.app-ready #trades .unholding-row small{display:block!important;font-size:7.5px!important;color:#7b8580!important;margin-top:2px!important}
+.app.app-ready #trades .unholding-row>div:nth-child(2) span{display:block!important;color:#7b8580!important;font-size:7.5px!important}
+.app.app-ready #trades .trade-settings-layout{
+  display:grid!important;
+  grid-template-columns:minmax(0,1.05fr) minmax(320px,.95fr)!important;
+  gap:10px!important;
+}
+
+/* Records */
+.app.app-ready #records .record-main-panel{
+  padding:12px!important;
+}
+.app.app-ready #records .record-main-panel .panel-head{
+  margin-bottom:8px!important;
+}
+.app.app-ready #records .event{
+  border:1px solid var(--cn-line-soft)!important;
+  background:#fff!important;
+}
+.app.app-ready #records .event:hover{
+  transform:translateY(-1px)!important;
+  box-shadow:0 5px 12px rgba(45,55,49,.05)!important;
+}
+
+/* Writing */
+.app.app-ready #novel .writing-summary-grid{
+  margin-bottom:10px!important;
+}
+.app.app-ready #novel .writing-summary-card strong{
+  font-size:14px!important;
+}
+.app.app-ready #novel .daily-doc-layout{
+  grid-template-columns:170px minmax(0,1fr) 320px!important;
+}
+.app.app-ready #novel .editor-card{
+  min-height:0!important;
+}
+.app.app-ready #novel .rich-editor{
+  min-height:420px!important;
+}
+.app.app-ready #novel .speech-panel,
+.app.app-ready #novel .memory-panel{
+  min-height:520px!important;
+}
+
+/* France 70 */
+.app.app-ready #france70chat .fr70-stats{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  margin-bottom:10px!important;
+}
+.app.app-ready #france70chat .fr70-layout{
+  grid-template-columns:minmax(0,1.05fr) minmax(380px,.95fr)!important;
+}
+.app.app-ready #france70chat .fr70-card{
+  margin-top:10px!important;
+}
+.app.app-ready #france70chat .fr70-card .eyebrow{
+  color:#8a681e!important;
+}
+.app.app-ready #france70chat .fr70-chat{
+  min-height:240px!important;
+  max-height:420px!important;
+  overflow:auto!important;
+}
+
+/* Consistency */
+.app.app-ready #topics .consistency-layout{
+  display:grid!important;
+  grid-template-columns:minmax(0,1.2fr) minmax(360px,.8fr)!important;
+  gap:10px!important;
+}
+.app.app-ready #topics .consistency-layout>.panel{
+  padding:13px!important;
+}
+.app.app-ready #topics .check-box{
+  margin-top:8px!important;
+}
+.app.app-ready #topics .topic-summary-list{
+  display:grid!important;
+  gap:6px!important;
+}
+.app.app-ready #topics .topic-summary-row{
+  min-height:38px!important;
+  padding:7px 9px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  border:1px solid var(--cn-line-soft)!important;
+  border-radius:8px!important;
+  background:#fff!important;
+}
+.app.app-ready #topics .topic-summary-row span{
+  color:#3d4842!important;
+  font-size:9px!important;
+}
+.app.app-ready #topics .topic-summary-row b{
+  color:#111514!important;
+  font-size:10px!important;
+}
+
+/* Responsive fallbacks */
+@media(max-width:1400px) and (min-width:901px){
+  .app.app-ready #groups .balanced-groups-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .app.app-ready #tradeRecommend .trade-candidate-head,
+  .app.app-ready #tradeRecommend .trade-candidate-row{
+    grid-template-columns:minmax(160px,1.2fr) 60px 50px 100px minmax(100px,.8fr) 80px 130px!important;
+  }
+  .app.app-ready #trades .trade-plan-table-head,
+  .app.app-ready #trades .trade-plan-table-row{
+    grid-template-columns:110px 130px 60px 70px 130px 80px 150px!important;
+  }
+}
+@media(max-width:1100px){
+  .app.app-ready #tradeRecommend .trade-recommend-top,
+  .app.app-ready #holdingsV2 .holding-main-grid,
+  .app.app-ready #trades .trade-settings-layout,
+  .app.app-ready #topics .consistency-layout{
+    grid-template-columns:1fr!important;
+  }
+  .app.app-ready #tradeRecommend .trade-candidate-table,
+  .app.app-ready #trades .trade-plan-table{
+    overflow-x:auto!important;
+  }
+}
