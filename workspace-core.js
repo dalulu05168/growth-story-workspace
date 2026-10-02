@@ -289,6 +289,7 @@ function bindDynamic(){
   document.querySelectorAll('.edit-person').forEach(b=>b.onclick=()=>openPerson(b.dataset.id));
   document.querySelectorAll('.view-person').forEach(b=>b.onclick=()=>viewPerson(b.dataset.id));
   document.querySelectorAll('.delete-person').forEach(b=>b.onclick=()=>deletePerson(b.dataset.id));
+  document.querySelectorAll('.view-record').forEach(b=>b.onclick=()=>renderRecordDetail(b.dataset.id));
   document.querySelectorAll('.edit-record').forEach(b=>b.onclick=()=>openRecord(b.dataset.id));
   document.querySelectorAll('.system-group-open').forEach(b=>b.onclick=()=>openSystemGroup(b.dataset.group));
   document.querySelectorAll('.edit-group').forEach(b=>b.onclick=()=>openGroup(b.dataset.id));
