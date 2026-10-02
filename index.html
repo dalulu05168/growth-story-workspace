@@ -16,7 +16,9 @@
 <style>.app:not(.app-ready){visibility:hidden}.auth-root{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:#f7f9fc}.auth-root.hidden{display:none!important}</style>
 <link rel="preload" as="image" href="./assets/login/landscape.webp" type="image/webp">
 <link rel="stylesheet" href="./intro.css?v=20261001-reliable-1">
-<link id="cnWorkspaceGlass" rel="stylesheet" href="./workspace-glass.css?v=20261001-reliable-1">\n<link rel="stylesheet" href="./france70-chat.css?v=20261002-free-1">\n<link rel="preload" href="./data/france70-v6.1.json" as="fetch" crossorigin="anonymous">
+<link id="cnWorkspaceGlass" rel="stylesheet" href="./workspace-glass.css?v=20261001-reliable-1">
+<link rel="stylesheet" href="./france70-chat.css?v=20261002-free-1">
+<link rel="preload" href="./data/france70-v6.1.json" as="fetch" crossorigin="anonymous">
 <script src="./theme-system.js?v=20261001-reliable-1"></script>
 </head>
 <body>
@@ -28,7 +30,6 @@
     <button data-page="people"><i>◎</i><span>人物库</span></button>
     <button data-page="groups"><i>◫</i><span>分组管理</span></button>
     <button data-page="records"><i>▤</i><span>重要事件</span></button>
-    <button data-page="france70Chat"><i>◈</i><span>群聊引擎</span></button>
     <button data-page="novel"><i>✎</i><span>小说文档</span></button>
     <button data-page="france70chat"><i>✦</i><span>France 70 群聊</span></button>
     <button data-page="topics"><i>◌</i><span>主题检查</span></button>
@@ -70,103 +71,7 @@
 </section>
 
 
-<section id="france70Chat" class="section">
-  <div class="topbar">
-    <div>
-      <div class="eyebrow">FRANCE 70 · FREE CHAT ENGINE</div>
-      <h1 class="page-title">70人群聊与长期记忆</h1>
-      <p class="sub">免费模式：工作台负责角色选择、提示词、群聊归档和人物记忆；AI 生成使用你现有的 ChatGPT，不调用额外付费 API。</p>
-    </div>
-    <div class="actions">
-      <span class="f70-free-badge">✓ 0 额外 API 费用</span>
-      <button class="btn ghost" id="f70ExportMemory" type="button">导出群聊记忆</button>
-    </div>
-  </div>
-
-  <div class="f70-steps">
-    <div class="f70-step"><b>① 输入助理 / 教授内容</b>系统从70人中挑选真正有理由参与的人。</div>
-    <div class="f70-step"><b>② 复制提示词到 ChatGPT</b>ChatGPT 按 v6.1 人设、关系与历史生成法语群聊。</div>
-    <div class="f70-step"><b>③ 粘贴 JSON 回来保存</b>自动检查“问句过多”等问题，并写入长期人物记忆。</div>
-  </div>
-
-  <div class="f70-layout">
-    <div class="f70-stack">
-      <div class="f70-card">
-        <div class="f70-head">
-          <div><h2>本轮来源</h2><p>可以直接粘贴你今天准备好的教授或助理内容。</p></div>
-          <div class="f70-source-tabs">
-            <button type="button" class="active" data-f70-source="assistant">助理</button>
-            <button type="button" data-f70-source="professor">教授</button>
-          </div>
-        </div>
-        <textarea id="f70SourceText" class="input f70-source" placeholder="例如：Bonjour à toutes et à tous..."></textarea>
-        <div class="f70-control-row">
-          <label>候选人数 <b id="f70MaxLabel">20</b>
-            <input id="f70MaxParticipants" type="range" min="5" max="20" value="20" oninput="document.getElementById('f70MaxLabel').textContent=this.value">
-          </label>
-          <label><input id="f70ReuseLast" type="checkbox"> 优先延续上一轮人物</label>
-          <span class="spacer"></span>
-          <button class="btn primary" id="f70BuildPrompt" type="button">生成免费提示词</button>
-        </div>
-        <div id="f70Status" class="f70-status">正在加载 v6.1 人物库…</div>
-      </div>
-
-      <div class="f70-card">
-        <div class="f70-head">
-          <div><h2>本轮候选人物</h2><p>候选不等于全部发言；允许沉默、表情和短回复。</p></div>
-        </div>
-        <div id="f70Candidates" class="f70-chips"><span class="muted">尚未选择人物</span></div>
-      </div>
-
-      <div class="f70-card">
-        <div class="f70-head">
-          <div><h2>给 ChatGPT 的提示词</h2><p>已经包含人物 Voice DNA、关系、正史、最近记忆以及“问句不得泛滥”的新规则。</p></div>
-          <div class="button-row">
-            <button class="btn ghost small" id="f70OpenChatGPT" type="button">打开 ChatGPT</button>
-            <button class="btn primary small" id="f70CopyPrompt" type="button">复制提示词</button>
-          </div>
-        </div>
-        <textarea id="f70Prompt" class="input f70-prompt" readonly placeholder="点击“生成免费提示词”后出现。"></textarea>
-      </div>
-
-      <div class="f70-card">
-        <div class="f70-head">
-          <div><h2>粘贴 ChatGPT 返回的 JSON</h2><p>系统先检查问句比例、分号和重复开头，再决定是否写入长期记忆。</p></div>
-          <button class="btn primary small" id="f70ImportResult" type="button">导入群聊并记忆</button>
-        </div>
-        <textarea id="f70ResultInput" class="input f70-result-input" placeholder='粘贴 {"topicTags":[],"messages":[],"memoryEvents":[]}'></textarea>
-        <div id="f70Qa" class="f70-qa"></div>
-      </div>
-
-      <div class="f70-card">
-        <div class="f70-head"><div><h2>本轮群聊</h2><p>这里只显示实际开口的人。</p></div></div>
-        <div id="f70Conversation" class="f70-message-list"></div>
-      </div>
-    </div>
-
-    <div class="f70-stack">
-      <div class="f70-card">
-        <div class="f70-head"><div><h3>历史会话</h3><p>点击恢复，下一轮可继续延续人物和观点。</p></div></div>
-        <div id="f70History" class="f70-history"></div>
-      </div>
-      <div class="f70-card">
-        <div class="f70-head"><div><h3>人物动态记忆</h3><p>近15天、15–90天和长期记忆会分层压缩。</p></div></div>
-        <div id="f70MemoryList" class="f70-memory-list"></div>
-      </div>
-      <div class="f70-card">
-        <div class="f70-help">
-          <strong>最新真实性规则已经写死：</strong><br>
-          · 直接问句目标 25–35%，不能所有人都提问。<br>
-          · 牵引方式包含判断、条件、反驳、经验、回复和反应。<br>
-          · 信随 / 执行者可以谈家庭价值，但不能临时编造“赚钱后全家旅行”。<br>
-          · 质疑者可以保持质疑，观望者不必被强行说服。<br>
-          · 法语长短句混合，极短回复和沉默都属于正常群聊。
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-\n<section id="novel" class="section">
+<section id="novel" class="section">
   <div class="topbar"><div><div class="eyebrow">NOVEL DOCUMENTS</div><h1 class="page-title">小说文档</h1><p class="sub">输入“人物编号 + 空格 + 发言内容”并回车，自动插入人物署名。</p></div><button class="btn primary" id="newDoc">＋ 新建文档</button></div>
   <div class="novel-layout"><div class="card panel"><div class="panel-head"><h2>文档列表</h2><button class="link-btn" id="renameDoc">重命名</button></div><div id="docList" class="doc-list"></div></div><div class="card panel"><div class="editor-toolbar"><input class="input" id="docTitle" placeholder="文档标题" style="max-width:360px"><div class="button-row"><button class="btn ghost small" id="saveDoc">保存文档</button><button class="btn ghost small" id="insertPerson">插入人物</button></div></div><textarea id="editor" class="editor" placeholder="开始写作…"></textarea><div class="shortcut">快捷人物插入：输入 <b>人物编号 + 空格 + 发言内容</b> 后按回车。</div><div id="docStatus" class="muted" style="font-size:12px;margin-top:8px"></div></div></div>
 </section>
@@ -175,16 +80,34 @@
 <section id="france70chat" class="section">
   <div class="topbar">
     <div>
-      <div class="eyebrow">FRANCE 70 · FREE WORKFLOW</div>
-      <h1 class="page-title">France 70 群聊生成器</h1>
-      <p class="sub">不调用收费 AI API。工作台负责选人、整理人设与记忆；复制到 ChatGPT 生成后，把 JSON 粘回来即可自动存档。</p>
+      <div class="eyebrow">FRANCE 70 · FREE CHAT & MEMORY</div>
+      <h1 class="page-title">France 70 群聊与长期记忆</h1>
+      <p class="sub">70位虚构法国人物 · v6.1 Voice DNA · 作者正史 · 关系网 · 动态记忆。网页不调用额外付费 AI API。</p>
+    </div>
+    <div class="actions">
+      <span class="status good">✓ 0 额外 API 费用</span>
+      <button class="btn ghost" type="button" id="fr70Export">导出群聊记忆</button>
     </div>
   </div>
+
   <div id="fr70LoadStatus" class="notice">正在读取 v6.1 角色库…</div>
+
   <div class="fr70-stats">
     <div class="fr70-stat"><span>历史会话</span><b id="fr70SessionCount">0</b></div>
     <div class="fr70-stat"><span>动态记忆事件</span><b id="fr70MemoryCount">0</b></div>
     <div class="fr70-stat"><span>已有记忆人物</span><b id="fr70PeopleMem">0</b></div>
+  </div>
+
+  <div class="card panel" style="margin-bottom:18px">
+    <div class="panel-head">
+      <h2>免费工作流</h2>
+      <span class="muted">一个入口 · 一个记忆源 · 一个 v6.1 主档</span>
+    </div>
+    <div class="check-box">
+      <b>① 输入助理 / 教授内容</b>：系统先从70人中筛选真正有理由参与的人。<br>
+      <b>② 生成并复制提示词</b>：把人物人设、关系、Canon、近期记忆一并交给 ChatGPT。<br>
+      <b>③ 粘贴 JSON 回来</b>：先做问句比例、分号、重复话术等 QA，再写入本轮历史和人物动态记忆。
+    </div>
   </div>
 
   <div class="fr70-layout">
@@ -222,9 +145,9 @@
 
       <div class="card fr70-card" style="margin-top:18px">
         <div class="eyebrow">STEP 2</div>
-        <h2 style="margin:3px 0 10px">复制这段提示词到 ChatGPT</h2>
+        <h2 style="margin:3px 0 10px">复制提示词到 ChatGPT</h2>
         <textarea id="fr70Prompt" class="fr70-prompt" readonly placeholder="点击“生成提示词”后，这里会包含所选人物 v6.1 人设、关系网和动态记忆。"></textarea>
-        <div class="fr70-note">免费版不在网页里调用模型，所以不会产生额外 API 费用。直接使用你现在的 ChatGPT 对话生成即可。</div>
+        <div class="fr70-note">提示词已写入真实性规则：直接问句目标约25%–35%，牵引不能等于人人提问，也不能强迫观望者和质疑者统一结论。</div>
       </div>
 
       <div class="card fr70-card" style="margin-top:18px">
@@ -232,20 +155,26 @@
         <h2 style="margin:3px 0 10px">粘贴 ChatGPT 返回的 JSON</h2>
         <textarea id="fr70Result" class="fr70-output" placeholder='粘贴 {"messages":[...],"memory_events":[...]}'></textarea>
         <div class="button-row" style="margin-top:12px">
-          <button class="btn primary" type="button" id="fr70Import">导入群聊并更新记忆</button>
+          <button class="btn primary" type="button" id="fr70Import">检查并导入群聊</button>
         </div>
-        <div class="fr70-note">系统会把本轮会话和人物动态记忆写进现有工作区数据，继续沿用你现在的云端保存机制。</div>
+        <div id="fr70Qa" class="fr70-qa"></div>
       </div>
     </div>
 
     <div>
       <div class="card fr70-card">
-        <div class="panel-head"><h2>本轮群聊预览</h2><span class="muted">真实长短混合 · 非人人提问</span></div>
+        <div class="panel-head"><h2>本轮群聊预览</h2><span class="muted">只显示实际开口的人</span></div>
         <div id="fr70Chat" class="fr70-chat"><div class="empty">还没有导入群聊结果</div></div>
       </div>
+
       <div class="card fr70-card" style="margin-top:18px">
         <div class="panel-head"><h2>历史会话</h2><span class="muted">最近 60 轮</span></div>
         <div id="fr70History" class="fr70-history"><div class="empty">暂无历史会话</div></div>
+      </div>
+
+      <div class="card fr70-card" style="margin-top:18px">
+        <div class="panel-head"><h2>人物动态记忆</h2><span class="muted">15天 / 90天 / 长期分层</span></div>
+        <div id="fr70MemoryList" class="fr70-memory-list"><div class="empty">暂无动态记忆</div></div>
       </div>
     </div>
   </div>
