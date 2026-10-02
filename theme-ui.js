@@ -1509,7 +1509,7 @@ body{font:14px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","M
 }
 .app.app-ready .row-more>summary::-webkit-details-marker{display:none!important}
 .app.app-ready .row-more-menu{
-  position:absolute!important;right:0!important;top:36px!important;z-index:20!important;
+  position:absolute!important;right:0!important;top:auto!important;bottom:36px!important;z-index:20!important;
   min-width:118px!important;padding:7px!important;border:1px solid var(--border-strong)!important;
   border-radius:10px!important;background:#fff!important;
   box-shadow:0 12px 28px rgba(35,40,37,.14)!important;
@@ -1587,7 +1587,7 @@ body{font:14px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","M
 .app.app-ready .editor-card,.app.app-ready .memory-panel{min-width:0!important}
 .app.app-ready .rich-editor{min-height:460px!important}
 .app.app-ready .memory-timeline{max-height:none!important;overflow:visible!important}
-@media(min-width:761px) and (max-width:1250px){
+@media(min-width:761px) and (max-width:1450px){
   .app.app-ready .daily-doc-layout{grid-template-columns:190px minmax(0,1fr)!important}
   .app.app-ready .memory-panel{grid-column:1/-1!important}
 }
@@ -1608,6 +1608,7 @@ body{font:14px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","M
 .app.app-ready .fr70-step b{display:block!important;color:#1d211f!important;font-size:13px!important}
 .app.app-ready .fr70-step span{display:block!important;margin-top:2px!important;color:#737a76!important;font-size:11px!important}
 .app.app-ready .fr70-step.current{border-color:#c8ad67!important;background:#f3eee1!important}
+.app.app-ready .fr70-step.complete{border-color:#bacdc3!important;background:#edf4f0!important}
 .app.app-ready :is(.fr70-chat,.fr70-history,.fr70-memory-list){max-height:none!important;overflow:visible!important}
 @media(max-width:760px){.app.app-ready .fr70-stepper{grid-template-columns:1fr!important}}
 
