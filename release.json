@@ -1,5 +1,5 @@
 {
-  "sourceSha": "437fe2ec2b7935db1353826829a63edcbbdaad64",
+  "sourceSha": "61f8c1f534f43b0a8701efa5f19a94079f43203c",
   "files": {
     "CNAME": "7f3352e8682740e6da414b7eb847d82c921ddf397bf3c175a9ae794ff8dd18f9",
     "assets/brand/chennan-logo.jpg": "f9cddb9644e71f715628511ec375b9baa7d24ba3d8b3ab0b934d87e047a1d982",
@@ -15,7 +15,7 @@
     "data/france70-v6.1.json": "6f3d57241c01a780fcbb14cb983a80bbd087acbacc8290e94210f4baeff1647a",
     "data/people.json": "f11b30a34ae3cb0b2b97fbb5a5f7eb8493b47ac7a4328cbe41800f6f24a5b357",
     "document-workspace.js": "89855d2b4c751cfb54501bf404062f535ffd1f9635e6cbac02a60058f1a4f45a",
-    "france70-chat.css": "6c14280d8be84ced29bd771212bf9c1283d498a3dc4652eb8acb4c877761bfc3",
+    "france70-chat.css": "86927735a033704e955d624a8bde39b3187d655e300ff052532d8b87a11780e4",
     "france70-chat.js": "661c71976be9bcfa8cf91a3346a9c34744fbe38a5489fefc791f6d033bdfffd1",
     "icons/LICENSE": "ddbe6082ec3cf979db47e5af549d2849c5d6182b3e005ef91ce1dbb9eb122f11",
     "icons/arrow-right.svg": "ebdc82ccfcfd9c9d81b1cb83aca241aac912e84c256a0451f64866a342a0a355",
@@ -39,7 +39,7 @@
     "theme-ui.js": "ad0c3939d142d7c847353d338ee88afdda3b5ebd05450129d4b340135acef0f3",
     "trade-dashboard.js": "d2cec99c2054318d2e2177e5e8fde56abe33624a63ad9ce6eed7abd685e0e242",
     "trading-simulator.js": "17aa899f1b3727662243d436e7bac2dd1cfa3a37a5e59be41326ad98d86b0cfa",
-    "ui-shell.js": "c99614f2124c62927c60b689251685bfe8d348fcf86db885b20d08cc540f46eb",
+    "ui-shell.js": "c1b9ad5eacd5dde3559de9b3e103980aadae15d6809d8672aaec8dd594beb7f0",
     "workspace-core.js": "b2842b18fe9d670715a1ce78c517ced1bb5581e247e7adc3e90dff2acb082e88",
     "workspace-glass.css": "5331ff056f9f23b7d2d60403cdb1f9237739534d0f0140fbe67acb3885ec73d4"
   }

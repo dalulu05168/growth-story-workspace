@@ -6,8 +6,8 @@ if(!app||!sidebar||!main||!nav)return;
 
 const brand=document.querySelector('.brand');
 if(brand)brand.innerHTML='<div class="cn-wordmark"><span>辰</span><span>南</span></div><div class="brand-copy"><b>辰南</b><small>投资管理系统</small></div>';
-const sideNote=document.querySelector('.side-note');if(sideNote)sideNote.innerHTML='<span class="cloud-live-dot"></span> Supabase 云端自动保存<br><small>人物 · 交易 · 持仓 · 文档</small>';
-const labelMap={overview:'概览',people:'人物库',groups:'分组管理',records:'人物记录',novel:'文档中心',topics:'一致性检查',trades:'交易计划',tradeRecommend:'人物交易列表',holdingsV2:'持仓管理'};
+const sideNote=document.querySelector('.side-note');if(sideNote)sideNote.innerHTML='<span class="cloud-live-dot"></span> Supabase 云端自动保存<br><small>人物 · 群聊 · 交易 · 持仓 · 文档</small>';
+const labelMap={overview:'概览',people:'人物库',groups:'分组管理',records:'人物记录',novel:'文档中心',france70chat:'France 70 群聊',topics:'一致性检查',trades:'交易计划',tradeRecommend:'人物交易列表',holdingsV2:'持仓管理'};
 nav.querySelectorAll('button[data-page]').forEach(b=>{const span=b.querySelector('span'),label=labelMap[b.dataset.page];if(span&&label)span.textContent=label});
 
 if(!document.querySelector('.nav-collapse')){
