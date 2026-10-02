@@ -150,7 +150,7 @@ function renderPeople(){
   $('#peopleList').innerHTML=list.map(p=>`<div class="profile-row">
     <div class="avatar">${pAvatar(p)}</div>
     <div class="person"><b>${esc(pCode(p))} · ${esc(pName(p))}</b><small>${esc(genderRelationLabel(p)||'未分类')} · ${esc(p.age||'--')}岁 · ${esc(p.location?.city||'城市未填')} · ${esc(p.occupation?.title_zh||p.occupation?.title_fr||'职业未填')}</small></div>
-    ${pVip(p)?'<span class="status vip">VIP</span>':''}
+    ${pVip(p)?'<span class="status vip vip-level vip-level-'+esc(String(p.vip?.level||'VIP').replace(/\D/g,'')||'x')+'">'+esc(p.vip?.level||'VIP')+'</span>':''}
     <span class="status ${pOpened(p)?'good':'warn'}">${pOpened(p)?'已开户':'未开户'}</span>
     <span class="status ${pJoined(p)?'good':''}">${pJoined(p)?'已入群':'未入群'}</span>
     <span class="sort-badge">股票热情 ${pEnthusiasm(p)}</span>
