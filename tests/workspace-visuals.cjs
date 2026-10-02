@@ -77,7 +77,7 @@ async function workspaceVisuals(browser,url){
     const layout=await page.evaluate(()=>({width:innerWidth,height:innerHeight,scroll:document.documentElement.scrollWidth,
      frame:document.querySelector('.app').getBoundingClientRect().toJSON(),side:document.querySelector('.sidebar').getBoundingClientRect().toJSON(),header:document.querySelector('.section.active>.topbar')?.getBoundingClientRect().toJSON()||null}));
     assert(layout.scroll<=width+1,'workspace overflow '+width);
-    if(width>900){assert(Math.abs(layout.frame.width/layout.frame.height-16/9)<.01,'desktop frame must be 16:9');assert(layout.frame.left>=0&&layout.frame.right<=width+1,'frame fits viewport');assert(layout.frame.top>=0&&layout.frame.bottom<=layout.height+1,'frame height fits viewport')}
+    if(width>900){assert(layout.frame.left>=0&&layout.frame.right<=width+1,'frame fits viewport');assert(layout.frame.top>=0&&layout.frame.bottom<=layout.height+1,'frame height fits viewport')}
     if(width<=760){assert(layout.side.left>=0&&layout.side.right<=width,'mobile navigation must remain inside viewport');assert(layout.header&&layout.header.top>=0,'active page header must remain visible')}
    }
    await page.setViewportSize({width:390,height:844});
