@@ -1379,7 +1379,7 @@ body{font:14px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","M
 :root,html[data-theme="reference"]{
   --text-primary:#111315;
   --text-secondary:#5f6467;
-  --text-muted:#8a8f92;
+  --text-muted:#565e59;
   --bg-page:#e6e8e6;
   --bg-card:#f8f9f7;
   --bg-subtle:#eff1ee;
@@ -1639,6 +1639,8 @@ body{font:14px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","M
 .app.app-ready :is(.panel h3,.card h3){font-size:16px!important}
 .app.app-ready :is(.people-data-table,.mini-table){font-size:13px!important}
 .app.app-ready :is(.card,.panel){border-color:var(--border)!important}
+.app.app-ready .metric .label{color:#535b56!important;font-weight:680!important}
+.app.app-ready .metric .trend{color:#3f6759!important;font-weight:720!important}
 
 `;
 document.head.appendChild(st);
