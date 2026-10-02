@@ -1703,6 +1703,11 @@ overviewReadabilityStyle.textContent=`
  .app.app-ready #people .toolbar .search{grid-column:1/-1!important;max-width:none!important}
  .app.app-ready #people .toolbar :is(.input,.select){width:100%!important;min-width:0!important;max-width:100%!important}
 }
+@media(min-width:901px) and (max-width:1179px){
+ .app.app-ready #people .toolbar{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;width:100%!important;min-width:0!important}
+ .app.app-ready #people .toolbar :is(.input,.select){width:100%!important;min-width:0!important;max-width:100%!important}
+}
+
 `;
 document.head.appendChild(overviewReadabilityStyle);
 
