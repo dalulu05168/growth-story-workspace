@@ -145,6 +145,10 @@ function scheduleSave(delay=450){
 }
 async function login(username,password){
   const data=await call('login',{username,password},false);
+  if(data?.requiresMfa||!data?.token){
+    setToken('');sessionStorage.removeItem(ACCOUNT_KEY);
+    return data;
+  }
   setToken(data.token);sessionStorage.setItem(ACCOUNT_KEY,JSON.stringify(data.account||{}));
   await hydrate();return data;
 }
