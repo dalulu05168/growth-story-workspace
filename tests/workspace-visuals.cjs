@@ -20,7 +20,7 @@ async function workspaceVisuals(browser,url){
   });
   try{
    const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
-   await page.goto(url+'?theme=night');
+   await page.goto(url+'?theme=night'); // legacy query must be ignored by the approved fixed workspace
    if(reducedMotion==='no-preference')await page.locator('#skipIntro').click();
    await page.locator('#loginForm').waitFor({state:'visible'});
    if(reducedMotion==='reduce'){
@@ -44,7 +44,7 @@ async function workspaceVisuals(browser,url){
    assert.equal(animation,reducedMotion==='reduce'?'none':'cnSidebarEnter');
    assert.equal(await page.locator('.app').evaluate(e=>getComputedStyle(e).transform),'none');
    await settle(page);
-   for(const theme of ['night']){
+   for(const theme of ['reference']){
     assert.equal(await page.locator('[data-theme-button]').count(),0);
     await page.waitForFunction(t=>document.documentElement.dataset.theme===t,theme);
     await page.waitForFunction(()=>!document.documentElement.classList.contains('theme-fade-in')&&!document.documentElement.classList.contains('theme-fade-out'));
@@ -81,7 +81,7 @@ async function workspaceVisuals(browser,url){
     if(width<=760){assert(Math.abs(layout.side.bottom-layout.height)<2,'bottom nav not fixed to viewport');assert(Math.abs(layout.header.top)<2,'header not fixed to viewport')}
    }
    await page.setViewportSize({width:390,height:844});
-   for(const id of ['overview','people','groups','records','novel','topics','trades','tradeRecommend','holdingsV2']){
+   for(const id of ['overview','people','groups','records','novel','topics','trades','tradeRecommend','holdingsV2','france70chat']){
     await page.locator('.nav [data-page="'+id+'"]').click();
     await page.locator('#'+id+'.active').waitFor({state:'visible'});await settle(page);
     assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'mobile page overflow '+id);
@@ -93,7 +93,7 @@ async function workspaceVisuals(browser,url){
     await page.locator('#people.active').waitFor({state:'visible'});await settle(page);
     const layout=await page.evaluate(()=>{
      const rect=e=>e.getBoundingClientRect().toJSON(),header=document.querySelector('.app-global-header');
-     const title=document.querySelector(innerWidth>900?'.cn-brand-image':'.cn-header-logo'),host=document.querySelector('#peopleList'),wrap=host.querySelector('.people-table-wrap');
+     const title=document.querySelector(innerWidth>900?'.cn-electric-logo':'.cn-header-logo'),host=document.querySelector('#peopleList'),wrap=host.querySelector('.people-table-wrap');
      return {title:rect(title),header:rect(header),host:rect(host),wrap:rect(wrap),
       mainWidth:document.querySelector('.main').getBoundingClientRect().width,frame:rect(document.querySelector('.app')),scroll:document.documentElement.scrollWidth,width:innerWidth,
       tableWidth:wrap.scrollWidth,tableViewport:wrap.clientWidth};
@@ -102,11 +102,15 @@ async function workspaceVisuals(browser,url){
     assert(layout.wrap.width>=layout.host.width-2,'table must fill the people panel '+width);
     assert(layout.wrap.width>=layout.mainWidth*.75,'table viewport too narrow '+width);
     assert(layout.title.right<=layout.frame.right&&layout.title.left>=layout.frame.left,'brand outside workspace '+width);
-    assert(layout.tableWidth>layout.tableViewport,'wide table must scroll inside its container');
-    const initial=await page.locator('.people-table-wrap').evaluate(e=>e.scrollLeft);
-    await page.locator('.people-table-wrap').evaluate(e=>{e.scrollLeft=e.scrollWidth});
-    assert(await page.locator('.people-table-wrap').evaluate(e=>e.scrollLeft)>initial,'table columns must be reachable');
-    await page.locator('.people-table-wrap').evaluate(e=>{e.scrollLeft=0});
+    if(width<1180){
+     assert(layout.tableWidth>layout.tableViewport,'narrow landscape table must scroll inside its container');
+     const initial=await page.locator('.people-table-wrap').evaluate(e=>e.scrollLeft);
+     await page.locator('.people-table-wrap').evaluate(e=>{e.scrollLeft=e.scrollWidth});
+     assert(await page.locator('.people-table-wrap').evaluate(e=>e.scrollLeft)>initial,'table columns must be reachable');
+     await page.locator('.people-table-wrap').evaluate(e=>{e.scrollLeft=0});
+    }else{
+     assert(layout.tableWidth<=layout.tableViewport+2,'desktop paginated table should fit the content width');
+    }
     if(reducedMotion==='no-preference'&&width===852){
      await page.locator('.people-table-wrap').scrollIntoViewIfNeeded();
      await page.mouse.move(width-1,height-1);
@@ -115,7 +119,7 @@ async function workspaceVisuals(browser,url){
    }
    if(reducedMotion==='no-preference')await page.screenshot({path:'evidence/workspace-mobile.png'});
    assert.deepEqual(calls,['login','load']);assert.deepEqual(errors,[]);
-   console.log('PASS workspace glass, entry motion, themes and fixed mobile navigation ('+reducedMotion+')');
+   console.log('PASS unified light workspace, entry motion, contrast and fixed mobile navigation ('+reducedMotion+')');
   }finally{await context.close()}
  }
 }
