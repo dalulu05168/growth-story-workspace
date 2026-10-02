@@ -17,5 +17,5 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: people-directory-preview
-          path: dist-static
+          path: dist/pages
           if-no-files-found: error
