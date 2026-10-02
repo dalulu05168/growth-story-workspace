@@ -1672,6 +1672,7 @@ overviewReadabilityStyle.textContent=`
 .app.app-ready #overview .cn-empty-icon{color:#3b5043!important}
 .app.app-ready #overview .cn-empty-title{color:#26352d!important}
 .app.app-ready #overview .cn-empty-desc{color:#43534a!important}
+.app.app-ready #groups .muted,.app.app-ready #groups .balanced-group-head small{color:#4d5b52!important}
 @media(max-width:900px){
  .app.app-ready>.main,
  .app.app-ready #people,
