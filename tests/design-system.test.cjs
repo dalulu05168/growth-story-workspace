@@ -10,8 +10,8 @@ const core=read('workspace-core.js');
 const people=read('people-detail.js');
 
 test('统一设计系统已作为最终样式层加载',()=>{
-  assert.match(index,/design-system\.css\?v=20261003-system-1/);
-  assert.match(index,/design-system\.js\?v=20261003-system-1/);
+  assert.match(index,/design-system\.css\?v=20261003-unified-2/);
+  assert.match(index,/design-system\.js\?v=20261003-unified-2/);
   assert(index.lastIndexOf('design-system.js')>index.lastIndexOf('overview-final.js'));
   assert.match(runtime,/ensureStylesheetLast/);
 });
