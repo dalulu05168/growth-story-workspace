@@ -1739,6 +1739,10 @@ dialog.growth-notice{
 .app.app-ready #tradeRecommend .candidate-state-rejected{color:#8f2f2f!important}
 
 /* Holdings */
+/* The holdings chart is shown on the overview; the detail page focuses on batches and sell timing. */
+.app.app-ready #holdingsV2 .holding-chart-panel{display:none!important}
+.app.app-ready #holdingsV2 .holding-main-grid{grid-template-columns:minmax(0,1fr)!important}
+
 .app.app-ready #holdingsV2 :is(.stock-chart-axis,.stock-chart-legend,.stock-chart-legend *){color:#43534a!important}
 
 .app.app-ready #holdingsV2 .holding-kpis,
