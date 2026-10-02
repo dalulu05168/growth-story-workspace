@@ -1802,7 +1802,7 @@ dialog.growth-notice{
 }
 .app.app-ready #holdingsV2 .holding-main-grid{
   display:grid!important;
-  grid-template-columns:minmax(0,1.35fr) minmax(330px,.65fr)!important;
+  grid-template-columns:minmax(0,1fr)!important;
   gap:10px!important;
   margin-bottom:10px!important;
 }
