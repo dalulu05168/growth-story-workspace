@@ -1021,6 +1021,9 @@ dialog.growth-notice{
 .app.app-ready #overview .metric{
   border-color:var(--cn-line-strong)!important;
 }
+.app.app-ready #overview .metric .trend{
+  color:#245c43!important;
+}
 .app.app-ready #overview :is(.overview-bottom-panel,.grid>.panel){
   border-color:var(--cn-line-strong)!important;
 }
