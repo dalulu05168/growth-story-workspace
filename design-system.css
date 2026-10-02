@@ -1924,6 +1924,11 @@ dialog.growth-notice{
 }
 
 /* Writing */
+.app.app-ready #novel :is(.muted,.cn-empty-icon,.cn-empty-title,.cn-empty-desc){color:#43534a!important}
+.app.app-ready #novel .speech-row :is(b,span,small,em){color:#35443b!important}
+.app.app-ready #novel .speech-row .speech-name{font-size:11px!important}
+.app.app-ready #novel .writing-summary-card :is(span,small){color:#43534a!important}
+
 .app.app-ready #novel .writing-summary-grid{
   margin-bottom:10px!important;
 }
