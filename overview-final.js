@@ -1682,6 +1682,8 @@ overviewReadabilityStyle.textContent=`
 .app.app-ready #novel .speech-row :is(b,.speech-name,.person-category,em){color:#35443b!important}
 .app.app-ready #novel .speech-row .speech-name{font-size:11px!important}
 .app.app-ready #novel :is(.muted,.cn-empty-icon,.cn-empty-title,.cn-empty-desc){color:#43534a!important}
+.app.app-ready #records .record-summary-card :is(span,small),
+.app.app-ready #records :is(.muted,.cn-empty-icon,.cn-empty-title,.cn-empty-desc),
 .app.app-ready #topics .consistency-summary-card :is(span,small),
 .app.app-ready #topics :is(.muted,.cn-empty-icon,.cn-empty-title,.cn-empty-desc){color:#43534a!important}
 .app.app-ready :is(#trades,#tradeRecommend,#holdingsV2,#france70chat) :is(.muted,.cn-empty-icon,.cn-empty-title,.cn-empty-desc){color:#43534a!important}
