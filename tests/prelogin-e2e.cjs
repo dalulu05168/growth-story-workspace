@@ -41,7 +41,7 @@ async function run(){
     assert.equal(await page.locator('#authRoot').getAttribute('data-intro-phase'),'login-ready');
     await rejectedLogin(page);assert.equal(loginRequests,1);
     console.log('PASS rejected login submits exactly once and keeps the workspace locked');
-    assert.equal(await page.locator('html').getAttribute('data-theme'),'night');
+    assert.equal(await page.locator('html').getAttribute('data-theme'),'reference');
     assert.equal(await page.locator('[data-theme-button]').count(),0);
     await page.getByRole('button',{name:'显示密码',exact:true}).click();
     assert.equal(await page.locator('#loginPassword').getAttribute('type'),'text');
@@ -51,7 +51,7 @@ async function run(){
     const remembered=await page.locator('#loginUser').inputValue();
     assert.equal(await page.evaluate(()=>localStorage.getItem('chennan-login-account')),remembered);
     await page.goto(url+'?theme=blue');await page.locator('#loginForm').waitFor({state:'visible'});
-    assert.equal(await page.locator('html').getAttribute('data-theme'),'night');
+    assert.equal(await page.locator('html').getAttribute('data-theme'),'reference');
     assert.equal(await page.locator('#loginUser').inputValue(),remembered);
     assert.equal(await page.locator('#rememberAccount').isChecked(),true);
     await page.locator('#rememberAccount').uncheck();
