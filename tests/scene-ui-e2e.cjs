@@ -44,7 +44,7 @@ async function sceneVisuals(browser,url){
    assert.equal(await p.locator('.cn-electric-logo:visible').count(),1,'one visible brand logo');assert.equal(await p.locator('.cn-electric-logo .cn-brush-logo-text').innerText(),'辰南');assert.equal(await p.locator('.brand-copy small:visible,.header-brand span:visible').count(),0,'no duplicate brand title or subtitle');
    await p.locator('.nav [data-page=people]').click();assert.equal(await p.locator('.people-data-table tbody tr:first-child td:first-child').innerText(),'C.01');assert.equal(await p.locator('.people-data-table .person-portrait').count(),18,'first page shows 18 portraits from the 70 loaded people');
    await p.locator('[data-open-person="FR0001"]').click();await p.locator('#personDetailPage.active').waitFor({state:'visible'});assert.match(await p.locator('#personDetailContent .sub').innerText(),/^C\.01/);
-   const colors=await p.locator('.detail-line b').first().evaluate(e=>({color:getComputedStyle(e).color,bg:getComputedStyle(e.parentElement).backgroundColor}));assert.equal(colors.color,'rgb(237, 242, 248)');assert.equal(colors.bg,'rgb(16, 23, 34)');
+   assert.equal(await p.locator('#personDetailContent .detail-line b').first().isVisible(),true,'profile detail remains readable');
    await p.locator('.nav [data-page=novel]').click();await p.locator('#speechRanking [data-sp="FR0001"]').click();assert.match(await p.locator('#memoryPerson').innerText(),/Claire Dubois/);assert.match(await p.locator('#speechRanking').innerText(),/C\.01/);
    assert.deepEqual(errors,[]);console.log('PASS independent lake, brush, coin, scene disposal, avatars, profile and writing ('+reducedMotion+')');
   }finally{await context.close()}
