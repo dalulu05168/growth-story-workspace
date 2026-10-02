@@ -28,7 +28,7 @@ function brushLogo(extraClass=''){
 window.ChenNanBrandMarkup=brushLogo;
 
 function cinematicIntro(){
-  return \`<div class="auth-cinematic" id="authCinematic" aria-hidden="true">
+  return `<div class="auth-cinematic" id="authCinematic" aria-hidden="true">
     <div class="cinematic-brand">
       <canvas class="scene-lake"></canvas>
       <div class="scene-haze"></div>
@@ -88,7 +88,7 @@ function cinematicIntro(){
       <img class="scene-brush" src="./assets/login/brush.webp" alt="">
       <div class="scene-coin"><img src="./assets/login/bitcoin.webp" alt=""><img class="coin-back" src="./assets/login/bitcoin.webp" alt=""></div>
     </div>
-  </div>\`;
+  </div>`;
 }
 
 function nextPaint(){
