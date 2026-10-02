@@ -46,16 +46,42 @@
   <div class="card panel"><div class="panel-head"><h2>系统分组概览</h2><button class="link-btn" data-go="groups">管理分组 →</button></div><div id="groupOverview"></div></div></div>
 </section>
 
-<section id="people" class="section">
-  <div class="topbar"><div><div class="eyebrow">INVESTOR DIRECTORY</div><h1 class="page-title">人物库</h1><p class="sub">查看、筛选、编辑、增加或删除人物。系统分组会随人物属性自动更新。</p></div>
-  <div class="actions"><button class="btn ghost" id="importBtn">导入 JSON / CSV</button><input id="fileInput" type="file" accept=".csv,.json,application/json,text/csv" hidden><button class="btn primary" id="addPerson">＋ 新增人物</button></div></div>
-  <div class="notice">支持完整画像 JSON（顶层含 <b>people</b>）和人物数组。修改人物的性别、新老客户、VIP、开户或入群状态后，系统分组立即重算。</div>
-  <div class="card panel"><div class="toolbar">
-    <input class="input search" id="personSearch" placeholder="搜索编号、姓名、城市、职业、标签…" />
-    <select class="select" id="systemGroupFilter"></select>
-    <select class="select" id="customGroupFilter"></select>
-    <select class="select" id="personSort"><option value="id">按编号升序</option><option value="name">按姓名</option><option value="enthusiasm">按股票热情降序</option><option value="assets">按可投资资产降序</option></select>
-  </div><div id="peopleCount" class="muted" style="margin:10px 0 12px"></div><div id="peopleList" class="profile-list"></div></div>
+<section id="people" class="section people-directory-page">
+  <div class="topbar people-directory-titlebar">
+    <div>
+      <div class="eyebrow">INVESTOR DIRECTORY</div>
+      <div class="people-directory-title-row">
+        <h1 class="page-title">人物库</h1>
+        <span class="people-title-divider" aria-hidden="true"></span>
+        <p class="sub" id="peopleDirectorySummary">共 70 位投资者，管理人物资料与分组标签</p>
+      </div>
+    </div>
+    <div class="actions people-import-hidden"><button class="btn ghost" id="importBtn">导入 JSON / CSV</button><input id="fileInput" type="file" accept=".csv,.json,application/json,text/csv" hidden></div>
+  </div>
+
+  <div class="people-summary-grid" id="peopleSummaryMetrics">
+    <div class="people-summary-card"><span class="people-summary-icon">♟</span><div><span>总人数</span><strong id="peopleMetricTotal">0</strong><small>完整人物画像</small></div><i>›</i></div>
+    <div class="people-summary-card"><span class="people-summary-icon">●</span><div><span>已开户</span><strong id="peopleMetricOpened">0</strong><small id="peopleMetricOpenedRate">开户率 0%</small></div><i>›</i></div>
+    <div class="people-summary-card"><span class="people-summary-icon crown">♛</span><div><span>VIP 人数</span><strong id="peopleMetricVip">0</strong><small id="peopleMetricVipRate">占比 0%</small></div><i>›</i></div>
+    <div class="people-summary-card"><span class="people-summary-icon">♟</span><div><span>已入群</span><strong id="peopleMetricJoined">0</strong><small id="peopleMetricJoinedRate">入群率 0%</small></div><i>›</i></div>
+  </div>
+
+  <div class="people-directory-surface">
+    <div class="people-filterbar">
+      <div class="people-search-wrap">
+        <span>⌕</span>
+        <input class="input search" id="personSearch" placeholder="搜索姓名、编号、地区、备注..." />
+      </div>
+      <label class="people-filter-field"><span>所属分组</span><select class="select" id="systemGroupFilter"></select></label>
+      <label class="people-filter-field"><span>VIP 等级</span><select class="select" id="peopleVipFilter"><option value="all">全部</option><option value="vip">全部 VIP</option><option value="VIP1">VIP1</option><option value="VIP2">VIP2</option><option value="VIP3">VIP3</option><option value="VIP4">VIP4</option><option value="VIP5">VIP5</option><option value="normal">普通</option></select></label>
+      <label class="people-filter-field"><span>人物状态</span><select class="select" id="peopleStatusFilter"><option value="all">全部</option><option value="opened">已开户</option><option value="not_opened">未开户</option><option value="joined">已入群</option><option value="not_joined">未入群</option></select></label>
+      <label class="people-filter-field"><span>排序方式</span><select class="select" id="personSort"><option value="recent">最近互动</option><option value="id">编号升序</option><option value="name">姓名</option><option value="enthusiasm">股票热情</option><option value="assets">可投资资产</option></select></label>
+      <button class="btn primary people-add-button" id="addPerson">＋ 新增人物</button>
+      <select class="select people-custom-filter-hidden" id="customGroupFilter" aria-label="自定义小组筛选"></select>
+    </div>
+    <div id="peopleCount" class="people-count"></div>
+    <div id="peopleList" class="people-table-host"></div>
+  </div>
 </section>
 
 <section id="groups" class="section">
