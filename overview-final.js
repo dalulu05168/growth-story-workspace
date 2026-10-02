@@ -458,7 +458,7 @@ html,body{background:#eef1f2!important;color:#111412!important}
  border-radius:16px!important;box-shadow:0 8px 24px rgba(55,65,60,.055)!important
 }
 .app.app-ready .section .topbar>div:first-child{min-width:0!important}
-.app.app-ready .section .eyebrow{color:#b47b10!important;font-size:10px!important;font-weight:800!important;letter-spacing:.16em!important}
+.app.app-ready .section .eyebrow{color:#684400!important;font-size:10px!important;font-weight:800!important;letter-spacing:.16em!important}
 .app.app-ready .section .page-title{
  margin:4px 0 5px!important;color:#111412!important;font-size:28px!important;line-height:1.2!important;
  font-weight:820!important;letter-spacing:-.022em!important
@@ -573,7 +573,7 @@ html,body{background:#eef1f2!important;color:#111412!important}
 
 /* France 70 */
 .app.app-ready #france70chat .fr70-seg{background:#f3f4f2!important;border-color:#dde1df!important}
-.app.app-ready #france70chat .fr70-seg button{color:#6d7571!important}
+.app.app-ready #france70chat .fr70-seg button{color:#43534a!important}
 .app.app-ready #france70chat .fr70-seg button.active{background:#fff!important;color:#8d620d!important}
 .app.app-ready #france70chat .fr70-bubble{background:#fff!important}
 .app.app-ready #france70chat .fr70-note{background:#fff7e5!important;color:#6f603f!important;border-color:#ecd8a6!important}
@@ -1689,6 +1689,9 @@ overviewReadabilityStyle.textContent=`
 .app.app-ready :is(#trades,#tradeRecommend,#holdingsV2,#france70chat) :is(.muted,.cn-empty-icon,.cn-empty-title,.cn-empty-desc){color:#43534a!important}
 .app.app-ready :is(#trades,#tradeRecommend,#holdingsV2,#france70chat) :is(.trade-summary-card,.offer-stat,.holding-kpi,.fr70-stat) :is(span,small){color:#43534a!important}
 .app.app-ready #trades .trade-tab:not(.active){color:#43534a!important}
+.app.app-ready #france70chat .fr70-card .eyebrow{color:#684400!important}
+.app.app-ready #france70chat .fr70-card .fr70-check{color:#43534a!important}
+.app.app-ready #france70chat .fr70-seg button:not(.active){color:#43534a!important}
 @media(max-width:900px){
  .app.app-ready>.main,
  .app.app-ready #people,
