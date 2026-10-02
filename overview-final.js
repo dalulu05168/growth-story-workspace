@@ -389,7 +389,7 @@ document.head.appendChild(st);
 const unifiedOld=$('#chennanUnifiedWorkspaceDesign');if(unifiedOld)unifiedOld.remove();
 const unifiedStyle=document.createElement('style');
 unifiedStyle.id='chennanUnifiedWorkspaceDesign';
-unifiedStyle.textContent=\`
+unifiedStyle.textContent=`
 html[data-theme="night"],html[data-theme="warm"],html[data-theme="light"]{
  color-scheme:light!important;
  --bg:#eef1f2!important;--paper:#fbfcfb!important;--ink:#111412!important;--muted:#68716d!important;
@@ -581,7 +581,7 @@ html,body{background:#eef1f2!important;color:#111412!important}
  .app.app-ready .section .actions .btn{flex:1 1 auto!important}
  .app.app-ready .section :is(.card,.panel){padding:14px!important}
 }
-\`;
+`;
 document.head.appendChild(unifiedStyle);
 
 /* 概览离开后，顶部操作按钮隐藏；返回概览恢复。 */
