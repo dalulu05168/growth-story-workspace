@@ -145,6 +145,11 @@ function scheduleSave(delay=450){
 }
 async function login(username,password){
   const data=await call('login',{username,password},false);
+  if(data?.requiresMfa){
+    setToken('');sessionStorage.removeItem(ACCOUNT_KEY);
+    return data;
+  }
+  if(!data?.token){const error=new Error('登录响应缺少会话令牌');error.code='INVALID_LOGIN_RESPONSE';throw error}
   setToken(data.token);sessionStorage.setItem(ACCOUNT_KEY,JSON.stringify(data.account||{}));
   await hydrate();return data;
 }
