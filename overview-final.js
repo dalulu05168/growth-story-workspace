@@ -1293,6 +1293,134 @@ peopleFinalStyle.textContent=`
 `;
 document.head.appendChild(peopleFinalStyle);
 
+
+/* 分组管理：10个固定均衡组，5×2桌面布局；成员固定，名称可改。 */
+const balancedGroupsOld=$('#chennanBalancedGroupsPage20261003');if(balancedGroupsOld)balancedGroupsOld.remove();
+const balancedGroupsStyle=document.createElement('style');
+balancedGroupsStyle.id='chennanBalancedGroupsPage20261003';
+balancedGroupsStyle.textContent=`
+.app.app-ready #groups .topbar{margin-bottom:9px!important}
+.app.app-ready #groups .balanced-groups-panel{
+ height:calc(100% - 103px)!important;min-height:0!important;
+ padding:12px!important;overflow:auto!important
+}
+.app.app-ready #groups .balanced-groups-panel>.panel-head{
+ min-height:30px!important;margin:0 0 9px!important
+}
+.app.app-ready #groups .balanced-groups-panel>.panel-head h2{
+ font-size:15px!important
+}
+.app.app-ready #groups .balanced-groups-grid{
+ display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;
+ gap:9px!important;align-items:stretch!important
+}
+.app.app-ready #groups .balanced-group-card{
+ min-width:0!important;min-height:225px!important;padding:11px!important;
+ display:flex!important;flex-direction:column!important;gap:8px!important;
+ border-radius:11px!important;background:#fbfcfb!important;
+ transform:none!important
+}
+.app.app-ready #groups .balanced-group-card:hover{
+ transform:translateY(-1px)!important;
+ border-color:#cfd5d1!important;
+ box-shadow:0 8px 18px rgba(46,56,50,.055)!important
+}
+.app.app-ready #groups .balanced-group-head{
+ display:flex!important;align-items:flex-start!important;justify-content:space-between!important;gap:8px!important
+}
+.app.app-ready #groups .balanced-group-head>div{min-width:0!important}
+.app.app-ready #groups .balanced-group-head small{
+ display:block!important;font-size:8px!important;letter-spacing:.12em!important;
+ color:#737c78!important;margin-bottom:2px!important
+}
+.app.app-ready #groups .balanced-group-head h3{
+ margin:0!important;font-size:13px!important;line-height:1.2!important;color:#1e2421!important;
+ white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important
+}
+.app.app-ready #groups .balanced-group-total{
+ flex:0 0 auto!important;min-width:38px!important;height:25px!important;padding:0 8px!important;
+ display:grid!important;place-items:center!important;border-radius:999px!important;
+ background:#f0f2f0!important;border:1px solid #dce1dd!important;
+ color:#39413d!important;font-size:9px!important;font-weight:760!important
+}
+.app.app-ready #groups .balanced-composition{
+ display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:4px!important
+}
+.app.app-ready #groups .balanced-composition span{
+ min-width:0!important;padding:4px 2px!important;text-align:center!important;
+ border-radius:6px!important;background:#f5f6f5!important;border:1px solid #e1e5e2!important;
+ color:#555f59!important;font-size:8px!important;white-space:nowrap!important
+}
+.app.app-ready #groups .balanced-members{
+ display:grid!important;grid-template-columns:1fr 1fr!important;gap:4px!important;flex:1 1 auto!important
+}
+.app.app-ready #groups .balanced-member{
+ min-width:0!important;min-height:35px!important;padding:3px 4px!important;
+ display:grid!important;grid-template-columns:26px minmax(0,1fr)!important;gap:5px!important;align-items:center!important;
+ border:1px solid #e4e8e5!important;border-radius:7px!important;background:#fff!important;text-align:left!important;
+ transition:background .15s ease,border-color .15s ease,transform .15s ease!important
+}
+.app.app-ready #groups .balanced-member:hover{
+ background:#f7f9fa!important;border-color:#cfd8d3!important;transform:translateY(-1px)!important
+}
+.app.app-ready #groups .balanced-member-avatar{
+ width:26px!important;height:26px!important;border-radius:50%!important;overflow:hidden!important;
+ display:block!important;background:#eef0ee!important
+}
+.app.app-ready #groups .balanced-member-avatar .person-portrait{
+ width:100%!important;height:100%!important;min-width:100%!important;min-height:100%!important
+}
+.app.app-ready #groups .balanced-member>span:last-child{
+ min-width:0!important;display:block!important
+}
+.app.app-ready #groups .balanced-member b{
+ display:block!important;font-size:8px!important;line-height:1.1!important;color:#2b312e!important
+}
+.app.app-ready #groups .balanced-member small{
+ display:block!important;font-size:7.5px!important;line-height:1.1!important;color:#727b76!important;
+ white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important
+}
+.app.app-ready #groups .balanced-group-actions{
+ margin-top:auto!important;display:grid!important;grid-template-columns:1fr 1fr!important;gap:5px!important
+}
+.app.app-ready #groups .balanced-group-actions .btn{
+ width:100%!important;min-height:29px!important;height:29px!important;padding:0 6px!important;
+ font-size:8.5px!important;color:#294e70!important;background:#fff!important;border-color:#dce2de!important
+}
+.app.app-ready #groups .balanced-group-actions .edit-group{
+ color:#765919!important;background:#fffaf0!important;border-color:#e5d4aa!important
+}
+
+/* 本页不再显示旧系统分组/新增/删除概念。 */
+.app.app-ready #groups #systemGroups,
+.app.app-ready #groups #addGroup,
+.app.app-ready #groups .delete-group{display:none!important}
+
+@media(min-width:1180px) and (min-aspect-ratio:4/3){
+ .app.app-ready #groups.active{
+  height:100%!important;max-height:100%!important;min-height:0!important;overflow:hidden!important
+ }
+ .app.app-ready #groups .balanced-groups-panel{
+  height:calc(100% - 103px)!important;overflow:hidden!important
+ }
+ .app.app-ready #groups .balanced-groups-grid{
+  height:calc(100% - 39px)!important;grid-template-rows:repeat(2,minmax(0,1fr))!important
+ }
+ .app.app-ready #groups .balanced-group-card{
+  min-height:0!important;height:100%!important
+ }
+}
+@media(min-width:901px) and (max-width:1350px){
+ .app.app-ready #groups .balanced-groups-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .app.app-ready #groups .balanced-groups-panel{overflow:auto!important}
+}
+@media(max-width:900px){
+ .app.app-ready #groups .balanced-groups-grid{grid-template-columns:1fr!important}
+ .app.app-ready #groups .balanced-group-card{min-height:auto!important}
+}
+`;
+document.head.appendChild(balancedGroupsStyle);
+
 /* 概览离开后，顶部操作按钮隐藏；返回概览恢复。 */
 function syncHeaderActions(){
  const active=$('.section.active');
