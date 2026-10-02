@@ -42,9 +42,10 @@ async function workspaceVisuals(browser,url){
    await page.locator('.app.app-ready').waitFor({state:'visible'}).catch(async error=>{console.error('WORKSPACE_LOGIN_DIAGNOSTIC',JSON.stringify({calls,errors,authError:await page.locator('#authError').textContent()}));throw error});
    const animation=await page.locator('.sidebar').evaluate(e=>getComputedStyle(e).animationName);
    assert.equal(animation,reducedMotion==='reduce'?'none':'cnSidebarEnter');
-   assert.equal(await page.locator('.app').evaluate(e=>getComputedStyle(e).transform),'none');
+   const transform=await page.locator('.app').evaluate(e=>{const m=new DOMMatrix(getComputedStyle(e).transform);return {a:m.a,b:m.b,c:m.c,d:m.d}});
+   assert.deepEqual(transform,{a:1,b:0,c:0,d:1},'workspace frame may translate for centering but must not scale or rotate');
    await settle(page);
-   for(const theme of ['night']){
+   for(const theme of ['reference']){
     assert.equal(await page.locator('[data-theme-button]').count(),0);
     await page.waitForFunction(t=>document.documentElement.dataset.theme===t,theme);
     await page.waitForFunction(()=>!document.documentElement.classList.contains('theme-fade-in')&&!document.documentElement.classList.contains('theme-fade-out'));
@@ -115,7 +116,7 @@ async function workspaceVisuals(browser,url){
    }
    if(reducedMotion==='no-preference')await page.screenshot({path:'evidence/workspace-mobile.png'});
    assert.deepEqual(calls,['login','load']);assert.deepEqual(errors,[]);
-   console.log('PASS workspace glass, entry motion, themes and fixed mobile navigation ('+reducedMotion+')');
+   console.log('PASS workspace reference theme, entry motion and fixed mobile navigation ('+reducedMotion+')');
   }finally{await context.close()}
  }
 }
