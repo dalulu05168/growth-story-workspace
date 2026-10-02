@@ -699,6 +699,9 @@ dialog.growth-notice{
 .app.app-ready #france70chat .fr70-memory-list{display:grid!important;gap:6px!important}
 .app.app-ready #france70chat .fr70-memory-row{padding:7px 8px!important}
 
+.app.app-ready #france70chat .fr70-card .eyebrow{color:#684400!important}
+.app.app-ready #france70chat .fr70-card .fr70-check{color:#43534a!important}
+
 /* Writing ranking and suggestion overlay */
 .app.app-ready #novel .speech-name{
   min-width:0!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
