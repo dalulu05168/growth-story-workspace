@@ -41,7 +41,7 @@ async function run(){
     assert.equal(await page.locator('#authRoot').getAttribute('data-intro-phase'),'login-ready');
     await rejectedLogin(page);assert.equal(loginRequests,1);
     console.log('PASS rejected login submits exactly once and keeps the workspace locked');
-    assert.equal(await page.locator('html').getAttribute('data-theme'),'night');
+    assert.equal(await page.locator('html').getAttribute('data-theme'),'reference');
     assert.equal(await page.locator('[data-theme-button]').count(),0);
     await page.getByRole('button',{name:'显示密码',exact:true}).click();
     assert.equal(await page.locator('#loginPassword').getAttribute('type'),'text');
@@ -51,13 +51,13 @@ async function run(){
     const remembered=await page.locator('#loginUser').inputValue();
     assert.equal(await page.evaluate(()=>localStorage.getItem('chennan-login-account')),remembered);
     await page.goto(url+'?theme=blue');await page.locator('#loginForm').waitFor({state:'visible'});
-    assert.equal(await page.locator('html').getAttribute('data-theme'),'night');
+    assert.equal(await page.locator('html').getAttribute('data-theme'),'reference');
     assert.equal(await page.locator('#loginUser').inputValue(),remembered);
     assert.equal(await page.locator('#rememberAccount').isChecked(),true);
     await page.locator('#rememberAccount').uncheck();
     assert.equal(await page.evaluate(()=>localStorage.getItem('chennan-login-account')),null);
     await page.locator('#passwordHelp').click();assert.equal(await page.locator('#authHelp').isVisible(),true);
-    console.log('PASS fixed black-gold theme, password visibility, account-only memory and password help');
+    console.log('PASS fixed reference theme, password visibility, account-only memory and password help');
     for(const [width,height] of [[1280,720],[1366,768],[1440,900],[1920,1080]]){
       await page.setViewportSize({width,height});
       const size=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,width:innerWidth}));
