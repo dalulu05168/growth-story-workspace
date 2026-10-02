@@ -261,12 +261,13 @@ function renderGroups(){
     const members=(g.members||[]).map(id=>person(id)).filter(Boolean);
     const counts={old_female:0,new_female:0,old_male:0,new_male:0};
     members.forEach(p=>{const k=balancedGroupCategory(p);if(counts[k]!=null)counts[k]++});
-    const memberHtml=members.map(p=>'<button class="balanced-member" type="button" data-person-detail="'+esc(p.id)+'"><span class="balanced-member-code">'+esc(pCode(p))+'</span><span class="balanced-member-name">'+esc(pName(p))+'</span><span class="balanced-member-type">'+esc(genderRelationLabel(p)||'未分类')+'</span></button>').join('');
+    const memberHtml=members.map(p=>'<button class="balanced-member" type="button" data-person-detail="'+esc(p.id)+'"><span class="balanced-member-code">'+esc(pCode(p))+'</span><span class="balanced-member-name">'+esc(pName(p))+'</span><span class="balanced-member-type">'+esc(genderRelationLabel(p)||'未分类')+'</span><span class="balanced-member-vip">'+(pVip(p)?esc(p.vip?.level||'VIP'):'—')+'</span></button>').join('');
     return '<div class="card custom-group balanced-group-card" data-group-index="'+index+'">'+
       '<div class="balanced-group-head"><div><small>GROUP '+String(index+1).padStart(2,'0')+'</small><h3>'+esc(g.name)+'</h3></div><span class="balanced-group-total">'+members.length+'人</span></div>'+
       '<div class="balanced-composition"><span>老女 '+counts.old_female+'</span><span>新女 '+counts.new_female+'</span><span>老男 '+counts.old_male+'</span><span>新男 '+counts.new_male+'</span></div>'+
+      '<div class="balanced-member-head"><span>编号</span><span>姓名</span><span>分类</span><span>VIP</span></div>'+
       '<div class="balanced-members">'+memberHtml+'</div>'+
-      '<div class="button-row balanced-group-actions"><button class="btn ghost small open-custom-group" data-id="'+esc(g.id)+'">查看人物库</button><button class="btn ghost small edit-group" data-id="'+esc(g.id)+'">修改名称</button></div>'+
+      '<div class="button-row balanced-group-actions"><button class="btn ghost small open-custom-group" data-id="'+esc(g.id)+'">查看详情</button><button class="btn ghost small edit-group" data-id="'+esc(g.id)+'">修改名称</button></div>'+
     '</div>';
   }).join('');
   host.querySelectorAll('[data-person-detail]').forEach(b=>b.onclick=e=>{e.stopPropagation();viewPerson(b.dataset.personDetail)});
