@@ -815,6 +815,51 @@ body{font:14px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","M
   visibility:visible!important;
 }
 
+
+/* People list final contrast: matches the actual mobile table structure. */
+.app.app-ready .people-data-table td:first-child{
+  color:#3f4541!important;
+  font-weight:750!important;
+}
+.app.app-ready .people-data-table .table-name,
+.app.app-ready .people-data-table tr.relation-old:not(.is-vip) .table-name,
+.app.app-ready .people-data-table tr.relation-new:not(.is-vip) .table-name,
+.app.app-ready .people-data-table tr.is-vip .table-name{
+  color:#111312!important;
+  font-weight:720!important;
+}
+.app.app-ready .people-data-table .person-category{
+  color:#222624!important;
+  background:#eef0ed!important;
+  border-color:#c9ceca!important;
+}
+.app.app-ready .people-data-table .person-category[data-category="老女"],
+.app.app-ready .people-data-table .person-category[data-category="老男"]{
+  color:#7a590f!important;
+  background:#efe5cb!important;
+  border-color:#c7ac6a!important;
+}
+.app.app-ready .people-data-table .person-category[data-category="新女"],
+.app.app-ready .people-data-table .person-category[data-category="新男"]{
+  color:#222624!important;
+  background:#eef0ed!important;
+  border-color:#c9ceca!important;
+}
+@media(max-width:760px){
+  .app.app-ready>.sidebar .nav button span{
+    display:block!important;
+    color:#3b403d!important;
+    opacity:1!important;
+    visibility:visible!important;
+    font-size:10px!important;
+    font-weight:650!important;
+  }
+  .app.app-ready>.sidebar .nav button.active span{
+    color:#1f2421!important;
+    font-weight:760!important;
+  }
+}
+
 `;
 document.head.appendChild(st);
 })();
