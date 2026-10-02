@@ -181,7 +181,7 @@ function renderOverview(){
     ['新客户',db.people.filter(p=>pRelationCode(p)==='NEW').length,'关系分层'],
     ['VIP 用户',db.people.filter(pVip).length,'金色标识'],
     ['已开户',db.people.filter(pOpened).length,'账户状态'],
-    ['群组数量',db.customGroups.length,'自定义小组']
+    ['群组数量',db.customGroups.length,'均衡小组']
   ].map(([l,n,t])=>`<div class="card metric"><span class="label">${l}</span><strong>${n}</strong><span class="trend">${t}</span></div>`).join('');
   $('#recentTimeline').innerHTML=rs.slice(0,4).map(eventHTML).join('')||'<div class="empty">还没有重要记录</div>';
   const ids=['new_male','new_female','old_male','old_female','vip','opened','joined'];
@@ -316,7 +316,7 @@ function viewPerson(id){
     <div class="detail-box"><span>偏好行业</span><b>${esc(sectors.join('、')||'--')}</b></div>
     <div class="section-label">性格与规划</div>
     <div class="detail-box" style="grid-column:1/-1"><span>性格</span><b>${esc(p.personality?.summary||'--')}</b></div>
-    <div class="detail-box" style="grid-column:1/-1"><span>自定义小组</span><b>${esc(groups.join('、')||'未加入自定义小组')}</b></div>
+    <div class="detail-box" style="grid-column:1/-1"><span>所属小组</span><b>${esc(groups.join('、')||'未加入小组')}</b></div>
     <div class="detail-box" style="grid-column:1/-1"><span>内部备注</span><b>${esc(p.crm?.notes||'--')}</b></div>
   </div>`,null);
 }
@@ -374,7 +374,7 @@ function deletePerson(id){
   const p=person(id);if(!p)return;
   const linked=[...(db.records||[]),...(db.portfolio?.holdings||[]),...(db.portfolio?.buyPlans||[])].some(x=>String(x.personId)===String(id))||(db.tradeSim?.recommendations||[]).some(r=>(r.candidates||[]).some(x=>String(x.personId)===String(id)))||(db.docs||[]).some(d=>String(d.html||'').includes('data-person="'+id+'"'))||Object.values(db.dailyDocs||{}).some(d=>String(d.html||'').includes('data-person="'+id+'"'));
   if(linked){toast('该人物有关联记录、交易或文档，请保留人物以维护历史完整性');return}
-  if(!confirm(`确定删除 ${pName(p)}（${p.id}）吗？\n该人物会同时从所有自定义小组中移除。`))return;
+  if(!confirm(`确定删除 ${pName(p)}（${p.id}）吗？\n该人物删除后，系统会重新校验并均衡分配其余小组成员。`))return;
   db.people=db.people.filter(x=>String(x.id)!==String(id));db.customGroups.forEach(g=>g.members=(g.members||[]).filter(x=>String(x)!==String(id)));save();render();toast('人物已删除');
 }
 function openSystemGroup(id){go('people');$('#systemGroupFilter').value=id;$('#customGroupFilter').value='all';renderPeople()}
