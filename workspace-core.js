@@ -108,11 +108,68 @@ const SYSTEM_GROUPS=[
 function systemGroup(id){return SYSTEM_GROUPS.find(g=>g.id===id)||SYSTEM_GROUPS[0]}
 function customGroup(id){return db.customGroups.find(g=>g.id===id)||null}
 
+/* 固定 10 组：70人平均分组。当前70人结构可做到每组 老女1 + 新女2 + 老男2 + 新男2。 */
+function balancedGroupCategory(p){
+  const rel=pRelationCode(p),gender=pGender(p);
+  if(rel==='OLD'&&gender==='女')return'old_female';
+  if(rel==='NEW'&&gender==='女')return'new_female';
+  if(rel==='OLD'&&gender==='男')return'old_male';
+  if(rel==='NEW'&&gender==='男')return'new_male';
+  return'other';
+}
+function balancedGroupSignature(){
+  return [...db.people].sort((a,b)=>String(a.id).localeCompare(String(b.id),undefined,{numeric:true}))
+    .map(p=>String(p.id)+':'+balancedGroupCategory(p)).join('|');
+}
+function ensureTenBalancedGroups(){
+  const version='balanced-10-v1';
+  const signature=balancedGroupSignature();
+  const valid=Array.isArray(db.customGroups)&&db.customGroups.length===10&&
+    db.customGroups.every((g,i)=>g&&g.id==='balanced-'+String(i+1).padStart(2,'0')&&Array.isArray(g.members))&&
+    db.meta?.balancedGroupVersion===version&&db.meta?.balancedGroupSignature===signature;
+  if(valid)return false;
+
+  const preserveNames=new Map();
+  if(db.meta?.balancedGroupVersion===version){
+    (db.customGroups||[]).forEach(g=>{
+      if(/^balanced-\d{2}$/.test(String(g.id||'')))preserveNames.set(g.id,String(g.name||'').trim());
+    });
+  }
+  const buckets={old_female:[],new_female:[],old_male:[],new_male:[],other:[]};
+  [...db.people].sort((a,b)=>String(a.id).localeCompare(String(b.id),undefined,{numeric:true}))
+    .forEach(p=>buckets[balancedGroupCategory(p)].push(p));
+
+  const groups=Array.from({length:10},(_,i)=>({
+    id:'balanced-'+String(i+1).padStart(2,'0'),
+    name:preserveNames.get('balanced-'+String(i+1).padStart(2,'0'))||('第'+String(i+1).padStart(2,'0')+'组'),
+    leader:'',
+    members:[],
+    balanced:true,
+    lockedMembers:true,
+    updated:today()
+  }));
+  ['old_female','new_female','old_male','new_male'].forEach(key=>{
+    buckets[key].forEach((p,i)=>groups[i%10].members.push(String(p.id)));
+  });
+  buckets.other.forEach(p=>{
+    const target=groups.slice().sort((a,b)=>a.members.length-b.members.length||a.id.localeCompare(b.id))[0];
+    target.members.push(String(p.id));
+  });
+  groups.forEach(g=>g.members.sort((a,b)=>String(a).localeCompare(String(b),undefined,{numeric:true})));
+  db.customGroups=groups;
+  db.meta=db.meta&&typeof db.meta==='object'?db.meta:{};
+  db.meta.balancedGroupVersion=version;
+  db.meta.balancedGroupSignature=signature;
+  save();
+  return true;
+}
+
 function eventHTML(r){
   const p=person(r.personId);
   return `<div class="timeline-item"><div class="date">${esc(r.date||'')}</div><div class="dotline"></div><div class="event"><div class="event-head"><div><span class="event-title">${esc(r.title)}</span><div class="muted" style="font-size:12px;margin-top:2px">${p?`${esc(pCode(p))} · ${esc(genderRelationLabel(p)||'未分类')} · ${esc(pName(p))}`:'未知人物'}</div></div><span class="type ${r.type==='发言记录'?'talk':''}">${esc(r.type)}</span></div><p>${esc(r.content)}</p><div class="tags">${(r.topics||[]).map(t=>`<span class="tag"># ${esc(t)}</span>`).join('')}<button class="link-btn edit-record" data-id="${esc(r.id)}">编辑</button></div></div></div>`;
 }
 function render(){
+  ensureTenBalancedGroups();
   if(db.people.length&&$('#seedNotice'))$('#seedNotice').textContent=`${db.people.length} 位人物资料已加载 · 完整画像与工作区数据`;
   renderOverview();renderPeopleFilters();renderPeople();renderGroups();fillSelect();renderRecords();renderTopics();renderDocs();bindDynamic();
 }
@@ -135,7 +192,7 @@ function renderPeopleFilters(){
   s.innerHTML=SYSTEM_GROUPS.map(g=>`<option value="${g.id}">${esc(g.name)} (${db.people.filter(g.test).length})</option>`).join('');
   s.value=SYSTEM_GROUPS.some(g=>g.id===old)?old:'all';
   const c=$('#customGroupFilter'),cold=c.value||'all';
-  c.innerHTML='<option value="all">全部自定义小组</option>'+db.customGroups.map(g=>`<option value="${esc(g.id)}">${esc(g.name)} (${g.members?.length||0})</option>`).join('');
+  c.innerHTML='<option value="all">全部小组</option>'+db.customGroups.map(g=>`<option value="${esc(g.id)}">${esc(g.name)} (${g.members?.length||0})</option>`).join('');
   c.value=db.customGroups.some(g=>g.id===cold)?cold:'all';
 }
 function personSearchBlob(p){
@@ -160,12 +217,23 @@ function renderPeople(){
   </div>`).join('')||'<div class="empty">没有匹配人物</div>';
 }
 function renderGroups(){
-  $('#systemGroups').innerHTML=SYSTEM_GROUPS.filter(g=>g.id!=='all').map(g=>`<div class="group-card"><button class="system-group-open" data-group="${g.id}"><small>系统分组</small><strong>${db.people.filter(g.test).length}</strong><b>${esc(g.name)}</b></button></div>`).join('');
-  $('#customGroupCount').textContent=`共 ${db.customGroups.length} 个小组`;
-  $('#customGroups').innerHTML=db.customGroups.map(g=>{
-    const names=(g.members||[]).map(id=>person(id)).filter(Boolean).slice(0,5).map(pName);
-    return `<div class="card custom-group"><h3>${esc(g.name)}</h3><div class="leader">组长：${esc(g.leader||'未设置')}</div><div class="members-preview">${g.members?.length||0} 位成员${names.length?` · ${names.map(esc).join('、')}${(g.members?.length||0)>5?'…':''}`:''}</div><div class="button-row" style="margin-top:12px"><button class="btn ghost small open-custom-group" data-id="${esc(g.id)}">查看成员</button><button class="btn ghost small edit-group" data-id="${esc(g.id)}">编辑</button><button class="btn danger small delete-group" data-id="${esc(g.id)}">删除</button></div></div>`;
-  }).join('')||'<div class="empty">还没有自定义小组，点击“新建自定义小组”开始规划。</div>';
+  ensureTenBalancedGroups();
+  const system=$('#systemGroups');if(system)system.innerHTML='';
+  const count=$('#customGroupCount');if(count)count.textContent='固定 10 组 · 每组 7 人 · 男女新老均衡';
+  const host=$('#customGroups');if(!host)return;
+  host.innerHTML=db.customGroups.map((g,index)=>{
+    const members=(g.members||[]).map(id=>person(id)).filter(Boolean);
+    const counts={old_female:0,new_female:0,old_male:0,new_male:0};
+    members.forEach(p=>{const k=balancedGroupCategory(p);if(counts[k]!=null)counts[k]++});
+    const memberHtml=members.map(p=>'<button class="balanced-member" type="button" data-person-detail="'+esc(p.id)+'"><span class="balanced-member-avatar">'+pAvatar(p)+'</span><span><b>'+esc(pCode(p))+'</b><small>'+esc(pName(p))+'</small></span></button>').join('');
+    return '<div class="card custom-group balanced-group-card" data-group-index="'+index+'">'+
+      '<div class="balanced-group-head"><div><small>GROUP '+String(index+1).padStart(2,'0')+'</small><h3>'+esc(g.name)+'</h3></div><span class="balanced-group-total">'+members.length+'人</span></div>'+
+      '<div class="balanced-composition"><span>老女 '+counts.old_female+'</span><span>新女 '+counts.new_female+'</span><span>老男 '+counts.old_male+'</span><span>新男 '+counts.new_male+'</span></div>'+
+      '<div class="balanced-members">'+memberHtml+'</div>'+
+      '<div class="button-row balanced-group-actions"><button class="btn ghost small open-custom-group" data-id="'+esc(g.id)+'">查看人物库</button><button class="btn ghost small edit-group" data-id="'+esc(g.id)+'">修改名称</button></div>'+
+    '</div>';
+  }).join('');
+  host.querySelectorAll('[data-person-detail]').forEach(b=>b.onclick=e=>{e.stopPropagation();viewPerson(b.dataset.personDetail)});
 }
 function fillSelect(){
   const s=$('#recordPerson'),old=s.value;
@@ -313,16 +381,13 @@ function openSystemGroup(id){go('people');$('#systemGroupFilter').value=id;$('#c
 function openCustomGroup(id){go('people');$('#systemGroupFilter').value='all';$('#customGroupFilter').value=id;renderPeople()}
 
 function openGroup(id){
-  const g=id?customGroup(id):{id:'g'+Date.now(),name:'',leader:'',members:[]};if(!g)return;
-  const memberRows=[...db.people].sort((a,b)=>String(a.id).localeCompare(String(b.id),undefined,{numeric:true})).map(p=>`<label class="member-option"><input type="checkbox" name="members" value="${esc(p.id)}" ${(g.members||[]).includes(String(p.id))?'checked':''}><span><b>${esc(pCode(p))} · ${esc(pName(p))}</b><br><small class="muted">${esc(genderRelationLabel(p)||'未分类')} · ${esc(p.age||'--')}岁 · ${pVip(p)?'VIP · ':''}${pOpened(p)?'已开户':'未开户'} · ${pJoined(p)?'已入群':'未入群'}</small></span></label>`).join('');
-  openModal(id?'编辑自定义小组':'新建自定义小组',`<div class="form-grid"><div class="field"><label>小组名称 *</label><input class="input" name="name" required value="${esc(g.name||'')}" placeholder="例如：重点跟进A组"></div><div class="field"><label>组长姓名（可不在名单中）</label><input class="input" name="leader" value="${esc(g.leader||'')}" placeholder="直接填写组长名称"></div><div class="field full"><label>选择成员</label><div class="member-picker">${memberRows||'<div class="empty">人物库为空</div>'}</div></div></div>`,f=>{
+  const g=customGroup(id);if(!g)return;
+  openModal('修改小组名称','<div class="form-grid"><div class="field full"><label>小组名称 *</label><input class="input" name="name" required maxlength="30" value="'+esc(g.name||'')+'" placeholder="输入新的小组名称"></div><div class="field full"><div class="notice">成员由系统按性别与新老属性均衡分配，每组固定 7 人；这里只修改名称。</div></div></div>',f=>{
     const name=String(f.get('name')).trim();if(!name)return false;
-    const members=[...document.querySelectorAll('#modalForm input[name="members"]:checked')].map(x=>String(x.value));
-    const x={id:g.id,name,leader:String(f.get('leader')).trim(),members,updated:today()};
-    if(id)db.customGroups=db.customGroups.map(a=>a.id===id?x:a);else db.customGroups.push(x);
+    g.name=name;g.updated=today();
   });
 }
-function deleteGroup(id){const g=customGroup(id);if(!g)return;if(!confirm(`确定删除自定义小组“${g.name}”吗？\n不会删除小组中的人物。`))return;db.customGroups=db.customGroups.filter(x=>x.id!==id);save();render();toast('小组已删除')}
+function deleteGroup(id){const g=customGroup(id);if(!g)return;toast('当前为固定10组，不能删除小组；可以修改小组名称')}
 
 function normalize(s){return String(s).toLowerCase().replace(/[\s，。！？、,.!?"“”‘’'：:；;（）()\[\]{}]/g,'')}
 function similarity(a,b){const x=normalize(a),y=normalize(b);if(!x||!y)return 0;const longer=x.length>=y.length?x:y,shorter=x.length>=y.length?y:x;if(longer.includes(shorter))return shorter.length/longer.length;let prev=Array(y.length+1).fill(0).map((_,i)=>i);for(let i=1;i<=x.length;i++){let cur=[i];for(let j=1;j<=y.length;j++)cur[j]=Math.min(cur[j-1]+1,prev[j]+1,prev[j-1]+(x[i-1]===y[j-1]?0:1));prev=cur}return 1-prev[y.length]/longer.length}
@@ -342,7 +407,7 @@ $('#editor').addEventListener('keydown',e=>{if(e.key!=='Enter')return;const el=e
 function download(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
 $('#importBtn').onclick=()=>$('#fileInput').click();
 $('#fileInput').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{const text=await file.text();let arr;if(file.name.toLowerCase().endsWith('.json')){const parsed=JSON.parse(text);arr=Array.isArray(parsed)?parsed:parsed.people}else{const lines=text.split(/\r?\n/).filter(Boolean),head=lines.shift().split(',').map(x=>x.trim());arr=lines.map(line=>{const vals=line.split(','),o={};head.forEach((h,i)=>o[h]=vals[i]||'');return o})}if(!Array.isArray(arr))throw Error('JSON 应为人物数组，或顶层包含 people 数组');let added=0,updated=0;arr.map(normalizePerson).forEach(x=>{if(!x.id)return;const old=person(x.id);if(old){const crm=old.crm;Object.assign(old,x);old.crm=x.crm||crm;updated++}else{db.people.push(x);added++}});save();render();toast(`导入完成：新增 ${added}，更新 ${updated}`)}catch(err){alert('导入失败：'+err.message)}e.target.value=''};
-$('#addPerson').onclick=()=>openPerson();$('#addGroup').onclick=()=>openGroup();
+$('#addPerson').onclick=()=>openPerson();const addGroupBtn=$('#addGroup');if(addGroupBtn)addGroupBtn.onclick=()=>toast('当前固定为10个均衡小组，不支持新增小组');
 $('#addRecord').onclick=()=>{if(!db.people.length)return alert('人物库为空');openRecord()};$('#quickAdd').onclick=()=>{go('records');if(db.people.length)openRecord()};
 $('#newDoc').onclick=createDoc;$('#saveDoc').onclick=saveDoc;$('#renameDoc').onclick=renameDoc;$('#insertPerson').onclick=insertPerson;
 $('#docTitle').oninput=()=>$('#docStatus').textContent='标题有未保存修改';$('#editor').oninput=()=>$('#docStatus').textContent='文档有未保存修改';
