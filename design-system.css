@@ -1768,8 +1768,8 @@ dialog.growth-notice{
  #topics .consistency-summary-card
 ) span{
   display:block!important;
-  color:#68716d!important;
-  font-size:8.5px!important;
+  color:#4d5b52!important;
+  font-size:11px!important;
 }
 .app.app-ready :is(
  #holdingsV2 .holding-kpi,
@@ -1791,8 +1791,8 @@ dialog.growth-notice{
 ) small{
   display:block!important;
   margin-top:3px!important;
-  color:#8a938e!important;
-  font-size:7.5px!important;
+  color:#4d5b52!important;
+  font-size:11px!important;
 }
 .app.app-ready #holdingsV2 .holding-main-grid{
   display:grid!important;
@@ -1906,6 +1906,8 @@ dialog.growth-notice{
 }
 
 /* Records */
+.app.app-ready #records :is(.muted,.cn-empty-desc,.cn-empty-icon){color:#43534a!important}
+
 .app.app-ready #records .record-main-panel{
   padding:12px!important;
 }
