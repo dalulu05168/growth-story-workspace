@@ -18,6 +18,7 @@
 <link rel="stylesheet" href="./intro.css?v=20261001-reliable-1">
 <link id="cnWorkspaceGlass" rel="stylesheet" href="./workspace-glass.css?v=20261002-people-contrast-1">
 <link rel="stylesheet" href="./france70-chat.css?v=20261002-reference-1">
+<link rel="stylesheet" href="./design-system.css?v=20261003-system-1" id="chennanDesignSystemStyles">
 <link rel="preload" href="./data/france70-v6.1.json" as="fetch" crossorigin="anonymous">
 <script src="./theme-system.js?v=20261002-final-ui-2"></script>
 </head>
@@ -181,7 +182,7 @@
 
 <section id="topics" class="section">
   <div class="topbar"><div><div class="eyebrow">DATA NOTES</div><h1 class="page-title">主题与检查说明</h1><p class="sub">记录主题自动汇总，人物数据保留原始完整画像结构。</p></div></div>
-  <div class="card panel"><h2>数据规则</h2><div class="check-box"><h3>系统分组</h3><ul><li>新男 / 新女 / 老男 / 老女由客户关系与性别动态计算。</li><li>VIP、男性、女性、已开户、未开户、已入群、未入群均由人物当前字段动态计算。</li></ul></div><div class="check-box"><h3>自定义小组</h3><ul><li>小组名称、组长姓名、成员列表独立保存；组长无需存在于 70 人名单。</li><li>删除人物时会同步从所有自定义小组中移除。</li></ul></div><div id="allTopics" style="margin-top:22px"></div></div>
+  <div class="card panel"><h2>数据规则</h2><div class="check-box"><h3>人物分类</h3><ul><li>新男 / 新女 / 老男 / 老女由客户关系与性别动态计算。</li><li>VIP、开户、入群、持仓和参与次数均来自人物当前真实字段与业务记录。</li></ul></div><div class="check-box"><h3>固定均衡小组</h3><ul><li>70 位人物固定分为 10 组，每组 7 人；当前结构为每组老女 1、新女 2、老男 2、新男 2。</li><li>成员由系统保持均衡，小组名称允许修改；人物资料变化后系统会重新校验分组。</li></ul></div><div id="allTopics" style="margin-top:16px"></div></div>
 </section>
 </main></div>
 
@@ -202,5 +203,6 @@
 <script src="./security-ui.js?v=20261002-no-mfa-1"></script>
 <script src="./theme-ui.js?v=20261002-detail-fix-2"></script>
 <script src="./offline-register.js?v=20261001-reliable-1"></script>\n<script src="./overview-final.js?v=20261003-groups-no-avatar-live-12"></script>
+<script src="./design-system.js?v=20261003-system-1"></script>
 </body>
 </html>
