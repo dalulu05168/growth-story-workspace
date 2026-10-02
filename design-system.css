@@ -1928,6 +1928,7 @@ dialog.growth-notice{
 .app.app-ready #novel .speech-row :is(b,span,small,em){color:#35443b!important}
 .app.app-ready #novel .speech-row .speech-name{font-size:11px!important}
 .app.app-ready #novel .writing-summary-card :is(span,small){color:#43534a!important}
+.app.app-ready #novel :is(.speech-head small,#dailyStatus,.editor-foot,.editor-foot *){color:#43534a!important}
 
 .app.app-ready #novel .writing-summary-grid{
   margin-bottom:10px!important;
