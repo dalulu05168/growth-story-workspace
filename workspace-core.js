@@ -164,10 +164,47 @@ function ensureTenBalancedGroups(){
   return true;
 }
 
+function ensureRecordDetailPage(){
+  let sec=$('#recordDetailPage');
+  if(sec)return sec;
+  sec=document.createElement('section');
+  sec.id='recordDetailPage';
+  sec.className='section';
+  sec.dataset.uiParent='records';
+  sec.innerHTML='<div id="recordDetailContent"></div>';
+  const records=$('#records');
+  if(records&&records.parentNode)records.parentNode.insertBefore(sec,records.nextSibling);
+  else $('.main')?.appendChild(sec);
+  return sec;
+}
+function renderRecordDetail(id){
+  const r=(db.records||[]).find(x=>String(x.id)===String(id));if(!r)return;
+  const p=person(r.personId);
+  ensureRecordDetailPage();
+  const host=$('#recordDetailContent');if(!host)return;
+  host.innerHTML=
+    '<div class="detail-head cn-page-header">'+
+      '<div class="detail-identity"><div class="cn-detail-mark">R</div><div><div class="eyebrow">RECORD DETAIL</div><h1 class="page-title">'+esc(r.title||r.type||'人物记录')+'</h1>'+
+      '<p class="sub">'+esc(r.date||'--')+' · '+esc(r.type||'记录')+(p?' · '+esc(pCode(p))+' · '+esc(pName(p)):'')+'</p></div></div>'+
+      '<div class="actions"><button class="btn ghost" id="recordDetailBack">← 返回人物记录</button><button class="btn primary" id="recordDetailEdit">编辑记录</button></div>'+
+    '</div>'+
+    '<div class="cn-record-detail-grid">'+
+      '<div class="card panel"><div class="panel-head"><h2>记录内容</h2><span class="muted">'+esc(r.type||'记录')+'</span></div><div class="cn-record-content">'+esc(r.content||'--')+'</div>'+
+      '<div class="tags" style="margin-top:12px">'+(r.topics||[]).map(t=>'<span class="tag"># '+esc(t)+'</span>').join('')+'</div></div>'+
+      '<div class="card panel"><div class="panel-head"><h2>关联人物</h2><span class="muted">'+(p?'已关联':'无人物')+'</span></div>'+
+      (p?'<div class="cn-linked-person"><b>'+esc(pCode(p))+' · '+esc(pName(p))+'</b><span>'+esc(genderRelationLabel(p)||'--')+' · '+esc(p.age||'--')+'岁 · '+esc(p.account?.status||'--')+'</span><button class="btn ghost small" id="recordPersonOpen">查看人物详情</button></div>':'<div class="empty">未找到关联人物</div>')+
+      '</div>'+
+    '</div>';
+  go('recordDetailPage');
+  $('#recordDetailBack').onclick=()=>go('records');
+  $('#recordDetailEdit').onclick=()=>openRecord(r.id);
+  if(p&&$('#recordPersonOpen'))$('#recordPersonOpen').onclick=()=>viewPerson(p.id);
+}
 function eventHTML(r){
   const p=person(r.personId);
-  return `<div class="timeline-item"><div class="date">${esc(r.date||'')}</div><div class="dotline"></div><div class="event"><div class="event-head"><div><span class="event-title">${esc(r.title)}</span><div class="muted" style="font-size:12px;margin-top:2px">${p?`${esc(pCode(p))} · ${esc(genderRelationLabel(p)||'未分类')} · ${esc(pName(p))}`:'未知人物'}</div></div><span class="type ${r.type==='发言记录'?'talk':''}">${esc(r.type)}</span></div><p>${esc(r.content)}</p><div class="tags">${(r.topics||[]).map(t=>`<span class="tag"># ${esc(t)}</span>`).join('')}<button class="link-btn edit-record" data-id="${esc(r.id)}">编辑</button></div></div></div>`;
+  return `<div class="timeline-item" data-record-id="${esc(r.id)}"><div class="date">${esc(r.date||'')}</div><div class="dotline"></div><div class="event"><div class="event-head"><div><span class="event-title">${esc(r.title)}</span><div class="muted" style="font-size:12px;margin-top:2px">${p?`${esc(pCode(p))} · ${esc(genderRelationLabel(p)||'未分类')} · ${esc(pName(p))}`:'未知人物'}</div></div><span class="type ${r.type==='发言记录'?'talk':''}">${esc(r.type)}</span></div><p>${esc(r.content)}</p><div class="tags">${(r.topics||[]).map(t=>`<span class="tag"># ${esc(t)}</span>`).join('')}<button class="link-btn view-record" data-id="${esc(r.id)}">详情</button><button class="link-btn edit-record" data-id="${esc(r.id)}">编辑</button></div></div></div>`;
 }
+
 function render(){
   ensureTenBalancedGroups();
   if(db.people.length&&$('#seedNotice'))$('#seedNotice').textContent=`${db.people.length} 位人物资料已加载 · 完整画像与工作区数据`;
@@ -244,6 +281,8 @@ function renderRecords(){
   const ps=$('#recordPerson').value||'all',ty=$('#recordType').value||'all',q=($('#recordSearch').value||'').toLowerCase();
   const rs=db.records.filter(r=>(ps==='all'||String(r.personId)===String(ps))&&(ty==='all'||r.type===ty)&&(`${r.title} ${r.content} ${(r.topics||[]).join(' ')}`).toLowerCase().includes(q)).sort((a,b)=>String(b.date).localeCompare(String(a.date)));
   $('#allTimeline').innerHTML=rs.map(eventHTML).join('')||'<div class="empty">没有匹配记录</div>';
+  document.querySelectorAll('.view-record').forEach(b=>b.onclick=()=>renderRecordDetail(b.dataset.id));
+  document.querySelectorAll('.view-record').forEach(b=>b.onclick=()=>renderRecordDetail(b.dataset.id));
   document.querySelectorAll('.edit-record').forEach(b=>b.onclick=()=>openRecord(b.dataset.id)); // record-edit-rebind
 }
 function topicCounts(){const m={};db.records.forEach(r=>(r.topics||[]).forEach(t=>{if(t)m[t]=(m[t]||0)+1}));return Object.entries(m).sort((a,b)=>b[1]-a[1])}
@@ -378,13 +417,78 @@ function deletePerson(id){
   db.people=db.people.filter(x=>String(x.id)!==String(id));db.customGroups.forEach(g=>g.members=(g.members||[]).filter(x=>String(x)!==String(id)));save();render();toast('人物已删除');
 }
 function openSystemGroup(id){go('people');$('#systemGroupFilter').value=id;$('#customGroupFilter').value='all';renderPeople()}
-function openCustomGroup(id){go('people');$('#systemGroupFilter').value='all';$('#customGroupFilter').value=id;renderPeople()}
+
+function ensureGroupDetailPage(){
+  let sec=$('#groupDetailPage');
+  if(sec)return sec;
+  sec=document.createElement('section');
+  sec.id='groupDetailPage';
+  sec.className='section';
+  sec.dataset.uiParent='groups';
+  sec.innerHTML='<div id="groupDetailContent"></div>';
+  const groups=$('#groups');
+  if(groups&&groups.parentNode)groups.parentNode.insertBefore(sec,groups.nextSibling);
+  else $('.main')?.appendChild(sec);
+  return sec;
+}
+function renderGroupDetail(id){
+  const g=customGroup(id);if(!g)return;
+  ensureGroupDetailPage();
+  const members=(g.members||[]).map(pid=>person(pid)).filter(Boolean);
+  const counts={old_female:0,new_female:0,old_male:0,new_male:0};
+  members.forEach(p=>{const k=balancedGroupCategory(p);if(counts[k]!=null)counts[k]++});
+  const holdings=(db.portfolio?.holdings||[]).filter(h=>h.status!=='sold'&&(g.members||[]).includes(String(h.personId)));
+  const opened=members.filter(pOpened).length;
+  const vip=members.filter(pVip).length;
+  const joined=members.filter(pJoined).length;
+  const host=$('#groupDetailContent');if(!host)return;
+  host.innerHTML=
+    '<div class="detail-head cn-page-header">'+
+      '<div class="detail-identity"><div class="cn-detail-mark">G'+esc(String(db.customGroups.findIndex(x=>x.id===g.id)+1).padStart(2,'0'))+'</div><div>'+
+        '<div class="eyebrow">GROUP PROFILE</div><h1 class="page-title">'+esc(g.name)+'</h1>'+
+        '<p class="sub">固定均衡小组 · '+members.length+' 人 · 老女 '+counts.old_female+' / 新女 '+counts.new_female+' / 老男 '+counts.old_male+' / 新男 '+counts.new_male+'</p>'+
+      '</div></div>'+
+      '<div class="actions"><button class="btn ghost" id="groupDetailBack">← 返回分组管理</button><button class="btn ghost" id="groupDetailPeople">人物库筛选</button><button class="btn primary" id="groupDetailRename">修改名称</button></div>'+
+    '</div>'+
+    '<div class="cn-detail-kpis">'+
+      '<div class="card cn-detail-kpi"><span>成员人数</span><strong>'+members.length+'</strong></div>'+
+      '<div class="card cn-detail-kpi"><span>已开户</span><strong>'+opened+'</strong></div>'+
+      '<div class="card cn-detail-kpi"><span>VIP</span><strong>'+vip+'</strong></div>'+
+      '<div class="card cn-detail-kpi"><span>已入群</span><strong>'+joined+'</strong></div>'+
+      '<div class="card cn-detail-kpi"><span>当前持仓</span><strong>'+holdings.length+' 笔</strong></div>'+
+    '</div>'+
+    '<div class="cn-two-column-detail">'+
+      '<div class="card panel"><div class="panel-head"><h2>小组成员</h2><span class="muted">'+members.length+' 人</span></div>'+
+        '<div class="table-wrap"><table class="mini-table"><thead><tr><th>编号</th><th>姓名</th><th>分类</th><th>VIP</th><th>开户</th><th>入群</th><th>可投资资产</th><th>操作</th></tr></thead><tbody>'+
+        members.map(p=>'<tr><td>'+esc(pCode(p))+'</td><td><b>'+esc(pName(p))+'</b></td><td>'+esc(genderRelationLabel(p)||'--')+'</td><td>'+(pVip(p)?esc(p.vip?.level||'VIP'):'—')+'</td><td>'+(pOpened(p)?'已开户':'未开户')+'</td><td>'+(pJoined(p)?'已入群':'未入群')+'</td><td>€ '+Number(pAssets(p)||0).toLocaleString()+'</td><td><button class="link-btn group-person-detail" data-id="'+esc(p.id)+'">详情</button></td></tr>').join('')+
+        '</tbody></table></div>'+
+      '</div>'+
+      '<div class="card panel"><div class="panel-head"><h2>小组规则</h2><span class="muted">系统固定</span></div>'+
+        '<div class="cn-rule-list">'+
+          '<div><span>分组数量</span><b>固定 10 组</b></div>'+
+          '<div><span>单组人数</span><b>固定 7 人</b></div>'+
+          '<div><span>男女结构</span><b>3 女 / 4 男</b></div>'+
+          '<div><span>新老结构</span><b>3 老 / 4 新</b></div>'+
+          '<div><span>成员维护</span><b>系统自动保持均衡</b></div>'+
+          '<div><span>允许修改</span><b>小组名称</b></div>'+
+        '</div>'+
+        '<div class="notice" style="margin-top:12px">当前 70 人结构可精确保持每组：老女 1、新女 2、老男 2、新男 2。人物属性变化后系统重新校验均衡分配。</div>'+
+      '</div>'+
+    '</div>';
+  go('groupDetailPage');
+  $('#groupDetailBack').onclick=()=>go('groups');
+  $('#groupDetailPeople').onclick=()=>{go('people');$('#systemGroupFilter').value='all';$('#customGroupFilter').value=g.id;renderPeople()};
+  $('#groupDetailRename').onclick=()=>openGroup(g.id);
+  $('.group-person-detail').forEach(b=>b.onclick=()=>viewPerson(b.dataset.id));
+}
+function openCustomGroup(id){renderGroupDetail(id)}
 
 function openGroup(id){
   const g=customGroup(id);if(!g)return;
   openModal('修改小组名称','<div class="form-grid"><div class="field full"><label>小组名称 *</label><input class="input" name="name" required maxlength="30" value="'+esc(g.name||'')+'" placeholder="输入新的小组名称"></div><div class="field full"><div class="notice">成员由系统按性别与新老属性均衡分配，每组固定 7 人；这里只修改名称。</div></div></div>',f=>{
     const name=String(f.get('name')).trim();if(!name)return false;
     g.name=name;g.updated=today();
+    setTimeout(()=>{if($('#groupDetailPage')?.classList.contains('active'))renderGroupDetail(g.id)},0);
   });
 }
 function deleteGroup(id){const g=customGroup(id);if(!g)return;toast('当前为固定10组，不能删除小组；可以修改小组名称')}
