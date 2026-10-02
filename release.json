@@ -1,5 +1,5 @@
 {
-  "sourceSha": "a02669e2c6125e0251216650db6bbe0f597283c8",
+  "sourceSha": "9964d89082a450f45930e4aa5b35bc5a3073244d",
   "files": {
     "CNAME": "7f3352e8682740e6da414b7eb847d82c921ddf397bf3c175a9ae794ff8dd18f9",
     "assets/brand/chennan-logo.jpg": "f9cddb9644e71f715628511ec375b9baa7d24ba3d8b3ab0b934d87e047a1d982",
@@ -28,7 +28,7 @@
     "icons/lock-key.svg": "d8bdf1b9399f973662e000036b09da5b4ff581ecfcb67299ba99169f0e2f79fe",
     "icons/user.svg": "fc75ff764c4c7e35dc54ad7b2df491de9c04a6e5f56fac342cf7359d1d4f89f0",
     "icons/users-four.svg": "75730ed755c47c39d6b41352c53a8c1fa1226c586ce89e1b1249b4f74457ffd1",
-    "index.html": "36c3d8259b72ebd0c53703c7f178363672d7e15bbfb1474b16419ff4441a985f",
+    "index.html": "33bbfbefa7a8249ae85f6e0555ac7e72458a4080222092a9902f441685a9cfa0",
     "intro.css": "304cff3b731e36a67867433663ff64234087f0a76263ed08ad8ffbf03c24696b",
     "login-scene.js": "24cfba757f095beef098f7ac6aea5f9ff790ed4dc4ce2b58f0ba97c201e83f25",
     "offline-register.js": "f3dce74ae3114047f66e2fd302555ac5ae6dc7bbeead759884670dc6a41c9681",
@@ -36,7 +36,7 @@
     "people-detail.js": "e96a861c0903a6e0d916d6d050ae0732ac9b83d33edcdbc6b629314da7c0759d",
     "security-ui.js": "5bb64abf6dd1db87d7d16c063629d4eeb59fd0eb957c18aaa9ce937477c84772",
     "theme-system.js": "682adea186383ce423c4cfff609d502e6e247bec38a9cf13ea73a1f4f19f8077",
-    "theme-ui.js": "0538d2843ea59e23a1936d3968cdef0d6d5c64412a0d1b56767b3638dd341e86",
+    "theme-ui.js": "4f03790385f3cfff942668458fae0c41cdcfbca0c7ddf0669f1953471d64280c",
     "trade-dashboard.js": "d2cec99c2054318d2e2177e5e8fde56abe33624a63ad9ce6eed7abd685e0e242",
     "trading-simulator.js": "0f93316ab4b0b5f5c8bff98dbb9eb39327fd3beec146bcb6a3268871c321fece",
     "ui-shell.js": "1ec4b60390a2166a5431170d0dbedfc48bf75f3c5da345ac0d6c3dfa5fcd6094",
