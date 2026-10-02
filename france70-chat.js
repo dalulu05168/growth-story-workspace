@@ -170,14 +170,60 @@ function compactOld(m){
   m.medium.forEach(function(e){var age=(now-Date.parse(e.at||e.date||0))/day;if(Number.isFinite(age)&&age>90){if(Number(e.importance)>=4)m.long.push(e)}else md.push(e)});
   m.recent=r.slice(-40);m.medium=md.slice(-60);m.long=m.long.slice(-60);
 }
+function normalizeLine(s){
+  return low(String(s||'')).replace(/[’']/g,"'").replace(/[^a-zà-öø-ÿœæ0-9' -]+/g,' ').replace(/\s+/g,' ').trim();
+}
+function validateResult(obj){
+  var ids=new Set(canon.people.map(function(p){return p.id}));
+  var rawMessages=Array.isArray(obj.messages)?obj.messages:[];
+  var valid=rawMessages.filter(function(m){return ids.has(m.speaker_id)&&String(m.text_fr||'').trim()});
+  var unknown=rawMessages.filter(function(m){return !ids.has(m.speaker_id)}).map(function(m){return m.speaker_id});
+  var questions=valid.filter(function(m){return /[?？]/.test(String(m.text_fr||''))}).length;
+  var ratio=valid.length?questions/valid.length:0;
+  var semicolons=valid.reduce(function(n,m){return n+(String(m.text_fr||'').match(/[;；]/g)||[]).length},0);
+  var exact={},starts={};
+  valid.forEach(function(m){
+    var n=normalizeLine(m.text_fr); if(n) exact[n]=(exact[n]||0)+1;
+    var start=n.split(' ').slice(0,4).join(' '); if(start) starts[start]=(starts[start]||0)+1;
+  });
+  var duplicateExact=Object.keys(exact).filter(function(k){return exact[k]>1});
+  var repeatedStarts=Object.keys(starts).filter(function(k){return starts[k]>=3});
+  var tooLong=valid.filter(function(m){return normalizeLine(m.text_fr).split(' ').filter(Boolean).length>90}).length;
+  var events=Array.isArray(obj.memory_events)?obj.memory_events:[];
+  var badEvents=events.filter(function(e){return !ids.has(e.person_id)||!String(e.summary_zh||'').trim()||!String(e.evidence_fr||'').trim()}).length;
+  var warnings=[];
+  if(valid.length>=6 && (ratio<.25||ratio>.35)) warnings.push('直接问句比例 '+Math.round(ratio*100)+'%，目标约25%–35%');
+  if(semicolons>1) warnings.push('分号 '+semicolons+' 个，法国即时群聊建议更少');
+  if(duplicateExact.length) warnings.push('存在 '+duplicateExact.length+' 组完全重复发言');
+  if(repeatedStarts.length) warnings.push('存在 '+repeatedStarts.length+' 组高频相同开头');
+  if(tooLong) warnings.push(tooLong+' 条发言超过90词');
+  if(unknown.length) warnings.push('发现未知人物ID：'+Array.from(new Set(unknown)).join(', '));
+  if(badEvents) warnings.push(badEvents+' 条记忆事件字段不完整，将不会写入');
+  return {valid:valid,questionRatio:ratio,questions:questions,total:valid.length,semicolons:semicolonCount=semicolons,duplicateExact:duplicateExact,repeatedStarts:repeatedStarts,tooLong:tooLong,badEvents:badEvents,warnings:warnings};
+}
+function renderQa(report){
+  var box=q('#fr70Qa');if(!box)return;
+  if(!report){box.innerHTML='';return}
+  var cls=report.warnings.length?'notice warn':'notice success';
+  var headline=report.warnings.length?'已完成 QA · 有 '+report.warnings.length+' 项提醒':'QA 通过 · 未发现明显结构问题';
+  var details=[
+    '有效发言 '+report.total+' 条',
+    '直接问句 '+report.questions+' 条（'+Math.round(report.questionRatio*100)+'%）',
+    '分号 '+report.semicolons+' 个'
+  ];
+  box.innerHTML='<div class="'+cls+'" style="margin-top:12px"><b>'+esc(headline)+'</b><br>'+esc(details.join(' · '))+(report.warnings.length?'<br>'+report.warnings.map(function(w){return '· '+esc(w)}).join('<br>'):'')+'</div>';
+}
 function saveResult(){
   var obj;
   try{obj=parseResult()}catch(e){toast(e.message);return}
   var ids=new Set(canon.people.map(function(p){return p.id}));
-  var messages=obj.messages.filter(function(m){return ids.has(m.speaker_id)&&String(m.text_fr||'').trim()}).slice(0,40);
+  var report=validateResult(obj);renderQa(report);
+  var messages=report.valid.slice(0,40);
   if(!messages.length){toast('没有找到有效角色发言');return}
   var s=ensureState(),now=new Date().toISOString(),sessionId='fr70_'+Date.now();
-  var events=Array.isArray(obj.memory_events)?obj.memory_events.filter(function(e){return ids.has(e.person_id)&&e.summary_zh}):[];
+  var events=Array.isArray(obj.memory_events)?obj.memory_events.filter(function(e){
+    return ids.has(e.person_id)&&String(e.summary_zh||'').trim()&&String(e.evidence_fr||'').trim();
+  }):[];
   events.forEach(function(e){
     var m=s.memory[e.person_id]||(s.memory[e.person_id]={recent:[],medium:[],long:[],opinions:{}});
     compactOld(m);
@@ -185,9 +231,14 @@ function saveResult(){
     if(e.stance_after)m.opinions[e.topic||'general']=e.stance_after;
   });
   var selectedIds=lastSelected.length?lastSelected:Array.from(new Set(messages.map(function(m){return m.speaker_id})));
-  var sess={id:sessionId,createdAt:now,sourceKind:sourceKind(),sourceText:q('#fr70Source').value.trim(),selectedIds:selectedIds,messages:messages,topics:topics(q('#fr70Source').value)};
+  var sess={
+    id:sessionId,createdAt:now,sourceKind:sourceKind(),sourceText:q('#fr70Source').value.trim(),
+    selectedIds:selectedIds,messages:messages,topics:topics(q('#fr70Source').value),
+    qa:{questionRatio:report.questionRatio,semicolons:report.semicolons,warnings:report.warnings}
+  };
   s.sessions.unshift(sess);s.sessions=s.sessions.slice(0,60);
-  save();renderSession(sess);renderHistory();renderStats();toast('已保存 '+messages.length+' 条发言、'+events.length+' 条动态记忆');
+  save();renderSession(sess);renderHistory();renderMemoryList();renderStats();
+  toast('已保存 '+messages.length+' 条发言、'+events.length+' 条动态记忆'+(report.warnings.length?'；QA有提醒':''));
 }
 function personById(id){return canon.people.find(function(p){return p.id===id})||db.people.find(function(p){return p.id===id})}
 function initials(name){return String(name||'?').trim().split(/\s+/).map(function(x){return x[0]}).join('').slice(0,2).toUpperCase()}
@@ -214,6 +265,36 @@ function renderStats(){
   q('#fr70MemoryCount').textContent=count;
   q('#fr70PeopleMem').textContent=Object.keys(s.memory).length;
 }
+function renderMemoryList(){
+  var box=q('#fr70MemoryList');if(!box)return;
+  var s=ensureState();
+  var rows=Object.keys(s.memory).map(function(id){
+    var m=s.memory[id]||{},p=personById(id),recent=m.recent||[],medium=m.medium||[],long=m.long||[];
+    var latest=recent[recent.length-1]||medium[medium.length-1]||long[long.length-1]||null;
+    return {id:id,name:p&&p.name||id,total:recent.length+medium.length+long.length,latest:latest};
+  }).sort(function(a,b){return b.total-a.total||a.name.localeCompare(b.name)}).slice(0,30);
+  if(!rows.length){box.innerHTML='<div class="empty">暂无动态记忆</div>';return}
+  box.innerHTML=rows.map(function(r){
+    var summary=r.latest&&r.latest.summary_zh?String(r.latest.summary_zh):'已有历史记忆';
+    return '<button class="fr70-memory-row" type="button" data-fr70-person="'+esc(r.id)+'"><b>'+esc(r.name)+'</b><span>'+r.total+' 条</span><small>'+esc(summary.slice(0,92))+(summary.length>92?'…':'')+'</small></button>';
+  }).join('');
+}
+function exportMemory(){
+  var s=ensureState();
+  var payload={
+    schema_version:'6.1',
+    exported_at:new Date().toISOString(),
+    synthetic:true,
+    sessions:s.sessions,
+    memory:s.memory
+  };
+  var blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='France70-群聊与记忆-'+new Date().toISOString().slice(0,10)+'.json';
+  document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(a.href)},1000);
+  toast('群聊与人物记忆已导出');
+}
 function setKind(k){
   q('#fr70KindAssistant').classList.toggle('active',k==='assistant');
   q('#fr70KindProfessor').classList.toggle('active',k==='professor');
@@ -224,9 +305,12 @@ async function init(){
     await loadCanon();ensureState();
     q('#fr70KindAssistant').onclick=function(){setKind('assistant')};
     q('#fr70KindProfessor').onclick=function(){setKind('professor')};
-    q('#fr70Build').onclick=buildPrompt;q('#fr70Copy').onclick=copyPrompt;q('#fr70Import').onclick=saveResult;
-    renderHistory();renderStats();renderSession(ensureState().sessions[0]||null);
-    q('#fr70LoadStatus').textContent='v6.1角色库已加载 · 70人';
+    q('#fr70Build').onclick=buildPrompt;
+    q('#fr70Copy').onclick=copyPrompt;
+    q('#fr70Import').onclick=saveResult;
+    q('#fr70Export').onclick=exportMemory;
+    renderHistory();renderMemoryList();renderStats();renderSession(ensureState().sessions[0]||null);
+    q('#fr70LoadStatus').textContent='v6.1角色库已加载 · 70人 · 单一记忆源';
     q('#fr70LoadStatus').className='notice success';
   }catch(e){
     q('#fr70LoadStatus').textContent='France 70加载失败：'+e.message;
