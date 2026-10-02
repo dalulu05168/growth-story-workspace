@@ -37,9 +37,12 @@
 
 /* 辰南固定黑金主题下，France 70 与工作台保持完全一致。 */
 html[data-theme="night"] .app.app-ready #france70chat :is(.fr70-stat,.fr70-bubble,.fr70-history button){
-  background:#141c28!important;border-color:#334052!important;color:#f1f4f8!important;box-shadow:0 8px 28px #0002!important
+  background:var(--cn-module-gradient)!important;
+  border-color:var(--cn-module-border)!important;
+  color:#f1f4f8!important;
+  box-shadow:var(--cn-module-shadow)!important
 }
-html[data-theme="night"] .app.app-ready #france70chat .fr70-stat{border-top:2px solid #b9975d!important}
+html[data-theme="night"] .app.app-ready #france70chat .fr70-stat{border-top:2px solid var(--cn-module-gold)!important}
 html[data-theme="night"] .app.app-ready #france70chat .fr70-stat span,
 html[data-theme="night"] .app.app-ready #france70chat .fr70-meta span,
 html[data-theme="night"] .app.app-ready #france70chat .fr70-history small,
@@ -60,7 +63,9 @@ html[data-theme="night"] .app.app-ready #france70chat .fr70-note{
   background:#1d2735!important;border-color:#334052!important
 }
 html[data-theme="night"] .app.app-ready #france70chat .fr70-history button:hover{
-  background:#202d40!important;border-color:#b9975d!important
+  background:var(--cn-module-gradient-soft)!important;
+  border-color:rgba(214,176,92,.62)!important;
+  box-shadow:var(--cn-module-shadow-hover)!important
 }
 
 /* 与辰南页面进入动画一致，仅对 France 70 内部卡片轻微错峰。 */
@@ -99,8 +104,8 @@ html[data-theme="night"] .app.app-ready #france70chat .fr70-history button:hover
 .fr70-memory-row span{font-size:10px;color:var(--accent-ink)}
 .fr70-memory-row small{grid-column:1/-1;color:var(--muted);font-size:10px;line-height:1.55}
 .fr70-memory-row:hover{background:var(--accent-soft);border-color:var(--accent)}
-html[data-theme="night"] .app.app-ready #france70chat .fr70-memory-row{background:#141c28!important;border-color:#334052!important;color:#f1f4f8!important}
+html[data-theme="night"] .app.app-ready #france70chat .fr70-memory-row{background:var(--cn-module-gradient)!important;border-color:var(--cn-module-border)!important;color:#f1f4f8!important;box-shadow:var(--cn-module-shadow)!important}
 html[data-theme="night"] .app.app-ready #france70chat .fr70-memory-row b{color:#f1f4f8!important}
 html[data-theme="night"] .app.app-ready #france70chat .fr70-memory-row span{color:#efd08a!important}
 html[data-theme="night"] .app.app-ready #france70chat .fr70-memory-row small{color:#b5c0d0!important}
-html[data-theme="night"] .app.app-ready #france70chat .fr70-memory-row:hover{background:#202d40!important;border-color:#b9975d!important}
+html[data-theme="night"] .app.app-ready #france70chat .fr70-memory-row:hover{background:var(--cn-module-gradient-soft)!important;border-color:rgba(214,176,92,.62)!important;box-shadow:var(--cn-module-shadow-hover)!important}
