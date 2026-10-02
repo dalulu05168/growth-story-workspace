@@ -1114,6 +1114,185 @@ peopleTightStyle.textContent=`
 `;
 document.head.appendChild(peopleTightStyle);
 
+
+/* 人物库最终清理：去黄线、去整块浮起、单行浮起、深蓝/深红操作色、全页深色文字。 */
+const peopleFinalOld=$('#chennanPeopleFinalClean20261003');if(peopleFinalOld)peopleFinalOld.remove();
+const peopleFinalStyle=document.createElement('style');
+peopleFinalStyle.id='chennanPeopleFinalClean20261003';
+peopleFinalStyle.textContent=`
+/* 整个人物库不是悬浮模块：外层永远不抬升。 */
+.app.app-ready #people>.card.panel,
+.app.app-ready #people>.card.panel:hover,
+.app.app-ready #people .people-table-wrap,
+.app.app-ready #people .people-table-wrap:hover{
+ transform:none!important;
+ border-color:#d5dad7!important;
+ box-shadow:
+  inset 1px 1px 0 rgba(255,255,255,.96),
+  inset -1px -1px 0 rgba(169,176,172,.10),
+  0 0 0 1px rgba(247,249,248,.72),
+  0 4px 14px rgba(52,62,56,.035)!important
+}
+
+/* 红框所示 VIP 行左侧竖黄线彻底取消。 */
+.app.app-ready #people .people-data-table tr.is-vip td:first-child,
+.app.app-ready #people .people-data-table tbody tr td:first-child{
+ box-shadow:none!important;border-left:0!important
+}
+.app.app-ready #people .people-data-table tbody tr::before,
+.app.app-ready #people .people-data-table tbody tr::after,
+.app.app-ready #people .people-data-table td::before,
+.app.app-ready #people .people-data-table td::after{
+ content:none!important;display:none!important
+}
+
+/* 整页文字使用深色；不出现浅黄字或白字。 */
+.app.app-ready #people,
+.app.app-ready #people :is(
+ h1,h2,h3,p,span,b,strong,small,label,td,th,option,
+ .page-title,.sub,.muted,.table-name,.meta,.status,.tag,.count
+){
+ color:#202624!important
+}
+.app.app-ready #people .sub,
+.app.app-ready #people .muted,
+.app.app-ready #people small,
+.app.app-ready #people #peopleCount{
+ color:#66706b!important
+}
+.app.app-ready #people .eyebrow{
+ color:#575f5b!important
+}
+.app.app-ready #people .btn{
+ color:#202624!important
+}
+.app.app-ready #people .btn.primary{
+ color:#202624!important;
+ background:linear-gradient(135deg,#d8ad4a,#c49125)!important;
+ border-color:#ba8a25!important
+}
+.app.app-ready #people .btn.ghost{
+ color:#26302c!important;background:#fff!important
+}
+
+/* VIP 与新老标签允许浅金底，但文字必须深色，不再发浅黄。 */
+.app.app-ready #people .vip-level-1,
+.app.app-ready #people .vip-level-2,
+.app.app-ready #people .vip-level-3,
+.app.app-ready #people .vip-level-4{
+ color:#4d3a10!important
+}
+.app.app-ready #people .vip-level-5{
+ color:#271f0a!important;background:#d9bd78!important;border-color:#a9873d!important
+}
+.app.app-ready #people .person-category,
+.app.app-ready #people [data-category]{
+ color:#514523!important
+}
+
+/* 操作列：详情 / 交易设置 / 编辑 = 深蓝；删除 = 深红。 */
+.app.app-ready #people .people-data-table td:nth-child(14) .link-btn,
+.app.app-ready #people .people-data-table td:nth-child(14) .view-person,
+.app.app-ready #people .people-data-table td:nth-child(14) [data-trade-pref],
+.app.app-ready #people .people-data-table td:nth-child(14) .edit-person{
+ color:#214f82!important;font-weight:720!important;text-decoration:none!important
+}
+.app.app-ready #people .people-data-table td:nth-child(14) .link-btn:hover,
+.app.app-ready #people .people-data-table td:nth-child(14) .view-person:hover,
+.app.app-ready #people .people-data-table td:nth-child(14) [data-trade-pref]:hover,
+.app.app-ready #people .people-data-table td:nth-child(14) .edit-person:hover{
+ color:#153a62!important
+}
+.app.app-ready #people .people-data-table td:nth-child(14) .delete-person,
+.app.app-ready #people .people-data-table td:nth-child(14) .link-btn.danger{
+ color:#8f2f2f!important;font-weight:760!important
+}
+.app.app-ready #people .people-data-table td:nth-child(14) .delete-person:hover,
+.app.app-ready #people .people-data-table td:nth-child(14) .link-btn.danger:hover{
+ color:#6f2020!important
+}
+
+/* 仅每个人物行有轻微浮起；不使用黄色 hover。 */
+.app.app-ready #people .people-data-table tbody tr{
+ position:relative!important;
+ transition:transform .16s ease,filter .16s ease!important;
+ transform:translateY(0)!important
+}
+.app.app-ready #people .people-data-table tbody tr:hover{
+ transform:translateY(-1px)!important;
+ filter:drop-shadow(0 3px 5px rgba(46,56,50,.08))!important
+}
+.app.app-ready #people .people-data-table tbody tr:hover td{
+ background:#f7f9fa!important;
+ border-top-color:#d8dddf!important;
+ border-bottom-color:#d8dddf!important
+}
+
+/* 表头/数据严格落在上下框线中间，列间距收紧。 */
+.app.app-ready #people .people-data-table{
+ border-collapse:collapse!important;table-layout:fixed!important
+}
+.app.app-ready #people .people-data-table thead th{
+ height:30px!important;min-height:30px!important;
+ padding:5px 5px!important;vertical-align:middle!important;
+ line-height:20px!important;color:#59625e!important;
+ border-bottom:1px solid #d9deda!important;background:#f2f4f3!important
+}
+.app.app-ready #people .people-data-table tbody td{
+ height:43px!important;min-height:43px!important;
+ padding:5px 5px!important;vertical-align:middle!important;
+ line-height:1.15!important;border-bottom:1px solid #e2e6e3!important;
+ background:#fff!important
+}
+.app.app-ready #people .people-data-table :is(th,td){
+ text-align:left!important;white-space:nowrap!important
+}
+.app.app-ready #people .people-data-table .table-person{
+ gap:6px!important;align-items:center!important
+}
+.app.app-ready #people .people-data-table .table-avatar{
+ width:32px!important;height:32px!important;min-width:32px!important;min-height:32px!important
+}
+.app.app-ready #people .people-data-table .table-name{
+ font-size:10.5px!important;line-height:1.1!important;max-width:150px!important
+}
+.app.app-ready #people .people-data-table .table-name>small{
+ margin-top:1px!important
+}
+.app.app-ready #people .person-category{
+ padding:1px 4px!important;font-size:7.5px!important;line-height:1.2!important
+}
+
+/* 再压一次列宽，减少中间空白，但保留完整字段。 */
+.app.app-ready #people .people-data-table :is(th,td):nth-child(1){width:48px!important}
+.app.app-ready #people .people-data-table :is(th,td):nth-child(2){width:184px!important}
+.app.app-ready #people .people-data-table :is(th,td):nth-child(3){width:40px!important}
+.app.app-ready #people .people-data-table :is(th,td):nth-child(4){width:40px!important}
+.app.app-ready #people .people-data-table :is(th,td):nth-child(5){width:54px!important}
+.app.app-ready #people .people-data-table :is(th,td):nth-child(6){width:56px!important}
+.app.app-ready #people .people-data-table :is(th,td):nth-child(7){width:58px!important}
+.app.app-ready #people .people-data-table :is(th,td):nth-child(8){width:58px!important}
+.app.app-ready #people .people-data-table :is(th,td):nth-child(9){width:58px!important}
+.app.app-ready #people .people-data-table :is(th,td):nth-child(10){width:58px!important}
+.app.app-ready #people .people-data-table :is(th,td):nth-child(11){width:50px!important}
+.app.app-ready #people .people-data-table :is(th,td):nth-child(12){width:96px!important}
+.app.app-ready #people .people-data-table :is(th,td):nth-child(13){width:68px!important}
+.app.app-ready #people .people-data-table :is(th,td):nth-child(14){width:204px!important}
+
+/* 筛选区与表头靠近，视觉更像一张连续信息表。 */
+.app.app-ready #people>.card.panel{padding:11px 12px 10px!important}
+.app.app-ready #people .toolbar{gap:7px!important;margin-bottom:5px!important}
+.app.app-ready #people #peopleCount{margin:2px 0 5px!important}
+.app.app-ready #people .people-table-wrap{border-radius:9px!important}
+
+/* 宽屏直接显示完整 14 列。 */
+@media(min-width:1450px){
+ .app.app-ready #people .people-data-table{min-width:0!important;width:100%!important}
+ .app.app-ready #people .people-table-wrap{overflow-x:hidden!important}
+}
+`;
+document.head.appendChild(peopleFinalStyle);
+
 /* 概览离开后，顶部操作按钮隐藏；返回概览恢复。 */
 function syncHeaderActions(){
  const active=$('.section.active');
