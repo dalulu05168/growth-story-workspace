@@ -354,7 +354,7 @@ html,body{background:var(--ov-bg)!important}
 .app.app-ready #overview .overview-metric-content{display:block!important;min-width:0!important}
 .app.app-ready #overview .metric .label{display:block!important;color:#222724!important;font-size:13px!important;margin:0!important}
 .app.app-ready #overview .metric strong{display:block!important;color:#080b09!important;font-size:38px!important;font-weight:760!important;line-height:1!important;margin:8px 0!important}
-.app.app-ready #overview .metric .trend{display:block!important;color:#a46b08!important;font-size:12px!important;font-weight:650!important}
+.app.app-ready #overview .metric .trend{display:block!important;color:#6c4700!important;font-size:12px!important;font-weight:650!important}
 .app.app-ready #overview .overview-metric-arrow{
  position:absolute!important;right:20px!important;top:50%!important;transform:translateY(-50%)!important;color:#9f6c10!important;font-size:28px!important;font-weight:300!important
 }
