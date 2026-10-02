@@ -1682,6 +1682,8 @@ overviewReadabilityStyle.textContent=`
 .app.app-ready #novel .speech-row :is(b,.speech-name,.person-category,em){color:#35443b!important}
 .app.app-ready #novel .speech-row .speech-name{font-size:11px!important}
 .app.app-ready #novel :is(.muted,.cn-empty-icon,.cn-empty-title,.cn-empty-desc){color:#43534a!important}
+.app.app-ready #topics .consistency-summary-card :is(span,small),
+.app.app-ready #topics :is(.muted,.cn-empty-icon,.cn-empty-title,.cn-empty-desc){color:#43534a!important}
 @media(max-width:900px){
  .app.app-ready>.main,
  .app.app-ready #people,
