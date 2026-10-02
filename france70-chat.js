@@ -199,7 +199,7 @@ function validateResult(obj){
   if(tooLong) warnings.push(tooLong+' 条发言超过90词');
   if(unknown.length) warnings.push('发现未知人物ID：'+Array.from(new Set(unknown)).join(', '));
   if(badEvents) warnings.push(badEvents+' 条记忆事件字段不完整，将不会写入');
-  return {valid:valid,questionRatio:ratio,questions:questions,total:valid.length,semicolons:semicolonCount=semicolons,duplicateExact:duplicateExact,repeatedStarts:repeatedStarts,tooLong:tooLong,badEvents:badEvents,warnings:warnings};
+  return {valid:valid,questionRatio:ratio,questions:questions,total:valid.length,semicolons:semicolons,duplicateExact:duplicateExact,repeatedStarts:repeatedStarts,tooLong:tooLong,badEvents:badEvents,warnings:warnings};
 }
 function renderQa(report){
   var box=q('#fr70Qa');if(!box)return;
