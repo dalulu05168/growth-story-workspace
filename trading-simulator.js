@@ -255,10 +255,29 @@ function renderStockChart(stocks){
 function renderHoldings(){
   ensure();setupUI();
   const body=el('holdingsV2Body');if(!body)return;
-  const bs=batches(),stocks=stockGroups();
-  body.innerHTML='<div class="topbar"><div><div class="eyebrow">PORTFOLIO HOLDINGS</div><h1 class="page-title">持仓页面</h1><p class="sub">按买入先后展示股票批次、持有人和距离计划卖出时间的剩余时长。</p></div><button class="btn ghost" id="goRecommend">返回人物交易列表</button></div>'+
-  '<div class="card panel"><div class="panel-head stock-chart-heading"><div><h2>各股票买入人数</h2><p class="muted">每根柱子代表一只股票，柱高表示当前持有人数；同一人物多次买入只计 1 人，已卖出持仓不计入。</p></div><span class="count">'+stocks.length+' 只股票</span></div><div class="stock-chart-axis">持有人数（人） · 0 至 '+Math.max(1,...stocks.map(x=>x.count))+' 人</div><div class="hold-chart" role="list" aria-label="按股票汇总的当前持有人数">'+renderStockChart(stocks)+
-  '</div><div class="stock-chart-legend"><span>绿色：满足持有条件</span><span>橙色：部分临近或可卖</span><span>主题色：持有中</span></div></div><div class="card panel" style="margin-top:18px"><div class="panel-head"><h2>持仓明细</h2><span class="muted">'+currentHoldings().length+' 笔</span></div>'+renderBatches(bs)+'</div>';
+  const bs=batches(),stocks=stockGroups(),holdingRows=currentHoldings();
+  const readyBatches=bs.filter(b=>batchStatus(b).key==='ready').length;
+  const nextSell=holdingRows.length?holdingRows.slice().sort((a,b)=>new Date(a.plannedSellAt)-new Date(b.plannedSellAt))[0]:null;
+  body.innerHTML=
+    '<div class="topbar"><div><div class="eyebrow">PORTFOLIO HOLDINGS</div><h1 class="page-title">持仓管理</h1><p class="sub">查看当前持仓组合、股票批次、持有人、买入金额、最早卖出时间与持仓状态。</p></div><div class="actions"><button class="btn ghost" id="goRecommend">返回人物交易</button></div></div>'+
+    '<div class="holding-kpis">'+
+      '<div class="card holding-kpi"><span>持仓股票</span><strong>'+stocks.length+'</strong><small>当前股票种类</small></div>'+
+      '<div class="card holding-kpi"><span>持仓记录</span><strong>'+holdingRows.length+'</strong><small>未卖出持仓</small></div>'+
+      '<div class="card holding-kpi"><span>可卖批次</span><strong>'+readyBatches+'</strong><small>已满足持有条件</small></div>'+
+      '<div class="card holding-kpi"><span>最近卖出节点</span><strong>'+(nextSell?h(dt(nextSell.plannedSellAt)):'--')+'</strong><small>'+(nextSell?h(remaining(new Date(nextSell.plannedSellAt).getTime()-Date.now())):'暂无计划')+'</small></div>'+
+    '</div>'+
+    '<div class="holding-main-grid">'+
+      '<section class="card panel holding-chart-panel"><div class="panel-head stock-chart-heading"><div><h2>股票持仓组合</h2><p class="muted">每根柱子代表一只股票，柱高表示当前持有人数；同一人物多次买入只计 1 人。</p></div><span class="count">'+stocks.length+' 只股票</span></div>'+
+      '<div class="stock-chart-axis">持有人数（人） · 0 至 '+Math.max(1,...stocks.map(x=>x.count))+' 人</div><div class="hold-chart" role="list" aria-label="按股票汇总的当前持有人数">'+renderStockChart(stocks)+'</div>'+
+      '<div class="stock-chart-legend"><span>绿色：满足持有条件</span><span>橙色：临近卖出</span><span>金色：持有中</span></div></section>'+
+      '<section class="card panel holding-next-panel"><div class="panel-head"><h2>卖出节点</h2><span class="muted">按时间排序</span></div>'+
+        (holdingRows.length?'<div class="holding-next-list">'+holdingRows.slice().sort((a,b)=>new Date(a.plannedSellAt)-new Date(b.plannedSellAt)).slice(0,6).map(x=>{
+          const p=person(x.personId),hs=holdingStatus(x);
+          return '<div class="holding-next-row" data-ui-surface="leaf"><div><b>'+h(x.symbol||'--')+' · '+h(nm(p))+'</b><small>'+h(pCode(p))+' · '+h(x.quantity)+' 股 · '+h(money(x.buyPrice,x.currency||'USD'))+'</small></div><div><strong>'+h(dt(x.plannedSellAt))+'</strong><span class="holding-state-text '+h(hs.key)+'">'+h(remaining(hs.left))+'</span></div></div>';
+        }).join('')+'</div>':'<div class="empty">暂无计划卖出节点</div>')+
+      '</section>'+
+    '</div>'+
+    '<section class="card panel holding-detail-panel"><div class="panel-head"><h2>持仓明细</h2><span class="muted">'+holdingRows.length+' 笔</span></div>'+renderBatches(bs)+'</section>';
   el('goRecommend')?.addEventListener('click',()=>{go('tradeRecommend');renderRecommend()});
   qsa('[data-sell-batch]').forEach(b=>b.onclick=()=>openSellBatch(b.dataset.sellBatch));
 }
