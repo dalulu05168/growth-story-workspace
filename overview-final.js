@@ -129,7 +129,7 @@ if(metrics)new MutationObserver(()=>requestAnimationFrame(decorateMetrics)).obse
 
 /* 最近事件：用真实已有事件 DOM 重排为设计稿表格风格。 */
 function decorateEvents(){
-  const timeline=$('#recentTimeline');if(!timeline||timeline.dataset.designTable==='1')return;
+  const timeline=$('#recentTimeline');if(!timeline||timeline.querySelector('.overview-event-head'))return;
   const items=$$('.timeline-item',timeline);
   if(!items.length)return;
   const rows=items.map(item=>{
@@ -157,7 +157,7 @@ function decorateGroups(){
     const span=x.querySelector('span'),b=x.querySelector('b');
     return {name:span?.textContent?.trim()||'',count:b?.textContent?.trim()||'0'};
   });
-  if(!raw.length||box.dataset.designGroups==='1')return;
+  if(!raw.length||box.querySelector('.overview-group-card'))return;
   const map=new Map(raw.map(x=>[x.name,x.count]));
   const groups=[
     ['老女','01 - 10',map.get('老女')||'10','5人VIP · 全部开户'],
@@ -195,8 +195,8 @@ html,body{background:var(--ov-bg)!important}
  }
  .app.app-ready>.sidebar:before{display:none!important}
  .app.app-ready>.sidebar .brand{
-  position:relative!important;left:auto!important;top:auto!important;width:100%!important;height:94px!important;
-  margin:0 0 14px!important;display:flex!important;align-items:center!important;justify-content:center!important
+  position:relative!important;left:auto!important;top:auto!important;width:100%!important;height:82px!important;
+  margin:0 0 10px!important;display:flex!important;align-items:center!important;justify-content:center!important
  }
  .app.app-ready>.sidebar .cn-wordmark{width:132px!important;height:78px!important;display:flex!important;align-items:center!important;justify-content:center!important}
  .app.app-ready>.sidebar .cn-brand-image{
@@ -204,10 +204,10 @@ html,body{background:var(--ov-bg)!important}
  }
  .app.app-ready>.sidebar .brand-copy,.app.app-ready>.sidebar .side-note,.app.app-ready>.sidebar .nav-collapse{display:none!important}
  .app.app-ready>.sidebar .nav{
-  margin:0!important;display:grid!important;gap:7px!important;max-height:none!important;overflow:visible!important
+  margin:0!important;display:grid!important;gap:5px!important;max-height:none!important;overflow:visible!important
  }
  .app.app-ready>.sidebar .nav button{
-  width:100%!important;margin:0!important;min-height:51px!important;padding:0 14px!important;
+  width:100%!important;margin:0!important;min-height:46px!important;padding:0 14px!important;
   display:grid!important;grid-template-columns:32px 1fr!important;gap:12px!important;align-items:center!important;
   border-radius:10px!important;background:transparent!important;color:#1e2320!important;font-weight:650!important
  }
