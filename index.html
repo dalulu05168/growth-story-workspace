@@ -59,9 +59,8 @@
 </section>
 
 <section id="groups" class="section">
-  <div class="topbar"><div><div class="eyebrow">GROUP MANAGEMENT</div><h1 class="page-title">分组管理</h1><p class="sub">系统分组自动计算；自定义小组可自由命名、选择成员，并设置不在人物名单中的组长。</p></div><button class="btn primary" id="addGroup">＋ 新建自定义小组</button></div>
-  <div class="card panel"><div class="panel-head"><h2>系统定义分组</h2><span class="muted">点击分组可直接筛选人物</span></div><div id="systemGroups" class="group-grid"></div></div>
-  <div class="card panel" style="margin-top:18px"><div class="panel-head"><h2>自定义小组</h2><span id="customGroupCount" class="muted"></span></div><div id="customGroups" class="custom-groups"></div></div>
+  <div class="topbar"><div><div class="eyebrow">BALANCED GROUPS</div><h1 class="page-title">分组管理</h1><p class="sub">70 位人物固定平均分为 10 组，每组 7 人；男女与新老客户比例均衡，小组名称可随时修改。</p></div></div>
+  <div class="card panel balanced-groups-panel"><div class="panel-head"><h2>10 个均衡小组</h2><span id="customGroupCount" class="muted"></span></div><div id="systemGroups" hidden></div><div id="customGroups" class="custom-groups balanced-groups-grid"></div></div>
 </section>
 
 <section id="records" class="section">
@@ -191,7 +190,7 @@
 
 <script src="./login-scene.js?v=20261001-reliable-1"></script>
 <script src="./auth.js?v=20261002-no-mfa-1"></script>
-<script src="./workspace-core.js?v=20261002-vip-levels-1"></script>
+<script src="./workspace-core.js?v=20261003-balanced-groups-2"></script>
 <script src="./cloud-sync.js?v=20261002-no-mfa-1"></script>
 <script src="./trade-dashboard.js?v=20261003-overview-portfolio-1"></script>
 <script src="./people-detail.js?v=20261002-vip-levels-1"></script>
