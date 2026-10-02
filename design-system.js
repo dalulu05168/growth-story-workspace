@@ -17,6 +17,37 @@ function ensureStylesheetLast(){
 }
 ensureStylesheetLast();
 
+const NAV_ICONS={
+  overview:'<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/><path d="M9.5 20v-6h5v6"/>',
+  people:'<circle cx="12" cy="8" r="3"/><path d="M6.5 20c.6-4 2.5-6 5.5-6s4.9 2 5.5 6"/>',
+  groups:'<circle cx="8" cy="8" r="2.5"/><circle cx="16.5" cy="9" r="2"/><path d="M3.5 20c.4-4 2-6 4.5-6s4.1 2 4.5 6"/><path d="M14 15c2.9.2 4.6 1.8 5 5"/>',
+  tradeRecommend:'<path d="M4 17 9 12l3 3 7-8"/><path d="M14 7h5v5"/>',
+  holdingsV2:'<path d="M5 6h14v13H5z"/><path d="M8 10h8M8 14h8M9 3v3m6-3v3"/>',
+  trades:'<path d="M4 7h12"/><path d="m13 4 3 3-3 3"/><path d="M20 17H8"/><path d="m11 14-3 3 3 3"/>',
+  records:'<path d="M6 4h12v16H6z"/><path d="M9 8h6M9 12h6M9 16h4"/>',
+  novel:'<path d="m4 20 4.5-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L4 20z"/><path d="m14.5 7.5 3 3"/>',
+  france70chat:'<path d="M4 6h16v11H8l-4 3V6z"/><path d="M8 10h8M8 13h5"/>',
+  topics:'<path d="m5 12 4 4L19 6"/>'
+};
+
+function svgIcon(inner){
+  return '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">'+inner+'</svg>';
+}
+function normalizeNavIcons(){
+  $('.sidebar .nav button[data-page]').forEach(btn=>{
+    const icon=btn.querySelector('i'),inner=NAV_ICONS[btn.dataset.page];
+    if(icon&&inner&&icon.dataset.uiIcon!==btn.dataset.page){
+      icon.innerHTML=svgIcon(inner);
+      icon.dataset.uiIcon=btn.dataset.page;
+    }
+  });
+  const logout=$('#logoutBtn i');
+  if(logout&&logout.dataset.uiIcon!=='logout'){
+    logout.innerHTML=svgIcon('<path d="M10 5H5v14h5"/><path d="M13 8l4 4-4 4"/><path d="M8 12h9"/>');
+    logout.dataset.uiIcon='logout';
+  }
+}
+
 const PAGE_META={
   overview:{eyebrow:'INVESTOR WORKSPACE',title:'投资者人物总览',sub:'70 位人物资料、分组、持仓与交易状态统一工作台。'},
   people:{eyebrow:'INVESTOR DIRECTORY',title:'人物库',sub:'查看、筛选、编辑人物完整资料，并进入人物详情与交易设置。'},
@@ -100,6 +131,7 @@ function normalizeDetailPage(){
 }
 
 function normalizeAll(root=document){
+  normalizeNavIcons();
   tagSections();
   normalizeButtons(root);
   normalizeTables(root);
