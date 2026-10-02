@@ -240,10 +240,11 @@ function generateBuyList(){
 }
 
 function enhancePeopleRows(){
-  document.querySelectorAll('#peopleList .profile-row').forEach(function(row){
+  document.querySelectorAll('#peopleList .profile-row,#peopleList .people-table-row').forEach(function(row){
     const edit=row.querySelector('.edit-person');if(!edit||row.querySelector('.trade-pref-btn'))return;
-    const b=document.createElement('button');b.className='link-btn trade-pref-btn';b.textContent='交易设置';b.dataset.tradePref=edit.dataset.id;b.onclick=function(){openTradePrefs(b.dataset.tradePref)};
-    row.insertBefore(b,edit);
+    const b=document.createElement('button');b.className='trade-pref-btn';b.textContent='交易设置';b.dataset.tradePref=edit.dataset.id;b.onclick=function(e){e.stopPropagation();openTradePrefs(b.dataset.tradePref)};
+    const menu=row.querySelector('.people-row-actions-menu');
+    if(menu)menu.insertBefore(b,edit);else row.insertBefore(b,edit);
   });
 }
 
