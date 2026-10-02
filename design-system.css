@@ -1746,7 +1746,8 @@ dialog.growth-notice{
 .app.app-ready #holdingsV2 .holding-chart-panel{display:none!important}
 .app.app-ready #holdingsV2 .holding-main-grid{grid-template-columns:minmax(0,1fr)!important}
 
-.app.app-ready :is(.holding-chart-panel,.hold-chart-overview) :is(.stock-chart-axis,.stock-chart-legend,.stock-chart-legend *){color:#43534a!important}
+.app.app-ready #overview :is(.stock-chart-axis,.stock-chart-legend,.stock-chart-legend *),
+.app.app-ready #holdingsV2 :is(.stock-chart-axis,.stock-chart-legend,.stock-chart-legend *){color:#43534a!important}
 
 .app.app-ready #holdingsV2 .holding-kpis,
 .app.app-ready #records .record-summary-grid,
