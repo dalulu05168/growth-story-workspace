@@ -281,7 +281,6 @@ function renderRecords(){
   const rs=db.records.filter(r=>(ps==='all'||String(r.personId)===String(ps))&&(ty==='all'||r.type===ty)&&(`${r.title} ${r.content} ${(r.topics||[]).join(' ')}`).toLowerCase().includes(q)).sort((a,b)=>String(b.date).localeCompare(String(a.date)));
   $('#allTimeline').innerHTML=rs.map(eventHTML).join('')||'<div class="empty">没有匹配记录</div>';
   document.querySelectorAll('.view-record').forEach(b=>b.onclick=()=>renderRecordDetail(b.dataset.id));
-  document.querySelectorAll('.view-record').forEach(b=>b.onclick=()=>renderRecordDetail(b.dataset.id));
   document.querySelectorAll('.edit-record').forEach(b=>b.onclick=()=>openRecord(b.dataset.id)); // record-edit-rebind
 }
 function topicCounts(){const m={};db.records.forEach(r=>(r.topics||[]).forEach(t=>{if(t)m[t]=(m[t]||0)+1}));return Object.entries(m).sort((a,b)=>b[1]-a[1])}
@@ -478,7 +477,7 @@ function renderGroupDetail(id){
   $('#groupDetailBack').onclick=()=>go('groups');
   $('#groupDetailPeople').onclick=()=>{go('people');$('#systemGroupFilter').value='all';$('#customGroupFilter').value=g.id;renderPeople()};
   $('#groupDetailRename').onclick=()=>openGroup(g.id);
-  $('.group-person-detail').forEach(b=>b.onclick=()=>viewPerson(b.dataset.id));
+  document.querySelectorAll('.group-person-detail').forEach(b=>b.onclick=()=>viewPerson(b.dataset.id));
 }
 function openCustomGroup(id){renderGroupDetail(id)}
 
