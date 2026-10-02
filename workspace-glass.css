@@ -352,3 +352,138 @@ html[data-theme="night"]{color-scheme:dark;--bg:#0b1018!important;--paper:#141c2
 .app.app-ready .trade-item :is(b,strong){color:#f1f4f8!important}
 .app.app-ready .trade-item .trade-meta{color:#b5c0d0!important}
 .app.app-ready .section .field>label{color:#c3cddd!important;font-size:14px!important}
+
+
+/* === 全站模块渐变统一系统 · 2026-10-02 ===
+   只作用于“模块方框/卡片”，输入框、表格单元格、正文编辑器继续保持实色阅读面。 */
+html[data-theme="night"]{
+  --cn-module-gradient:
+    linear-gradient(180deg,rgba(255,255,255,.022) 0%,rgba(255,255,255,0) 28%),
+    linear-gradient(145deg,#182438 0%,#131d2d 48%,#0e1624 100%);
+  --cn-module-gradient-soft:
+    linear-gradient(180deg,rgba(239,208,138,.045) 0%,rgba(239,208,138,0) 30%),
+    linear-gradient(145deg,#1d2a40 0%,#162236 50%,#101928 100%);
+  --cn-module-gradient-deep:
+    linear-gradient(145deg,#141f31 0%,#101927 58%,#0c131f 100%);
+  --cn-module-border:rgba(114,133,162,.48);
+  --cn-module-gold:rgba(214,176,92,.78);
+  --cn-module-shadow:0 12px 34px rgba(0,0,0,.22),inset 0 1px rgba(255,255,255,.025);
+  --cn-module-shadow-hover:0 18px 46px rgba(0,0,0,.30),inset 0 1px rgba(255,255,255,.045);
+}
+
+/* 核心业务模块：概览、人物、分组、记录、交易、持仓、计划、文档、检查。 */
+html[data-theme="night"] .app.app-ready :is(
+  .card,
+  .panel,
+  .metric,
+  .dashboard>.metric,
+  .group-card,
+  .profile-row,
+  .event,
+  .detail-box,
+  .detail-card,
+  .batch-card,
+  .offer-card,
+  .candidate-card,
+  .mini-person,
+  .person-mini,
+  .offer-stat,
+  .offer-row,
+  .detail-line,
+  .check-box,
+  .member-picker,
+  .doc-item,
+  .custom-group,
+  .trade-mini,
+  .person-buy-card,
+  .holding-person,
+  .memory-person-card,
+  .memory-row,
+  .logic-warning
+){
+  background:var(--cn-module-gradient)!important;
+  border:1px solid var(--cn-module-border)!important;
+  box-shadow:var(--cn-module-shadow)!important;
+  color:#f1f4f8!important;
+}
+
+/* 较重要的统计/主模块保留辰南黑金识别：金色顶部高光。 */
+html[data-theme="night"] .app.app-ready :is(
+  .metric,
+  .dashboard>.metric,
+  .group-card,
+  .detail-card,
+  .batch-card,
+  .offer-card,
+  .custom-group,
+  .holding-person
+){
+  border-top:2px solid var(--cn-module-gold)!important;
+}
+
+/* 小型内嵌模块使用更深一层渐变，避免所有层级“糊成一块”。 */
+html[data-theme="night"] .app.app-ready :is(
+  .detail-line,
+  .offer-stat,
+  .trade-mini,
+  .mini-person,
+  .person-mini,
+  .memory-row,
+  .doc-item
+){
+  background:var(--cn-module-gradient-deep)!important;
+}
+
+/* 状态型模块仍保留语义，但统一为渐变底。 */
+html[data-theme="night"] .app.app-ready .candidate-card.bought{
+  background:
+    linear-gradient(145deg,rgba(74,145,118,.22),rgba(18,37,35,.88)),
+    var(--cn-module-gradient)!important;
+  border-color:rgba(89,165,137,.62)!important;
+}
+html[data-theme="night"] .app.app-ready .candidate-card.rejected{
+  background:var(--cn-module-gradient-deep)!important;
+}
+html[data-theme="night"] .app.app-ready .offer-row.active{
+  background:
+    linear-gradient(145deg,rgba(214,176,92,.12),rgba(20,28,40,.94)),
+    var(--cn-module-gradient)!important;
+  border-color:var(--cn-module-gold)!important;
+}
+
+/* 悬停统一：只提升一层，不改变布局。 */
+@media(hover:hover) and (pointer:fine){
+  html[data-theme="night"] .app.app-ready :is(
+    .card,
+    .metric,
+    .group-card,
+    .profile-row,
+    .event,
+    .detail-box,
+    .detail-card,
+    .batch-card,
+    .offer-card,
+    .candidate-card,
+    .custom-group,
+    .trade-mini,
+    .person-buy-card,
+    .holding-person,
+    .doc-item,
+    .memory-row
+  ):hover{
+    background:var(--cn-module-gradient-soft)!important;
+    border-color:rgba(214,176,92,.62)!important;
+    box-shadow:var(--cn-module-shadow-hover)!important;
+  }
+}
+
+/* 移动端保留渐变，但降低阴影强度，避免页面显得过厚重。 */
+@media(max-width:760px){
+  html[data-theme="night"] .app.app-ready :is(
+    .card,.panel,.metric,.group-card,.profile-row,.event,.detail-box,.detail-card,
+    .batch-card,.offer-card,.candidate-card,.custom-group,.trade-mini,.person-buy-card,
+    .holding-person,.memory-person-card,.memory-row,.check-box
+  ){
+    box-shadow:0 8px 24px rgba(0,0,0,.18),inset 0 1px rgba(255,255,255,.02)!important;
+  }
+}
