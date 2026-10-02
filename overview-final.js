@@ -1672,6 +1672,14 @@ overviewReadabilityStyle.textContent=`
 .app.app-ready #overview .cn-empty-icon{color:#3b5043!important}
 .app.app-ready #overview .cn-empty-title{color:#26352d!important}
 .app.app-ready #overview .cn-empty-desc{color:#43534a!important}
+@media(max-width:900px){
+ .app.app-ready>.main,
+ .app.app-ready #people,
+ .app.app-ready #people>.card.panel,
+ .app.app-ready #people #peopleList,
+ .app.app-ready #people .people-table-wrap{min-width:0!important;max-width:100%!important}
+ .app.app-ready #people .people-table-wrap{overflow-x:auto!important;overscroll-behavior-x:contain!important}
+}
 `;
 document.head.appendChild(overviewReadabilityStyle);
 
