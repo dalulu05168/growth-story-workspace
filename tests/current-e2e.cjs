@@ -134,7 +134,7 @@ async function prelogin(page){
   );
   await page.locator('#loginForm').waitFor({state:'attached',timeout:2000});
   assert.equal(await page.locator('[data-theme-button]').count(),0);
-  assert.equal(await page.locator('html').getAttribute('data-theme'),'night');
+  assert.equal(await page.locator('html').getAttribute('data-theme'),'reference');
   assert.equal(await page.locator('.auth-title').innerText(),'欢迎回来');
   assert.equal(await page.locator('#loginForm input').count(),2);
   assert.equal(await page.locator('.login-language').innerText(),'简体中文');
