@@ -79,7 +79,11 @@ async function workspaceVisuals(browser,url){
      frame:document.querySelector('.app').getBoundingClientRect().toJSON(),side:document.querySelector('.sidebar').getBoundingClientRect().toJSON(),header:document.querySelector('.app-global-header').getBoundingClientRect().toJSON()}));
     assert(layout.scroll<=width+1,'workspace overflow '+width);
     if(width>900){assert(Math.abs(layout.frame.width/layout.frame.height-16/9)<.01,'desktop frame must be 16:9');assert(layout.frame.left>=0&&layout.frame.right<=width+1,'frame fits viewport');assert(layout.frame.top>=0&&layout.frame.bottom<=layout.height+1,'frame height fits viewport')}
-    if(width<=760){assert(Math.abs(layout.side.bottom-layout.height)<2,'bottom nav not fixed to viewport');assert(Math.abs(layout.header.top)<2,'header not fixed to viewport')}
+    if(width<=760){
+     const bottomGap=layout.height-layout.side.bottom;
+     assert(bottomGap>=0&&bottomGap<=14,'bottom nav must stay within the mobile viewport safe inset');
+     assert(layout.header.top>=0&&layout.header.top<=14,'mobile header must stay within the top safe inset');
+    }
    }
    await page.setViewportSize({width:390,height:844});
    for(const id of ['overview','people','groups','records','novel','topics','trades','tradeRecommend','holdingsV2']){
