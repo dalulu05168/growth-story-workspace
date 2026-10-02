@@ -97,21 +97,68 @@ function ensureUI(){
   }
 }
 
+let peoplePage=1;
+const PEOPLE_PAGE_SIZE=18;
+let peoplePageSignature='';
+
 renderPeople=function(){
   const host=$id('peopleList');if(!host)return;
-  const list=currentList(),count=$id('peopleCount');if(count)count.textContent='当前显示 '+list.length+' / '+db.people.length+' 人';
-  host.innerHTML='<div class="people-table-wrap"><table class="people-data-table"><thead><tr><th>编号</th><th>姓名</th><th>性别</th><th>年龄</th><th>新/老</th><th>VIP</th><th>开户</th><th>入群</th><th>联系记录</th><th>参与次数</th><th>持仓</th><th>可投资资产</th><th>盈利占比</th><th>操作</th></tr></thead><tbody>'+
-  list.map(function(p){
+  const list=currentList();
+  const signature=[
+    $id('personSearch')?.value||'',
+    $id('personSort')?.value||'id',
+    $id('systemGroupFilter')?.value||'all',
+    $id('customGroupFilter')?.value||'all',
+    list.length
+  ].join('|');
+  if(signature!==peoplePageSignature){
+    peoplePage=1;
+    peoplePageSignature=signature;
+  }
+  const totalPages=Math.max(1,Math.ceil(list.length/PEOPLE_PAGE_SIZE));
+  peoplePage=Math.min(Math.max(1,peoplePage),totalPages);
+  const pageStart=(peoplePage-1)*PEOPLE_PAGE_SIZE;
+  const pageRows=list.slice(pageStart,pageStart+PEOPLE_PAGE_SIZE);
+  const count=$id('peopleCount');
+  if(count){
+    const from=list.length?pageStart+1:0;
+    const to=Math.min(pageStart+PEOPLE_PAGE_SIZE,list.length);
+    count.textContent='当前显示 '+from+'-'+to+' / '+list.length+' 人';
+  }
+  const colgroup='<colgroup>'+
+    '<col style="width:4.5%"><col style="width:17%"><col style="width:4%"><col style="width:4%">'+
+    '<col style="width:5.5%"><col style="width:5.5%"><col style="width:5.5%"><col style="width:5.5%">'+
+    '<col style="width:6%"><col style="width:6%"><col style="width:5%"><col style="width:9%">'+
+    '<col style="width:7%"><col style="width:15.5%">'+
+  '</colgroup>';
+  const pager=totalPages>1?'<div class="people-pagination" aria-label="人物列表分页">'+
+    Array.from({length:totalPages},function(_,i){
+      const page=i+1;
+      return '<button type="button" class="people-page-btn'+(page===peoplePage?' active':'')+'" data-people-page="'+page+'">'+page+'</button>';
+    }).join('')+
+  '</div>':'';
+
+  host.innerHTML='<div class="people-table-wrap"><table class="people-data-table">'+colgroup+'<thead><tr><th>编号</th><th>姓名</th><th>性别</th><th>年龄</th><th>新/老</th><th>VIP</th><th>开户</th><th>入群</th><th>联系记录</th><th>参与次数</th><th>持仓</th><th>可投资资产</th><th>盈利占比</th><th>操作</th></tr></thead><tbody>'+
+  pageRows.map(function(p){
     const hs=personHoldings(p,false),pf=performance(p);
     const relation=pRelationCode(p)==='OLD'?'relation-old':'relation-new';
     const vipClass=pVip(p)?' is-vip':'';
-    return '<tr class="'+relation+vipClass+'" data-open-person="'+s(p.id)+'"><td>'+s(pCode(p))+'</td><td class="namecell"><span class="table-person"><span class="table-avatar">'+pAvatar(p)+'</span><span class="table-name">'+s(label(p))+'<small class="person-category" data-category="'+s(genderRelationLabel(p))+'">'+s(genderRelationLabel(p))+'</small></span></span></td><td>'+s(pGender(p)||'--')+'</td><td>'+s(p.age||'--')+'</td><td>'+s(pRelationName(p)||'--')+'</td><td class="vip-cell">'+(pVip(p)?'<span class="vip-level vip-level-'+s(String(p.vip?.level||'VIP').replace(/\D/g,'')||'x')+'">'+s(p.vip?.level||'VIP')+'</span>':'<span class="vip-none">—</span>')+'</td><td>'+(isOpened(p)?'已开户':'未开户')+'</td><td>'+(isJoined(p)?'已入群':'未入群')+'</td><td>'+contactCount(p)+'</td><td>'+participationCount(p)+'</td><td>'+(hs.length?hs.length+' 笔':'无')+'</td><td>'+cash(p.finance?.estimated_investable_assets_eur||0)+'</td><td class="'+(pf.ratio==null?'':(pf.ratio>=0?'profit-pos':'profit-neg'))+'">'+s(pf.multi?'多币种':ratioText(pf.ratio))+'</td><td><button class="link-btn view-person" data-id="'+s(p.id)+'">详情</button> <button class="link-btn" data-trade-pref="'+s(p.id)+'">交易设置</button> <button class="link-btn edit-person" data-id="'+s(p.id)+'">编辑</button> <button class="link-btn danger delete-person" data-id="'+s(p.id)+'">删除</button></td></tr>';
-  }).join('')+'</tbody></table></div>';
+    return '<tr class="'+relation+vipClass+'" data-open-person="'+s(p.id)+'"><td>'+s(pCode(p))+'</td><td class="namecell"><span class="table-person"><span class="table-avatar">'+pAvatar(p)+'</span><span class="table-name">'+s(label(p))+'<small class="person-category" data-category="'+s(genderRelationLabel(p))+'">'+s(genderRelationLabel(p))+'</small></span></span></td><td>'+s(pGender(p)||'--')+'</td><td>'+s(p.age||'--')+'</td><td>'+s(pRelationName(p)||'--')+'</td><td class="vip-cell">'+(pVip(p)?'<span class="vip-level vip-level-'+s(String(p.vip?.level||'VIP').replace(/\D/g,'')||'x')+'">'+s(p.vip?.level||'VIP')+'</span>':'<span class="vip-none">—</span>')+'</td><td>'+(isOpened(p)?'已开户':'未开户')+'</td><td>'+(isJoined(p)?'已入群':'未入群')+'</td><td>'+contactCount(p)+'</td><td>'+participationCount(p)+'</td><td>'+(hs.length?hs.length+' 笔':'无')+'</td><td>'+cash(p.finance?.estimated_investable_assets_eur||0)+'</td><td class="'+(pf.ratio==null?'':(pf.ratio>=0?'profit-pos':'profit-neg'))+'">'+s(pf.multi?'多币种':ratioText(pf.ratio))+'</td><td><span class="people-actions"><button class="link-btn view-person" data-id="'+s(p.id)+'">详情</button><button class="link-btn" data-trade-pref="'+s(p.id)+'">交易设置</button><button class="link-btn edit-person" data-id="'+s(p.id)+'">编辑</button><button class="link-btn danger delete-person" data-id="'+s(p.id)+'">删除</button></span></td></tr>';
+  }).join('')+'</tbody></table></div>'+pager;
+
   host.querySelectorAll('[data-open-person]').forEach(function(row){row.onclick=function(e){if(e.target.closest('button'))return;openDetail(row.dataset.openPerson)}});
   host.querySelectorAll('.view-person').forEach(function(b){b.onclick=function(e){e.stopPropagation();openDetail(b.dataset.id)}});
   host.querySelectorAll('[data-trade-pref]').forEach(function(b){b.onclick=function(e){e.stopPropagation();editTradePrefLocal(b.dataset.tradePref)}});
   host.querySelectorAll('.edit-person').forEach(function(b){b.onclick=function(e){e.stopPropagation();openPerson(b.dataset.id)}});
   host.querySelectorAll('.delete-person').forEach(function(b){b.onclick=function(e){e.stopPropagation();deletePerson(b.dataset.id)}});
+  host.querySelectorAll('[data-people-page]').forEach(function(b){
+    b.onclick=function(){
+      peoplePage=Number(b.dataset.peoplePage)||1;
+      peoplePageSignature=signature;
+      renderPeople();
+      host.querySelector('.people-table-wrap')?.scrollTo({top:0,left:0,behavior:'auto'});
+    };
+  });
 };
 
 function editTradePrefLocal(id){
