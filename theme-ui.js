@@ -1374,6 +1374,271 @@ body{font:14px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","M
   .app.app-ready .holding-info-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
 }
 
+
+/* ===== 2026-10-02 strict product-design remediation ===== */
+:root,html[data-theme="reference"]{
+  --text-primary:#111315;
+  --text-secondary:#5f6467;
+  --text-muted:#8a8f92;
+  --bg-page:#e6e8e6;
+  --bg-card:#f8f9f7;
+  --bg-subtle:#eff1ee;
+  --border:#d5d9d5;
+  --border-strong:#bcc3be;
+  --dark:#222523;
+  --gold-deep:#9a7424;
+  --gold-soft:#e8d18f;
+  --success:#557568;
+  --danger:#b8645c;
+}
+.app.app-ready{color:var(--text-primary)!important}
+.app.app-ready .page-title{color:#111315!important;font-weight:780!important}
+.app.app-ready :is(.sub,.muted,.meta){color:var(--text-secondary)!important}
+.app.app-ready .eyebrow{color:var(--gold-deep)!important;font-weight:780!important;letter-spacing:.16em!important}
+.app.app-ready :is(.card,.panel,.detail-card,.fr70-card){border-radius:16px!important}
+.app.app-ready :is(.btn,.input,.select,textarea,input:not([type=checkbox]):not([type=radio]),select){border-radius:12px!important}
+
+/* Desktop shell: one primary vertical scroller. */
+@media(min-width:1180px){
+  html,body{height:100%!important;overflow:hidden!important}
+  .app.app-ready{overflow:hidden!important}
+  .app.app-ready>.sidebar{
+    width:272px!important;
+    padding-left:78px!important;
+    padding-right:14px!important;
+    overflow:hidden!important;
+  }
+  .app.app-ready>.sidebar:before{left:10px!important;width:52px!important}
+  .app.app-ready>.sidebar .brand{left:15px!important}
+  .app.app-ready>.sidebar .nav{
+    margin-top:62px!important;
+    gap:4px!important;
+    max-height:none!important;
+    overflow:visible!important;
+  }
+  .app.app-ready>.sidebar .nav button{
+    width:calc(100% + 68px)!important;
+    margin-left:-68px!important;
+    min-height:43px!important;
+    grid-template-columns:54px 1fr!important;
+    gap:12px!important;
+  }
+  .app.app-ready>.sidebar .nav button:after{left:56px!important;border-radius:12px!important}
+  .app.app-ready>.sidebar .nav button i{width:30px!important;height:30px!important;margin-left:12px!important}
+  .app.app-ready>.sidebar .side-note{left:76px!important;right:14px!important}
+  .app.app-ready>.main{
+    margin-left:304px!important;
+    width:calc(100% - 304px)!important;
+    height:100%!important;
+    min-height:0!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    scrollbar-gutter:stable!important;
+    overscroll-behavior:contain!important;
+  }
+  .app.app-ready .app-global-header{
+    grid-template-columns:minmax(320px,560px) minmax(0,1fr)!important;
+    gap:18px!important;
+  }
+  .app.app-ready .app-global-header .header-brand{display:none!important}
+  .app.app-ready .app-global-header .header-search{grid-column:1!important;width:100%!important;max-width:560px!important}
+  .app.app-ready .app-global-header .header-right{grid-column:2!important;justify-self:end!important}
+}
+
+/* People directory: freeze identity, let only the table move horizontally. */
+.app.app-ready #peopleList.profile-list{display:block!important;min-width:0!important}
+.app.app-ready .people-table-wrap{
+  position:relative!important;
+  width:100%!important;
+  max-width:100%!important;
+  overflow-x:auto!important;
+  overflow-y:visible!important;
+  overscroll-behavior-inline:contain!important;
+  border:1px solid var(--border)!important;
+  border-radius:16px!important;
+  background:var(--bg-card)!important;
+}
+.app.app-ready .people-data-table{
+  min-width:1510px!important;
+  border-collapse:separate!important;
+  border-spacing:0!important;
+  table-layout:auto!important;
+  background:var(--bg-card)!important;
+}
+.app.app-ready .people-data-table :is(th,td){
+  height:auto!important;
+  padding:13px 12px!important;
+  vertical-align:middle!important;
+  color:var(--text-primary)!important;
+  background:#f8f9f7!important;
+  border-bottom:1px solid var(--border)!important;
+}
+.app.app-ready .people-data-table th{
+  background:#e9ece8!important;
+  color:#3e4541!important;
+  font-size:12px!important;
+  font-weight:760!important;
+}
+.app.app-ready .people-data-table :is(th,td):nth-child(1){
+  position:sticky!important;left:0!important;
+  width:82px!important;min-width:82px!important;max-width:82px!important;
+  z-index:5!important;
+}
+.app.app-ready .people-data-table :is(th,td):nth-child(2){
+  position:sticky!important;left:82px!important;
+  width:228px!important;min-width:228px!important;max-width:228px!important;
+  z-index:5!important;
+  box-shadow:1px 0 0 var(--border-strong)!important;
+}
+.app.app-ready .people-data-table th:nth-child(-n+2){z-index:7!important;background:#e9ece8!important}
+.app.app-ready .people-data-table tbody tr:hover td{background:#eef2ef!important}
+.app.app-ready .people-data-table tbody tr:hover td:nth-child(-n+2){background:#eef2ef!important}
+.app.app-ready .people-data-table .table-person{display:flex!important;align-items:center!important;gap:11px!important;min-width:0!important}
+.app.app-ready .people-data-table .table-name{min-width:0!important;white-space:normal!important;overflow-wrap:anywhere!important}
+.app.app-ready .people-data-table td:last-child{min-width:228px!important}
+.app.app-ready .table-actions{display:flex!important;align-items:center!important;gap:9px!important;white-space:nowrap!important}
+.app.app-ready .table-actions .link-btn{color:#6f561d!important;font-weight:690!important}
+.app.app-ready .table-actions .link-btn.danger{color:var(--danger)!important}
+.app.app-ready .row-more{position:relative!important;display:inline-block!important}
+.app.app-ready .row-more>summary{
+  list-style:none!important;cursor:pointer!important;user-select:none!important;
+  min-width:34px!important;height:30px!important;padding:0 8px!important;
+  display:grid!important;place-items:center!important;border-radius:9px!important;
+  border:1px solid var(--border)!important;background:#f3f5f2!important;
+  color:#4f5652!important;font-weight:800!important;
+}
+.app.app-ready .row-more>summary::-webkit-details-marker{display:none!important}
+.app.app-ready .row-more-menu{
+  position:absolute!important;right:0!important;top:36px!important;z-index:20!important;
+  min-width:118px!important;padding:7px!important;border:1px solid var(--border-strong)!important;
+  border-radius:10px!important;background:#fff!important;
+  box-shadow:0 12px 28px rgba(35,40,37,.14)!important;
+}
+.app.app-ready .row-more-menu .link-btn{width:100%!important;text-align:left!important;padding:7px 9px!important}
+
+/* VIP level language: progressively stronger without compromising legibility. */
+.app.app-ready .vip-level{min-width:48px!important;height:24px!important;font-size:10px!important;font-weight:820!important}
+.app.app-ready .vip-level-1{background:#f5ecd6!important;color:#785913!important;border-color:#d9c18b!important}
+.app.app-ready .vip-level-2{background:#eadbb8!important;color:#67490c!important;border-color:#caae6b!important}
+.app.app-ready .vip-level-3{background:linear-gradient(135deg,#ead69d,#d5ba73)!important;color:#4f3908!important;border-color:#b99548!important}
+.app.app-ready .vip-level-4{background:#4a4436!important;color:#f3d788!important;border-color:#9e8240!important;box-shadow:inset 0 1px rgba(255,255,255,.08)!important}
+.app.app-ready .vip-level-5{background:#20231f!important;color:#f1ca67!important;border-color:#a78333!important;box-shadow:0 4px 12px rgba(52,43,19,.13),inset 0 1px rgba(255,255,255,.08)!important}
+.app.app-ready .vip-level-5::before{content:"★";margin-right:4px!important;font-size:9px!important}
+.app.app-ready .vip-none{color:#8a908c!important}
+
+/* Group cards never switch to unreadable dark-on-dark states. */
+.app.app-ready .group-card{background:#f8f9f7!important;border:1px solid var(--border)!important;overflow:hidden!important}
+.app.app-ready .system-group-open{
+  background:transparent!important;color:var(--text-primary)!important;
+  min-height:142px!important;padding:20px!important;
+}
+.app.app-ready .system-group-open small{color:var(--text-muted)!important}
+.app.app-ready .system-group-open strong{color:#171a18!important}
+.app.app-ready .system-group-open b{color:#1f2421!important}
+@media(hover:hover) and (pointer:fine){
+  .app.app-ready .group-card:hover{transform:translateY(-3px)!important;border-color:#c8b374!important;box-shadow:0 13px 28px rgba(35,40,37,.08)!important}
+  .app.app-ready .group-card:hover .system-group-open{background:#f1f3ef!important}
+}
+.app.app-ready .system-group-open:focus-visible{outline:2px solid #b9994e!important;outline-offset:-3px!important;background:#f4f0e5!important}
+
+/* Trading readability: stock identity stays dark; emphasis is reserved for finance state. */
+.app.app-ready :is(.stock-title,.offer-row .stock-title,.holding-batch .stock-title,.offer-stat b){
+  color:#111315!important;text-shadow:none!important;font-weight:780!important;
+}
+.app.app-ready .offer-row{background:#f9faf8!important;border-color:var(--border)!important}
+.app.app-ready .offer-row.active{background:#f3efe4!important;border-color:#c9ad68!important}
+.app.app-ready .offer-row.active :is(.stock-title,.muted){color:#252925!important}
+.app.app-ready .offer-stat{background:#f7f8f5!important;border-color:var(--border)!important}
+.app.app-ready .offer-stat span{color:#69706c!important}
+.app.app-ready .link-btn{font-weight:660!important}
+
+/* A single holding no longer sits alone in a giant chart canvas. */
+.app.app-ready .hold-chart:has(.hold-bar-wrap:only-child){
+  min-height:210px!important;
+  justify-content:flex-start!important;
+  align-items:flex-end!important;
+  padding:24px 30px 16px!important;
+  gap:0!important;
+}
+.app.app-ready .hold-chart:has(.hold-bar-wrap:only-child) .hold-bar-wrap{
+  flex:0 0 190px!important;
+  min-width:190px!important;
+  padding:14px 20px 10px!important;
+  border:1px solid var(--border)!important;
+  border-radius:14px!important;
+  background:#f1f4f1!important;
+}
+.app.app-ready .hold-chart:has(.hold-bar-wrap:only-child) .hold-bar{width:58px!important}
+
+/* Daily writing: contained portraits and readable 3-column work area; no nested vertical scrollers. */
+.app.app-ready .daily-doc-layout{
+  grid-template-columns:220px minmax(440px,1fr) 300px!important;
+  gap:18px!important;
+  align-items:start!important;
+}
+.app.app-ready .speech-panel{padding:14px!important;max-height:none!important;overflow:visible!important}
+.app.app-ready .speech-row{
+  grid-template-columns:44px minmax(0,1fr) auto!important;
+  gap:10px!important;min-height:58px!important;padding:8px!important;
+}
+.app.app-ready .speech-row .speech-avatar{width:44px!important;height:44px!important;min-width:44px!important}
+.app.app-ready .speech-row>div{min-width:0!important}
+.app.app-ready .speech-row .speech-name{display:block!important;color:#222624!important;font-size:11px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+.app.app-ready .editor-card,.app.app-ready .memory-panel{min-width:0!important}
+.app.app-ready .rich-editor{min-height:460px!important}
+.app.app-ready .memory-timeline{max-height:none!important;overflow:visible!important}
+@media(min-width:761px) and (max-width:1250px){
+  .app.app-ready .daily-doc-layout{grid-template-columns:190px minmax(0,1fr)!important}
+  .app.app-ready .memory-panel{grid-column:1/-1!important}
+}
+@media(max-width:760px){
+  .app.app-ready .daily-doc-layout{grid-template-columns:1fr!important}
+  .app.app-ready .speech-panel{max-height:none!important;overflow:visible!important}
+}
+
+/* France 70: persistent workflow context and one-page scrolling. */
+.app.app-ready .fr70-stepper{
+  display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:10px!important;margin:-2px 0 18px!important;
+}
+.app.app-ready .fr70-step{
+  min-width:0!important;padding:12px 14px!important;border:1px solid var(--border)!important;
+  border-radius:12px!important;background:#f6f8f5!important;
+}
+.app.app-ready .fr70-step b{display:block!important;color:#1d211f!important;font-size:13px!important}
+.app.app-ready .fr70-step span{display:block!important;margin-top:2px!important;color:#737a76!important;font-size:11px!important}
+.app.app-ready .fr70-step.current{border-color:#c8ad67!important;background:#f3eee1!important}
+.app.app-ready :is(.fr70-chat,.fr70-history,.fr70-memory-list){max-height:none!important;overflow:visible!important}
+@media(max-width:760px){.app.app-ready .fr70-stepper{grid-template-columns:1fr!important}}
+
+/* Empty states are intentional surfaces, not large unexplained blank areas. */
+.app.app-ready :is(
+  .trade-list>.empty,.timeline>.empty,#recentTimeline>.empty,#allTimeline>.empty,
+  #fr70Chat>.empty,#fr70History>.empty,#fr70MemoryList>.empty,
+  .offer-list>.empty,.candidate-grid>.empty
+){
+  min-height:116px!important;padding:24px!important;
+  display:grid!important;place-items:center!important;align-content:center!important;gap:8px!important;
+  text-align:center!important;color:#777e79!important;
+  border:1px dashed #cbd0cc!important;border-radius:14px!important;background:#f6f7f4!important;
+}
+.app.app-ready :is(
+  .trade-list>.empty,.timeline>.empty,#recentTimeline>.empty,#allTimeline>.empty,
+  #fr70Chat>.empty,#fr70History>.empty,#fr70MemoryList>.empty,
+  .offer-list>.empty,.candidate-grid>.empty
+)::before{
+  content:"—"!important;
+  display:grid!important;place-items:center!important;width:30px!important;height:30px!important;
+  border-radius:50%!important;background:#e9ece8!important;color:#7a817c!important;font-weight:800!important;
+}
+
+/* Consistent desktop hierarchy. */
+.app.app-ready .topbar h1,.app.app-ready .page-title{font-size:clamp(34px,2.25vw,40px)!important}
+.app.app-ready .panel-head h2,.app.app-ready h2{font-size:20px!important}
+.app.app-ready :is(.panel h3,.card h3){font-size:16px!important}
+.app.app-ready :is(.people-data-table,.mini-table){font-size:13px!important}
+.app.app-ready :is(.card,.panel){border-color:var(--border)!important}
+
 `;
 document.head.appendChild(st);
 })();
