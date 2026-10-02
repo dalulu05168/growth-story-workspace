@@ -94,6 +94,13 @@ if(header)header.classList.remove('design-header');
 if(overviewTop&&overviewActions&&overviewActions.parentElement!==overviewTop)overviewTop.appendChild(overviewActions);
 if(overviewActions)overviewActions.classList.add('overview-header-actions');
 
+
+/* 人物库第二页精简：移除说明条与“横向滑动”提示，不改人物数据。 */
+const peopleSection=$('#people');
+if(peopleSection){
+  peopleSection.querySelector(':scope > .notice')?.remove();
+}
+
 /* 标题行：去掉旧介绍，改成设计稿中的实时资料状态。 */
 if(overviewTop){
   overviewTop.classList.add('overview-titlebar');
@@ -995,6 +1002,117 @@ polishStyle.textContent=`
 }
 `;
 document.head.appendChild(polishStyle);
+
+
+/* 人物库第二页：完整字段紧凑显示。 */
+const peopleTightOld=$('#chennanPeoplePageTight20261003');if(peopleTightOld)peopleTightOld.remove();
+const peopleTightStyle=document.createElement('style');
+peopleTightStyle.id='chennanPeoplePageTight20261003';
+peopleTightStyle.textContent=`
+.app.app-ready #people>#peopleList:before,
+.app.app-ready #people #peopleList:before{
+ content:none!important;display:none!important
+}
+.app.app-ready #people>.notice{display:none!important}
+.app.app-ready #people .topbar{margin-bottom:9px!important}
+.app.app-ready #people>.card.panel{
+ padding:13px 14px 12px!important
+}
+.app.app-ready #people .toolbar{
+ display:grid!important;
+ grid-template-columns:minmax(220px,1.18fr) minmax(145px,.74fr) minmax(145px,.74fr) minmax(150px,.76fr)!important;
+ gap:8px!important;margin:0 0 7px!important;align-items:center!important
+}
+.app.app-ready #people .toolbar :is(.input,.select){
+ min-width:0!important;max-width:none!important;height:38px!important;min-height:38px!important;
+ padding:7px 10px!important;font-size:11px!important
+}
+.app.app-ready #people #peopleCount{
+ margin:4px 0 7px!important;font-size:10px!important;line-height:1.35!important
+}
+.app.app-ready #people #peopleList{
+ margin:0!important;min-width:0!important
+}
+.app.app-ready #people .people-table-wrap{
+ width:100%!important;max-width:100%!important;overflow-x:auto!important;overflow-y:visible!important;
+ border-radius:10px!important
+}
+.app.app-ready #people .people-data-table{
+ width:100%!important;min-width:1138px!important;table-layout:fixed!important;
+ border-collapse:collapse!important;font-size:10px!important
+}
+.app.app-ready #people .people-data-table :is(th,td){
+ padding:7px 5px!important;height:46px!important;min-height:46px!important;
+ font-size:10px!important;line-height:1.2!important;white-space:nowrap!important;
+ overflow:hidden!important;text-overflow:ellipsis!important
+}
+.app.app-ready #people .people-data-table th{
+ height:32px!important;min-height:32px!important;font-size:9px!important;
+ letter-spacing:.015em!important;font-weight:760!important
+}
+/* 14 列按信息密度分配，姓名与操作保留更多空间。 */
+.app.app-ready #people .people-data-table :is(th,td):nth-child(1){width:54px!important}
+.app.app-ready #people .people-data-table :is(th,td):nth-child(2){width:190px!important}
+.app.app-ready #people .people-data-table :is(th,td):nth-child(3){width:44px!important}
+.app.app-ready #people .people-data-table :is(th,td):nth-child(4){width:44px!important}
+.app.app-ready #people .people-data-table :is(th,td):nth-child(5){width:58px!important}
+.app.app-ready #people .people-data-table :is(th,td):nth-child(6){width:60px!important}
+.app.app-ready #people .people-data-table :is(th,td):nth-child(7){width:62px!important}
+.app.app-ready #people .people-data-table :is(th,td):nth-child(8){width:62px!important}
+.app.app-ready #people .people-data-table :is(th,td):nth-child(9){width:62px!important}
+.app.app-ready #people .people-data-table :is(th,td):nth-child(10){width:62px!important}
+.app.app-ready #people .people-data-table :is(th,td):nth-child(11){width:54px!important}
+.app.app-ready #people .people-data-table :is(th,td):nth-child(12){width:100px!important}
+.app.app-ready #people .people-data-table :is(th,td):nth-child(13){width:70px!important}
+.app.app-ready #people .people-data-table :is(th,td):nth-child(14){width:216px!important}
+
+.app.app-ready #people .people-data-table .table-person{
+ gap:7px!important;max-width:100%!important
+}
+.app.app-ready #people .people-data-table .table-avatar{
+ width:34px!important;height:34px!important;min-width:34px!important;min-height:34px!important
+}
+.app.app-ready #people .people-data-table .table-name{
+ min-width:0!important;max-width:140px!important;font-size:11px!important;line-height:1.15!important
+}
+.app.app-ready #people .people-data-table .table-name>small{
+ margin-top:2px!important
+}
+.app.app-ready #people .person-category{
+ padding:1px 5px!important;font-size:8px!important;line-height:1.25!important
+}
+.app.app-ready #people .vip-level,
+.app.app-ready #people .vip-none{
+ font-size:9px!important;padding:2px 6px!important
+}
+.app.app-ready #people .people-data-table td:nth-child(14){
+ overflow:visible!important;text-overflow:clip!important
+}
+.app.app-ready #people .people-data-table td:nth-child(14) .link-btn{
+ min-height:0!important;padding:2px 4px!important;margin:0!important;
+ font-size:9px!important;line-height:1.25!important;white-space:nowrap!important
+}
+.app.app-ready #people .people-data-table td:nth-child(14) .link-btn+ .link-btn{
+ margin-left:1px!important
+}
+.app.app-ready #people .people-data-table tbody tr:hover td{background:#fffaf0!important}
+
+@media(min-width:1450px){
+ .app.app-ready #people .people-data-table{min-width:0!important}
+ .app.app-ready #people .people-table-wrap{overflow-x:hidden!important}
+}
+@media(min-width:1180px) and (max-width:1449px){
+ .app.app-ready #people .people-data-table{min-width:1100px!important}
+ .app.app-ready #people .people-data-table :is(th,td){padding-left:4px!important;padding-right:4px!important}
+ .app.app-ready #people .people-data-table td:nth-child(14) .link-btn{font-size:8px!important;padding-inline:2px!important}
+}
+@media(max-width:900px){
+ .app.app-ready #people .toolbar{grid-template-columns:1fr 1fr!important}
+ .app.app-ready #people .people-data-table{min-width:1138px!important}
+ .app.app-ready #people .people-table-wrap{overflow-x:auto!important}
+}
+`;
+document.head.appendChild(peopleTightStyle);
 
 /* 概览离开后，顶部操作按钮隐藏；返回概览恢复。 */
 function syncHeaderActions(){
