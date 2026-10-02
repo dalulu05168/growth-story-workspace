@@ -18,6 +18,89 @@
 <link rel="stylesheet" href="./intro.css?v=20261001-reliable-1">
 <link id="cnWorkspaceGlass" rel="stylesheet" href="./workspace-glass.css?v=20261002-gradient-1">
 <link rel="stylesheet" href="./france70-chat.css?v=20261002-gradient-1">
+<style id="cnGradientCardsV2">
+/* 辰南撰写 · 全站模块渐变最终覆盖层
+   放在所有主题样式之后，保证业务页面的模块方框可明显看出渐变。 */
+html[data-theme="night"] .app.app-ready{
+  --cn-card-v2:
+    radial-gradient(120% 95% at 8% 0%,rgba(72,111,169,.26) 0%,rgba(72,111,169,0) 48%),
+    linear-gradient(145deg,#20314d 0%,#17253a 43%,#101827 100%);
+  --cn-card-v2-hover:
+    radial-gradient(120% 95% at 8% 0%,rgba(239,208,138,.13) 0%,rgba(239,208,138,0) 48%),
+    linear-gradient(145deg,#263a58 0%,#1b2b43 45%,#121c2c 100%);
+  --cn-card-v2-inner:
+    linear-gradient(145deg,#18263b 0%,#121d2e 56%,#0d1522 100%);
+  --cn-card-v2-border:rgba(116,139,176,.58);
+  --cn-card-v2-gold:rgba(226,189,104,.86);
+}
+
+html[data-theme="night"] .app.app-ready :is(
+  .card,.panel,.metric,.dashboard>.metric,.group-card,.profile-row,.event,
+  .detail-box,.detail-card,.batch-card,.offer-card,.candidate-card,
+  .mini-person,.person-mini,.offer-stat,.offer-row,.detail-line,.check-box,
+  .member-picker,.doc-item,.custom-group,.trade-mini,.person-buy-card,
+  .holding-person,.memory-person-card,.memory-row,.logic-warning,
+  .fr70-stat,.fr70-bubble,.fr70-history button,.fr70-memory-row
+){
+  background:var(--cn-card-v2)!important;
+  border:1px solid var(--cn-card-v2-border)!important;
+  box-shadow:0 12px 34px rgba(0,0,0,.24),inset 0 1px rgba(255,255,255,.035)!important;
+  color:#f1f4f8!important;
+}
+
+html[data-theme="night"] .app.app-ready :is(
+  .metric,.dashboard>.metric,.group-card,.detail-card,.batch-card,
+  .offer-card,.custom-group,.holding-person,.fr70-stat
+){
+  border-top:2px solid var(--cn-card-v2-gold)!important;
+}
+
+html[data-theme="night"] .app.app-ready :is(
+  .detail-line,.offer-stat,.trade-mini,.mini-person,.person-mini,
+  .memory-row,.doc-item
+){
+  background:var(--cn-card-v2-inner)!important;
+}
+
+html[data-theme="night"] .app.app-ready .candidate-card.bought{
+  background:
+    radial-gradient(100% 100% at 8% 0%,rgba(86,173,139,.20),transparent 50%),
+    linear-gradient(145deg,#1b3534,#14282a 52%,#101c22)!important;
+}
+html[data-theme="night"] .app.app-ready .offer-row.active{
+  background:
+    radial-gradient(100% 90% at 8% 0%,rgba(226,189,104,.16),transparent 48%),
+    linear-gradient(145deg,#2a2d35,#1b2432 55%,#121a28)!important;
+  border-color:var(--cn-card-v2-gold)!important;
+}
+
+@media(hover:hover) and (pointer:fine){
+  html[data-theme="night"] .app.app-ready :is(
+    .card,.panel,.metric,.group-card,.profile-row,.event,.detail-box,
+    .detail-card,.batch-card,.offer-card,.candidate-card,.custom-group,
+    .trade-mini,.person-buy-card,.holding-person,.doc-item,.memory-row,
+    .fr70-stat,.fr70-bubble,.fr70-history button,.fr70-memory-row
+  ):hover{
+    background:var(--cn-card-v2-hover)!important;
+    border-color:rgba(226,189,104,.72)!important;
+    box-shadow:0 18px 48px rgba(0,0,0,.32),inset 0 1px rgba(255,255,255,.05)!important;
+  }
+}
+
+@media(max-width:760px){
+  html[data-theme="night"] .app.app-ready :is(
+    .card,.panel,.metric,.group-card,.profile-row,.event,.detail-box,
+    .detail-card,.batch-card,.offer-card,.candidate-card,.custom-group,
+    .trade-mini,.person-buy-card,.holding-person,.check-box,
+    .fr70-stat,.fr70-bubble,.fr70-history button,.fr70-memory-row
+  ){
+    background:
+      radial-gradient(120% 100% at 5% 0%,rgba(77,116,174,.30) 0%,rgba(77,116,174,0) 50%),
+      linear-gradient(145deg,#20324f 0%,#18263b 44%,#101827 100%)!important;
+    box-shadow:0 8px 24px rgba(0,0,0,.22),inset 0 1px rgba(255,255,255,.035)!important;
+  }
+}
+</style>
 <link rel="preload" href="./data/france70-v6.1.json" as="fetch" crossorigin="anonymous">
 <script src="./theme-system.js?v=20261001-reliable-1"></script>
 </head>
