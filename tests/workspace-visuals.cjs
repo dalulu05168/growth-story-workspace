@@ -44,7 +44,7 @@ async function workspaceVisuals(browser,url){
    assert.equal(animation,reducedMotion==='reduce'?'none':'cnSidebarEnter');
    // Centered desktop 16:9 framing may use a CSS transform; viewport-fit is asserted below.
    await settle(page);
-   for(const theme of ['night']){
+   for(const theme of ['reference']){
     assert.equal(await page.locator('[data-theme-button]').count(),0);
     await page.waitForFunction(t=>document.documentElement.dataset.theme===t,theme);
     await page.waitForFunction(()=>!document.documentElement.classList.contains('theme-fade-in')&&!document.documentElement.classList.contains('theme-fade-out'));
