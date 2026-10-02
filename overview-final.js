@@ -584,6 +584,173 @@ html,body{background:#eef1f2!important;color:#111412!important}
 `;
 document.head.appendChild(unifiedStyle);
 
+
+/* 2026-10-03 实机截图整改：桌面压缩为真正 16:9 一屏，手机逻辑保持原状。 */
+const rectOld=$('#chennanDesktopRectification20261003');if(rectOld)rectOld.remove();
+const rectStyle=document.createElement('style');
+rectStyle.id='chennanDesktopRectification20261003';
+rectStyle.textContent=`
+@media(min-width:1180px) and (min-aspect-ratio:4/3){
+ html,body{overflow:hidden!important}
+ .app.app-ready{overflow:hidden!important}
+ .app.app-ready>.main{
+  left:auto!important;right:0!important;top:0!important;bottom:0!important;
+  height:100%!important;min-height:0!important;overflow:hidden!important;
+  margin-left:196px!important;width:calc(100% - 196px)!important;
+  padding:8px 14px 12px 8px!important
+ }
+ .app.app-ready>.main>.section{
+  height:100%!important;max-height:100%!important;min-height:0!important;
+  overflow-y:auto!important;overflow-x:hidden!important;padding:0!important;
+  scrollbar-width:none!important
+ }
+ .app.app-ready>.main>.section::-webkit-scrollbar{display:none!important}
+ .app.app-ready>.main>#overview.active{overflow:hidden!important}
+
+ /* 左栏由当前约 220px 继续缩到 176px；桌面不显示“更多”。 */
+ .app.app-ready>.sidebar{
+  width:176px!important;left:10px!important;top:8px!important;bottom:8px!important;
+  padding:12px 10px 12px!important;border-radius:18px!important;
+  overflow:hidden!important
+ }
+ .app.app-ready>.sidebar:before{display:none!important}
+ .app.app-ready>.sidebar .brand{
+  position:relative!important;left:auto!important;top:auto!important;
+  width:100%!important;height:62px!important;margin:0 0 7px!important;
+  display:grid!important;place-items:center!important;border:0!important;
+  background:transparent!important;box-shadow:none!important
+ }
+ .app.app-ready>.sidebar .brand:before,.app.app-ready>.sidebar .brand:after,
+ .app.app-ready>.sidebar .cn-wordmark:before,.app.app-ready>.sidebar .cn-wordmark:after{display:none!important}
+ .app.app-ready>.sidebar .cn-wordmark{
+  width:96px!important;height:58px!important;min-width:96px!important;
+  display:grid!important;place-items:center!important;border:0!important;
+  background:transparent!important;box-shadow:none!important;overflow:hidden!important
+ }
+ .app.app-ready>.sidebar .cn-brand-image{
+  width:92px!important;height:54px!important;max-width:92px!important;
+  object-fit:cover!important;object-position:center!important;border:0!important;
+  outline:0!important;border-radius:0!important;background:transparent!important;
+  box-shadow:none!important;animation:none!important
+ }
+ .app.app-ready>.sidebar .brand-copy,.app.app-ready>.sidebar .side-note,
+ .app.app-ready>.sidebar .nav-collapse{display:none!important}
+ .app.app-ready>.sidebar .nav{
+  margin:0!important;display:grid!important;gap:2px!important;max-height:none!important;overflow:visible!important
+ }
+ .app.app-ready>.sidebar .nav button{
+  width:100%!important;margin:0!important;min-height:40px!important;height:40px!important;
+  padding:0 9px!important;display:grid!important;grid-template-columns:27px 1fr!important;
+  gap:9px!important;align-items:center!important;border-radius:9px!important;
+  font-size:13px!important;font-weight:650!important
+ }
+ .app.app-ready>.sidebar .nav button i{
+  width:26px!important;height:26px!important;margin:0!important;display:grid!important;
+  place-items:center!important;font-size:15px!important;line-height:1!important;
+  background:transparent!important;border:0!important;color:#262b28!important
+ }
+ .app.app-ready>.sidebar .nav button span{font-size:13px!important;line-height:1.1!important}
+ .app.app-ready>.sidebar #logoutBtn{height:40px!important;min-height:40px!important;margin-top:3px!important}
+ .app.app-ready>.sidebar #mobileMoreBtn,
+ .app.app-ready>.sidebar .mobile-more-button{display:none!important}
+
+ /* 概览标题区压低，按钮保留在标题框内。 */
+ .app.app-ready #overview .overview-titlebar{
+  min-height:92px!important;height:92px!important;margin:0 0 9px!important;
+  padding:12px 302px 12px 18px!important;border-radius:13px!important
+ }
+ .app.app-ready #overview .overview-titlebar:after{height:108px!important;opacity:.28!important}
+ .app.app-ready #overview .eyebrow{font-size:9px!important;letter-spacing:.14em!important}
+ .app.app-ready #overview .overview-title-row{gap:14px!important;margin-top:3px!important}
+ .app.app-ready #overview .page-title{font-size:27px!important;line-height:1.12!important}
+ .app.app-ready #overview .overview-title-divider{height:23px!important}
+ .app.app-ready #overview .overview-summary-inline{font-size:12px!important}
+ .app.app-ready #overview .overview-titlebar .overview-header-actions{
+  right:16px!important;gap:8px!important
+ }
+ .app.app-ready #overview .overview-titlebar .overview-header-actions .btn{
+  height:38px!important;min-height:38px!important;padding:0 14px!important;font-size:11px!important
+ }
+
+ /* 8 个指标卡缩高、缩间距，保留 4×2。 */
+ .app.app-ready #overview .dashboard{
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:9px!important;margin:0 0 9px!important
+ }
+ .app.app-ready #overview .metric{
+  min-height:104px!important;height:104px!important;
+  padding:10px 28px 10px 78px!important;border-radius:12px!important
+ }
+ .app.app-ready #overview .overview-metric-icon{
+  left:18px!important;width:46px!important;height:46px!important;font-size:21px!important
+ }
+ .app.app-ready #overview .metric .label{font-size:11px!important}
+ .app.app-ready #overview .metric strong{
+  font-size:30px!important;line-height:1!important;margin:6px 0!important
+ }
+ .app.app-ready #overview .metric .trend{font-size:10px!important}
+ .app.app-ready #overview .overview-metric-arrow{right:13px!important;font-size:21px!important}
+
+ /* 下方两块只保留必要高度，空状态不再撑长页面。 */
+ .app.app-ready #overview>.grid{
+  grid-template-columns:minmax(0,1.55fr) minmax(355px,.95fr)!important;
+  gap:9px!important;margin:0!important;height:246px!important
+ }
+ .app.app-ready #overview>.grid>.panel{
+  height:246px!important;min-height:246px!important;padding:12px!important;
+  border-radius:12px!important;overflow:hidden!important
+ }
+ .app.app-ready #overview .panel-head{margin:0 0 6px!important;min-height:28px!important}
+ .app.app-ready #overview .panel-head h2{font-size:15px!important}
+ .app.app-ready #overview .panel-head h2:before{margin-right:7px!important}
+ .app.app-ready #overview .panel-head .link-btn{font-size:10px!important}
+ .app.app-ready #overview .overview-event-head,
+ .app.app-ready #overview .overview-event-row{
+  grid-template-columns:78px 130px minmax(0,1fr) 72px!important;
+  min-height:31px!important;padding:0 6px!important;gap:8px!important
+ }
+ .app.app-ready #overview .overview-event-head{min-height:29px!important;font-size:9px!important}
+ .app.app-ready #overview .overview-event-row{font-size:10px!important}
+ .app.app-ready #overview .event-person i{width:23px!important;height:23px!important;font-size:9px!important}
+ .app.app-ready #overview .event-type-chip{padding:3px 8px!important;font-size:9px!important}
+ .app.app-ready #overview .empty{padding:54px 8px!important;font-size:11px!important}
+
+ .app.app-ready #overview .overview-group-grid{gap:6px!important}
+ .app.app-ready #overview .overview-group-card{
+  min-height:55px!important;height:55px!important;padding:7px!important;
+  grid-template-columns:34px minmax(0,1fr) auto!important;gap:7px!important;border-radius:8px!important
+ }
+ .app.app-ready #overview .overview-group-avatar{width:30px!important;height:30px!important;font-size:13px!important}
+ .app.app-ready #overview .overview-group-card b{font-size:10px!important}
+ .app.app-ready #overview .overview-group-card b small{font-size:9px!important}
+ .app.app-ready #overview .overview-group-card p{margin:3px 0 0!important;font-size:8px!important}
+ .app.app-ready #overview .overview-group-progress{height:3px!important;margin-top:3px!important}
+ .app.app-ready #overview .overview-group-card em{font-size:9px!important}
+ .app.app-ready #overview .overview-group-total{
+  min-height:48px!important;height:48px!important;
+  grid-template-columns:34px auto 1fr 26px!important;padding:6px 9px!important;gap:7px!important;border-radius:8px!important
+ }
+ .app.app-ready #overview .overview-total-icon{width:30px!important;height:30px!important;font-size:13px!important}
+ .app.app-ready #overview .overview-group-total strong{font-size:23px!important}
+ .app.app-ready #overview .overview-group-total b{font-size:9px!important}
+ .app.app-ready #overview .overview-group-total small{font-size:8px!important}
+ .app.app-ready #overview .overview-group-total>i{width:24px!important;height:24px!important;font-size:16px!important}
+
+ /* 交易计划已有独立模块，桌面概览不重复堆叠同一份名单。 */
+ .app.app-ready #overview #tradeOverview{display:none!important}
+
+ /* 页面边缘滚动条不外露；其他长页面在内容区内部滚动。 */
+ .app.app-ready>.main,.app.app-ready>.main>.section{scrollbar-gutter:auto!important}
+}
+
+@media(min-width:901px) and (max-width:1179px){
+ .app.app-ready>.sidebar #mobileMoreBtn,
+ .app.app-ready>.sidebar .mobile-more-button{display:none!important}
+ .app.app-ready>.sidebar .cn-brand-image{border:0!important;outline:0!important;box-shadow:none!important}
+}
+`;
+document.head.appendChild(rectStyle);
+
 /* 概览离开后，顶部操作按钮隐藏；返回概览恢复。 */
 function syncHeaderActions(){
  const active=$('.section.active');
