@@ -40,8 +40,8 @@ async function sceneVisuals(browser,url){
    }
    await p.locator('#loginUser').fill('e2e_local_scene');await p.locator('#loginPassword').fill('fixture');await p.locator('#loginForm button[type=submit]').click();await p.locator('#authRoot').waitFor({state:'hidden'});assert.equal(await p.locator('#authRoot').getAttribute('data-scene-state'),'disposed');
    await p.locator('.app.app-ready').waitFor({state:'visible'});await p.evaluate(async()=>{await Promise.all(document.getAnimations().filter(a=>a.effect.getComputedTiming().iterations!==Infinity).map(a=>a.finished.catch(()=>{})))});
-   await p.locator('.cn-brand-image:visible,.cn-header-logo:visible').first().waitFor({state:'visible'});
-   assert.equal(await p.locator('.cn-brand-image:visible,.cn-header-logo:visible').count(),1,'one visible brand logo');assert.equal(await p.locator('.brand-copy small:visible,.header-brand span:visible').count(),0,'no duplicate brand title or subtitle');
+   await p.locator('.sidebar .cn-electric-logo:visible').waitFor({state:'visible'});
+   assert.equal(await p.locator('.cn-electric-logo:visible').count(),1,'one visible brand logo');assert.equal(await p.locator('.cn-electric-logo .cn-brush-logo-text').innerText(),'辰南');assert.equal(await p.locator('.brand-copy small:visible,.header-brand span:visible').count(),0,'no duplicate brand title or subtitle');
    await p.locator('.nav [data-page=people]').click();assert.equal(await p.locator('.people-data-table tbody tr:first-child td:first-child').innerText(),'C.01');assert.equal(await p.locator('.people-data-table .person-portrait').count(),70);
    await p.locator('[data-open-person="FR0001"]').click();await p.locator('#personDetailPage.active').waitFor({state:'visible'});assert.match(await p.locator('#personDetailContent .sub').innerText(),/^C\.01/);
    const colors=await p.locator('.detail-line b').first().evaluate(e=>({color:getComputedStyle(e).color,bg:getComputedStyle(e.parentElement).backgroundColor}));assert.equal(colors.color,'rgb(237, 242, 248)');assert.equal(colors.bg,'rgb(16, 23, 34)');
