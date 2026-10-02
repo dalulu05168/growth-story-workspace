@@ -1,0 +1,21 @@
+name: People directory preview artifact
+on:
+  push:
+    branches:
+      - fix/people-directory-design-20261003
+jobs:
+  build-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build:static
+      - uses: actions/upload-artifact@v4
+        with:
+          name: people-directory-preview
+          path: dist-static
+          if-no-files-found: error
