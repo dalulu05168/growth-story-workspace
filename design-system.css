@@ -538,6 +538,39 @@ dialog.growth-notice{
 .app.app-ready #personDetailPage .journey-body small{font-size:8px!important;color:var(--cn-muted)!important}
 .app.app-ready #personDetailPage .journey-rail:before{background:var(--cn-gold)!important}
 .app.app-ready #personDetailPage .journey-rail:after{background:var(--cn-border-soft)!important}
+.app.app-ready #personDetailPage .detail-bottom-grid{
+  display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:10px!important;margin-top:10px!important;
+}
+.app.app-ready #personDetailPage .detail-bottom-card{
+  min-width:0!important;min-height:190px!important;padding:11px!important;
+}
+.app.app-ready #personDetailPage .detail-compact-list{
+  display:grid!important;gap:5px!important;
+}
+.app.app-ready #personDetailPage .detail-compact-row{
+  min-width:0!important;min-height:30px!important;padding:5px 7px!important;
+  display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:8px!important;align-items:center!important;
+  border:1px solid var(--cn-border-soft)!important;border-radius:7px!important;background:#fafbfa!important;
+}
+.app.app-ready #personDetailPage .detail-compact-row>div{min-width:0!important}
+.app.app-ready #personDetailPage .detail-compact-row b{
+  display:block!important;color:#171c19!important;font-size:8.5px!important;
+  white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+}
+.app.app-ready #personDetailPage .detail-compact-row small{
+  display:block!important;color:var(--cn-muted)!important;font-size:7.5px!important;margin-top:1px!important;
+  white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+}
+.app.app-ready #personDetailPage .detail-compact-row>span{
+  color:#6b746f!important;font-size:7.5px!important;white-space:nowrap!important;
+}
+.app.app-ready #personDetailPage .detail-holdings-table{
+  margin-top:10px!important;padding:11px!important;
+}
+@media(max-width:1250px){
+  .app.app-ready #personDetailPage .detail-bottom-grid{grid-template-columns:1fr!important}
+}
 
 /* ===== Group page ===== */
 .app.app-ready #groups .balanced-groups-grid{
