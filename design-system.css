@@ -596,6 +596,141 @@ dialog.growth-notice{
 .app.app-ready #groups .balanced-member-avatar,
 .app.app-ready #groups .balanced-member .person-portrait{display:none!important}
 
+/* ===== Secondary flows & dense components ===== */
+
+/* Legacy/fallback profile detail modal and grouped information blocks */
+.app.app-ready .profile-detail{
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;
+}
+.app.app-ready .profile-detail .section-label{
+  grid-column:1/-1!important;margin:5px 0 0!important;padding-top:8px!important;
+  border-top:1px solid var(--cn-border-soft)!important;
+  color:#303834!important;font-size:10px!important;font-weight:760!important;
+}
+.app.app-ready .profile-detail .detail-box{
+  min-height:52px!important;padding:8px 9px!important;
+  border:1px solid var(--cn-border-soft)!important;border-radius:7px!important;background:#fafbfa!important;
+}
+.app.app-ready .profile-detail .detail-box span{
+  display:block!important;color:var(--cn-muted)!important;font-size:8px!important;
+}
+.app.app-ready .profile-detail .detail-box b{
+  display:block!important;margin-top:3px!important;color:#161b18!important;font-size:9px!important;line-height:1.35!important;
+}
+
+/* Timeline, tags and record chips */
+.app.app-ready .tags{
+  display:flex!important;align-items:center!important;gap:5px!important;flex-wrap:wrap!important;
+}
+.app.app-ready .timeline-item{min-width:0!important}
+.app.app-ready .event-head{
+  display:flex!important;justify-content:space-between!important;align-items:flex-start!important;gap:10px!important;
+}
+.app.app-ready .event-title{color:#171c19!important;font-size:10px!important;font-weight:740!important}
+.app.app-ready .event p{margin:4px 0!important;color:#4f5a54!important;font-size:9px!important;line-height:1.5!important}
+
+/* Trading settings mini people pickers / confirmation lists */
+.app.app-ready .person-mini-grid{
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important;margin-top:10px!important;
+}
+.app.app-ready .person-mini{
+  min-width:0!important;min-height:54px!important;padding:8px!important;
+  display:grid!important;grid-template-columns:auto 38px minmax(0,1fr)!important;gap:7px!important;align-items:center!important;
+  border:1px solid var(--cn-border-soft)!important;border-radius:8px!important;background:#fff!important;
+}
+.app.app-ready .person-mini>input{width:14px!important;height:14px!important;min-height:0!important}
+.app.app-ready .person-mini .gender-avatar{
+  width:34px!important;height:34px!important;border-radius:50%!important;overflow:hidden!important;background:#eff1f0!important;
+}
+.app.app-ready .person-mini b{display:block!important;color:#171c19!important;font-size:9px!important}
+.app.app-ready .person-mini small{display:block!important;font-size:8px!important;margin-top:2px!important}
+
+/* Holding chart details */
+.app.app-ready #holdingsV2 .stock-chart-axis{
+  color:var(--cn-muted)!important;font-size:8px!important;margin:0 0 6px!important;
+}
+.app.app-ready #holdingsV2 .hold-bar-wrap{
+  min-width:54px!important;display:flex!important;align-items:flex-end!important;justify-content:center!important;height:100%!important;
+}
+.app.app-ready #holdingsV2 .hold-bar{
+  border-radius:7px 7px 2px 2px!important;background:#c7ae70!important;box-shadow:none!important;
+}
+.app.app-ready #holdingsV2 .hold-bar.ready{background:#78a28d!important}
+.app.app-ready #holdingsV2 .hold-bar.soon{background:#c6a55b!important}
+.app.app-ready #holdingsV2 .hold-bar-count{
+  color:#202724!important;font-size:8px!important;font-weight:760!important;
+}
+.app.app-ready #holdingsV2 .hold-bar-label{
+  color:#65706a!important;font-size:7.5px!important;text-align:center!important;line-height:1.25!important;
+}
+.app.app-ready #holdingsV2 .hold-bar-label b{color:#1e2521!important;font-size:8px!important}
+
+/* France 70 dense controls, history and memory */
+.app.app-ready #france70chat .fr70-row,
+.app.app-ready #france70chat .fr70-options{
+  display:flex!important;align-items:center!important;gap:7px!important;flex-wrap:wrap!important;
+}
+.app.app-ready #france70chat .fr70-selected{
+  min-height:34px!important;padding:7px 9px!important;border:1px solid var(--cn-border-soft)!important;
+  border-radius:8px!important;background:#fafbfa!important;color:#37403b!important;font-size:9px!important;
+}
+.app.app-ready #france70chat .fr70-note{
+  padding:8px 9px!important;border:1px solid #e4ddcc!important;border-radius:8px!important;
+  background:#f8f5ec!important;color:#665c43!important;font-size:8.5px!important;line-height:1.5!important;
+}
+.app.app-ready #france70chat .fr70-history{
+  display:grid!important;gap:6px!important;max-height:300px!important;overflow:auto!important;
+}
+.app.app-ready #france70chat .fr70-history button{
+  width:100%!important;padding:7px 8px!important;text-align:left!important;
+}
+.app.app-ready #france70chat .fr70-message{
+  min-width:0!important;display:grid!important;grid-template-columns:30px minmax(0,1fr)!important;gap:7px!important;align-items:start!important;
+}
+.app.app-ready #france70chat .fr70-avatar{
+  width:28px!important;height:28px!important;border-radius:50%!important;overflow:hidden!important;background:#eef1ef!important;
+}
+.app.app-ready #france70chat .fr70-meta{
+  display:flex!important;align-items:center!important;gap:5px!important;flex-wrap:wrap!important;margin-bottom:3px!important;
+}
+.app.app-ready #france70chat .fr70-meta b{color:#171c19!important;font-size:9px!important}
+.app.app-ready #france70chat .fr70-meta span{color:var(--cn-muted)!important;font-size:7.5px!important}
+.app.app-ready #france70chat .fr70-bubble p{margin:0!important;color:#303934!important;font-size:9px!important;line-height:1.55!important}
+.app.app-ready #france70chat .fr70-memory-list{display:grid!important;gap:6px!important}
+.app.app-ready #france70chat .fr70-memory-row{padding:7px 8px!important}
+
+/* Writing ranking and suggestion overlay */
+.app.app-ready #novel .speech-name{
+  min-width:0!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+  color:#29322e!important;font-size:8.5px!important;
+}
+.app.app-ready #novel .doc-suggest{
+  padding:7px 9px!important;border:1px solid var(--cn-border)!important;
+  background:#f8faf9!important;color:#55615b!important;font-size:8.5px!important;
+}
+.app.app-ready #novel .person-token{
+  background:#f4ead0!important;color:#544119!important;border-radius:5px!important;padding:1px 4px!important;font-weight:740!important;
+}
+.app.app-ready #novel .logic-warning{
+  padding:8px 9px!important;border:1px solid #ead7d4!important;border-radius:8px!important;
+  background:#f8efed!important;color:#87514d!important;font-size:8.5px!important;
+}
+
+/* Settings and compact control panels */
+.app.app-ready .member-picker{
+  max-height:380px!important;overflow:auto!important;padding:6px!important;
+  border:1px solid var(--cn-border)!important;border-radius:8px!important;background:#f8f9f8!important;
+}
+.app.app-ready .member-option{
+  min-height:42px!important;padding:6px!important;display:grid!important;
+  grid-template-columns:16px minmax(0,1fr)!important;gap:7px!important;align-items:center!important;
+  border-bottom:1px solid var(--cn-border-soft)!important;color:#202724!important;
+}
+.app.app-ready .member-option:last-child{border-bottom:0!important}
+.app.app-ready .member-option input{width:14px!important;height:14px!important;min-height:0!important}
+.app.app-ready .member-option b{font-size:9px!important}
+.app.app-ready .member-option small{font-size:7.5px!important}
+
 /* ===== Scrollbars ===== */
 .app.app-ready *{scrollbar-width:thin;scrollbar-color:#c5ccc8 transparent}
 .app.app-ready *::-webkit-scrollbar{width:6px;height:6px}
