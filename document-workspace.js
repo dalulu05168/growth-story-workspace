@@ -97,7 +97,7 @@ function renderTabs(){
 }
 function renderRank(){
   const host=E('speechRanking');if(!host)return;
-  host.innerHTML=ranking().map(p=>'<button class="speech-row '+(String(p.id)===String(currentPersonId)?'active':'')+'" data-sp="'+esc(p.id)+'">'+pAvatar(p)+'<div><b>'+esc(pCode(p))+'</b><span class="speech-name">'+esc(pname(p))+'</span><small class="person-category" data-category="'+esc(pcl(p))+'">'+esc(pcl(p))+'</small></div><em>'+speechCount(p)+'次</em></button>').join('');
+  host.innerHTML=ranking().map(p=>'<button class="speech-row '+(String(p.id)===String(currentPersonId)?'active':'')+'" data-sp="'+esc(p.id)+'"><span class="gender-avatar speech-avatar">'+pAvatar(p)+'</span><div><b>'+esc(pCode(p))+'</b><span class="speech-name">'+esc(pname(p))+'</span><small class="person-category" data-category="'+esc(pcl(p))+'">'+esc(pcl(p))+'</small></div><em>'+speechCount(p)+'次</em></button>').join('');
   QA('[data-sp]').forEach(b=>b.onclick=()=>{currentPersonId=b.dataset.sp;renderRank();renderMemory(currentPersonId)});
 }
 function refreshWorkspace(){ensureDocs();renderTabs();loadEditor();renderRank();if(currentPersonId&&person(currentPersonId))renderMemory(currentPersonId);else renderMemory(null);}
