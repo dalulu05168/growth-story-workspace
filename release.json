@@ -1,5 +1,5 @@
 {
-  "sourceSha": "e8392192c544baa436832abccd814de084cec0a9",
+  "sourceSha": "437fe2ec2b7935db1353826829a63edcbbdaad64",
   "files": {
     "CNAME": "7f3352e8682740e6da414b7eb847d82c921ddf397bf3c175a9ae794ff8dd18f9",
     "assets/brand/chennan-logo.jpg": "f9cddb9644e71f715628511ec375b9baa7d24ba3d8b3ab0b934d87e047a1d982",
@@ -12,8 +12,11 @@
     "auth.js": "d3b7b9ecaf01f896b60a7413a1ea0d51165590984cfe9040f292279035013e7e",
     "character-memory.js": "ee64aabe353f5e1065054034f853b84239c50dc25f0ebb19530bf1dac15c420b",
     "cloud-sync.js": "8284228560449899da1117f9b5b14412b941e76ac2aac209210cc350367d3a06",
+    "data/france70-v6.1.json": "6f3d57241c01a780fcbb14cb983a80bbd087acbacc8290e94210f4baeff1647a",
     "data/people.json": "f11b30a34ae3cb0b2b97fbb5a5f7eb8493b47ac7a4328cbe41800f6f24a5b357",
     "document-workspace.js": "89855d2b4c751cfb54501bf404062f535ffd1f9635e6cbac02a60058f1a4f45a",
+    "france70-chat.css": "6c14280d8be84ced29bd771212bf9c1283d498a3dc4652eb8acb4c877761bfc3",
+    "france70-chat.js": "661c71976be9bcfa8cf91a3346a9c34744fbe38a5489fefc791f6d033bdfffd1",
     "icons/LICENSE": "ddbe6082ec3cf979db47e5af549d2849c5d6182b3e005ef91ce1dbb9eb122f11",
     "icons/arrow-right.svg": "ebdc82ccfcfd9c9d81b1cb83aca241aac912e84c256a0451f64866a342a0a355",
     "icons/chart-line-up.svg": "8811e55c318ee826426a47e727cf027672c7278a89065e78a420d5bf9b4cc17b",
@@ -25,7 +28,7 @@
     "icons/lock-key.svg": "d8bdf1b9399f973662e000036b09da5b4ff581ecfcb67299ba99169f0e2f79fe",
     "icons/user.svg": "fc75ff764c4c7e35dc54ad7b2df491de9c04a6e5f56fac342cf7359d1d4f89f0",
     "icons/users-four.svg": "75730ed755c47c39d6b41352c53a8c1fa1226c586ce89e1b1249b4f74457ffd1",
-    "index.html": "93f22538b81308be9c9d26034daa07f989f76e1f2a1893a434822aeb48982d5a",
+    "index.html": "747cc53069e709254f59ba0c38255cdeef0f41843202a6a4bbd462fa5c7f61fd",
     "intro.css": "304cff3b731e36a67867433663ff64234087f0a76263ed08ad8ffbf03c24696b",
     "login-scene.js": "24cfba757f095beef098f7ac6aea5f9ff790ed4dc4ce2b58f0ba97c201e83f25",
     "offline-register.js": "f3dce74ae3114047f66e2fd302555ac5ae6dc7bbeead759884670dc6a41c9681",
