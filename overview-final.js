@@ -1550,6 +1550,63 @@ peoplePaginationStyle.textContent=`
 `;
 document.head.appendChild(peoplePaginationStyle);
 
+
+/* 分组页修正：不显示人物头像；整组卡不浮起，仅单个人物条目浮起。 */
+const groupFixOld=$('#chennanBalancedGroupsNoAvatar20261003');if(groupFixOld)groupFixOld.remove();
+const groupFixStyle=document.createElement('style');
+groupFixStyle.id='chennanBalancedGroupsNoAvatar20261003';
+groupFixStyle.textContent=`
+.app.app-ready #groups .balanced-group-card,
+.app.app-ready #groups .balanced-group-card:hover{
+ transform:none!important;
+ border-color:#d9dedb!important;
+ box-shadow:
+  inset 1px 1px 0 rgba(255,255,255,.96),
+  inset -1px -1px 0 rgba(168,175,171,.08),
+  0 4px 12px rgba(52,62,56,.03)!important
+}
+.app.app-ready #groups .balanced-members{
+ display:grid!important;
+ grid-template-columns:1fr!important;
+ gap:4px!important
+}
+.app.app-ready #groups .balanced-member{
+ min-width:0!important;min-height:27px!important;height:27px!important;
+ padding:0 7px!important;
+ display:grid!important;
+ grid-template-columns:44px minmax(0,1fr) 34px!important;
+ gap:7px!important;align-items:center!important;
+ border:1px solid #e3e7e4!important;border-radius:7px!important;
+ background:#fff!important;text-align:left!important;
+ transform:translateY(0)!important;
+ box-shadow:none!important;
+ transition:transform .14s ease,background .14s ease,border-color .14s ease,box-shadow .14s ease!important
+}
+.app.app-ready #groups .balanced-member:hover{
+ background:#f7f9fa!important;
+ border-color:#cbd4cf!important;
+ transform:translateY(-1px)!important;
+ box-shadow:0 3px 8px rgba(45,55,49,.07)!important
+}
+.app.app-ready #groups .balanced-member-code{
+ color:#111514!important;font-size:8px!important;font-weight:760!important;
+ white-space:nowrap!important
+}
+.app.app-ready #groups .balanced-member-name{
+ min-width:0!important;color:#202624!important;font-size:8px!important;font-weight:650!important;
+ white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important
+}
+.app.app-ready #groups .balanced-member-type{
+ justify-self:end!important;color:#5f6863!important;font-size:7.5px!important;
+ white-space:nowrap!important
+}
+.app.app-ready #groups .balanced-member-avatar,
+.app.app-ready #groups .balanced-member .person-portrait{
+ display:none!important
+}
+`;
+document.head.appendChild(groupFixStyle);
+
 /* 概览离开后，顶部操作按钮隐藏；返回概览恢复。 */
 function syncHeaderActions(){
  const active=$('.section.active');
