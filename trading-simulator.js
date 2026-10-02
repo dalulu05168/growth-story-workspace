@@ -102,19 +102,73 @@ function renderRecommend(){
   const offers=[...db.tradeSim.offers].sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));
   if(!activeOfferId&&offers[0])activeOfferId=offers[0].id;
   const o=offer(activeOfferId),rec=o?recommendationFor(o.id):null;
-  body.innerHTML='<div class="topbar"><div><div class="eyebrow">SIMULATED TRADE RECOMMENDATION</div><h1 class="page-title">人物交易列表</h1><p class="sub">设定模拟股票条件，一键从主看板“今日待买”人员优先推荐，再由用户逐一邀请或拒绝。</p></div><button class="btn primary" id="newOffer">＋ 新建股票计划</button></div>'+
-  '<div class="grid"><div class="card panel"><div class="panel-head"><h2>股票计划</h2><span class="muted">'+offers.length+' 个计划</span></div><div class="offer-list">'+(offers.map(x=>'<div class="offer-row '+(x.id===activeOfferId?'active':'')+'"><div><b class="stock-title">'+h(x.symbol)+' · '+h(x.name)+'</b><div class="muted">'+h(x.market||'美股')+' · 折扣 '+h(x.discountPct)+'% · 单价 '+money(x.unitPrice,x.currency||'USD')+' · 最低 '+h(x.minShares)+'股 · 持有'+h(x.holdDays)+'天 · '+h(x.participantCount)+'人</div></div><div class="button-row"><button class="btn ghost small" data-offer-open="'+h(x.id)+'">打开</button><button class="btn ghost small" data-offer-edit="'+h(x.id)+'">编辑</button></div></div>').join('')||'<div class="empty">还没有股票计划</div>')+'</div></div>'+
-  '<div class="card panel"><div class="panel-head"><h2>当前计划</h2><span class="muted">模拟交易</span></div>'+(o?offerInfo(o):'<div class="empty">请先新建股票计划</div>')+'</div></div>'+
-  (o?'<div class="card panel" style="margin-top:18px"><div class="panel-head"><h2>推荐购买人物</h2><div class="button-row"><span class="muted">主页面今日待买：'+todayPlans().length+' 人</span><button class="btn primary" id="recommendPeople">一键推荐购买人物</button></div></div>'+(rec?renderCandidates(o,rec):'<div class="empty">点击“一键推荐购买人物”生成名单</div>')+'</div>':'');
+  const todayCount=todayPlans().length;
+  const invited=rec?rec.candidates.filter(x=>x.status==='invited').length:0;
+  const bought=rec?rec.candidates.filter(x=>x.status==='bought').length:0;
+
+  const planRows=offers.length?offers.map(function(x){
+    const active=x.id===activeOfferId?' active':'';
+    return '<div class="trade-plan-row'+active+'" data-offer-row="'+h(x.id)+'">'+
+      '<div class="trade-plan-main"><div class="trade-plan-title"><b>'+h(x.symbol)+'</b><span>'+h(x.name)+'</span></div>'+
+      '<div class="trade-plan-meta"><span>'+h(x.market||'美股')+'</span><span>折扣 '+h(x.discountPct)+'%</span><span>单价 '+money(x.unitPrice,x.currency||'USD')+'</span><span>最低 '+h(x.minShares)+' 股</span><span>持有 '+h(x.holdDays)+' 天</span><span>目标 '+h(x.participantCount)+' 人</span></div></div>'+
+      '<div class="trade-plan-actions"><button class="link-btn" data-offer-open="'+h(x.id)+'">打开</button><button class="link-btn" data-offer-edit="'+h(x.id)+'">编辑</button></div>'+
+    '</div>';
+  }).join(''):'<div class="empty">还没有股票计划</div>';
+
+  body.innerHTML=
+    '<div class="topbar"><div><div class="eyebrow">INVESTOR TRANSACTIONS</div><h1 class="page-title">人物交易</h1><p class="sub">管理股票计划、计划参数、推荐购买人物，以及邀请、拒绝和确认买入结果。</p></div><div class="actions"><button class="btn primary" id="newOffer">＋ 新建股票计划</button></div></div>'+
+    '<div class="trade-recommend-top">'+
+      '<section class="card panel trade-plan-panel"><div class="panel-head"><h2>股票计划</h2><span class="muted">'+offers.length+' 个计划</span></div><div class="trade-plan-list">'+planRows+'</div></section>'+
+      '<section class="card panel trade-current-panel"><div class="panel-head"><h2>当前计划</h2><span class="muted">'+(o?'计划已选择':'未选择')+'</span></div>'+
+        (o?offerInfo(o):'<div class="empty">请先新建或选择股票计划</div>')+
+      '</section>'+
+    '</div>'+
+    '<section class="card panel trade-recommend-people">'+
+      '<div class="panel-head"><div><h2>推荐购买人物</h2><p class="muted">基于开户、资金条件与今日待买名单生成推荐结果。</p></div>'+
+      '<div class="trade-recommend-head-actions"><span class="trade-summary-chip">今日待买 '+todayCount+'</span><span class="trade-summary-chip">已邀请 '+invited+'</span><span class="trade-summary-chip">已买入 '+bought+'</span>'+
+      (o?'<button class="btn primary" id="recommendPeople">一键推荐购买人物</button>':'')+'</div></div>'+
+      (o?(rec?renderCandidates(o,rec):'<div class="empty">当前计划尚未生成推荐名单</div>'):'<div class="empty">选择股票计划后可生成推荐购买人物</div>')+
+    '</section>';
   bindRecommend();
 }
 function offerInfo(o){
-  return '<div class="offer-grid">'+stat('股票',o.symbol+' · '+o.name)+stat('市场',o.market||'美股')+stat('折扣占比',o.discountPct+'%')+stat('单价',money(o.unitPrice,o.currency||'USD'))+stat('最低购买',o.minShares+' 股')+stat('持有时限',o.holdDays+' 天')+stat('购买人数',o.participantCount+' 人')+stat('最低资金',money(Number(o.minShares)*Number(o.unitPrice),o.currency||'USD'))+'</div>';
+  const minMoney=Number(o.minShares||0)*Number(o.unitPrice||0);
+  return '<div class="trade-current-summary"><div class="trade-current-title"><b>'+h(o.symbol)+'</b><span>'+h(o.name)+'</span></div>'+
+    '<div class="offer-grid">'+
+      stat('市场',o.market||'美股')+
+      stat('币种',o.currency||'USD')+
+      stat('折扣占比',o.discountPct+'%')+
+      stat('单价',money(o.unitPrice,o.currency||'USD'))+
+      stat('最低购买',o.minShares+' 股')+
+      stat('持有时限',o.holdDays+' 天')+
+      stat('购买人数',o.participantCount+' 人')+
+      stat('最低资金',money(minMoney,o.currency||'USD'))+
+    '</div></div>';
 }
 function stat(k,v){return'<div class="offer-stat"><span>'+h(k)+'</span><b>'+h(v)+'</b></div>'}
 function renderCandidates(o,rec){
   const people=rec.candidates.map(c=>({c,p:person(c.personId)})).filter(x=>x.p);
-  return '<div class="candidate-grid">'+people.map(({c,p})=>{const cls=c.status==='invited'?'invited':c.status==='rejected'?'rejected':c.status==='bought'?'bought':'',fs=fundingState(p,o),no=pCode(p),labelLine=no+(genderRelationLabel(p)||'')+' · '+nm(p);return '<div class="candidate-card '+cls+'"><div class="gender-avatar '+(sex(p)==='女'?'f':'m')+'">'+pAvatar(p)+'</div><div><b>'+h(labelLine)+'</b><div class="candidate-meta-line"><span class="meta-label">VIP</span>'+(vip(p)?vipBadge(p):'<span class="vip-none">—</span>')+'<span class="meta-divider">·</span><span class="meta-label">组长</span><span class="meta-value">'+h(leaderFor(p))+'</span></div><div class="meta">已参与联系次数：'+contactCount(p)+'　推荐来源：'+h(c.source)+'</div><div class="meta">最低资金：'+h(money(fs.need,o.currency||'USD'))+'　'+(fs.known?(fs.ok?'资金满足':'资金不足'):'该币种资金待确认')+'</div><div class="meta">当前状态：'+h(c.status==='pending'?'待确认':c.status==='invited'?'已邀请':c.status==='rejected'?'已拒绝':'已确认买入')+'</div></div><div class="actions">'+(c.status==='pending'?'<button class="btn danger small" data-reject="'+h(p.id)+'">拒绝</button><button class="btn primary small" data-invite="'+h(p.id)+'" '+(!fs.ok?'disabled':'')+'>邀请</button>':'')+(c.status==='invited'?'<button class="btn ghost small" data-reject="'+h(p.id)+'">拒绝</button><button class="btn primary small" data-confirm-buy="'+h(p.id)+'">确认买入</button>':'')+(c.status==='rejected'?'<button class="btn ghost small" data-invite="'+h(p.id)+'" '+(!fs.ok?'disabled':'')+'>重新邀请</button>':'')+(c.status==='bought'?'<span class="pill good">已形成持仓</span>':'')+'</div></div>'}).join('')+'</div>';
+  if(!people.length)return '<div class="empty">没有符合当前计划条件的人物</div>';
+  return '<div class="trade-candidate-table"><div class="trade-candidate-head"><span>人物</span><span>分类</span><span>VIP</span><span>资金状态</span><span>推荐来源</span><span>当前状态</span><span>操作</span></div>'+
+  people.map(({c,p})=>{
+    const fs=fundingState(p,o),statusLabel=c.status==='pending'?'待确认':c.status==='invited'?'已邀请':c.status==='rejected'?'已拒绝':'已确认买入';
+    const cls=c.status==='invited'?' invited':c.status==='rejected'?' rejected':c.status==='bought'?' bought':'';
+    const fund=fs.known?(fs.ok?'资金满足':'资金不足'):'资金待确认';
+    return '<div class="trade-candidate-row'+cls+'" data-ui-surface="leaf">'+
+      '<div class="trade-candidate-person"><span class="trade-candidate-avatar">'+pAvatar(p)+'</span><span><b>'+h(pCode(p))+' · '+h(nm(p))+'</b><small>联系 '+contactCount(p)+' 次</small></span></div>'+
+      '<div>'+h(genderRelationLabel(p)||'--')+'</div>'+
+      '<div>'+(vip(p)?vipBadge(p):'<span class="vip-none">—</span>')+'</div>'+
+      '<div><b class="'+(fs.known&&fs.ok?'fund-ok':fs.known?'fund-bad':'fund-wait')+'">'+h(fund)+'</b><small>'+h(money(fs.need,o.currency||'USD'))+'</small></div>'+
+      '<div>'+h(c.source||'--')+'</div>'+
+      '<div><span class="candidate-state candidate-state-'+h(c.status)+'">'+h(statusLabel)+'</span></div>'+
+      '<div class="trade-candidate-actions">'+
+        (c.status==='pending'?'<button class="link-btn danger" data-reject="'+h(p.id)+'">拒绝</button><button class="link-btn" data-invite="'+h(p.id)+'" '+(!fs.ok?'disabled':'')+'>邀请</button>':'')+
+        (c.status==='invited'?'<button class="link-btn danger" data-reject="'+h(p.id)+'">拒绝</button><button class="link-btn" data-confirm-buy="'+h(p.id)+'">确认买入</button>':'')+
+        (c.status==='rejected'?'<button class="link-btn" data-invite="'+h(p.id)+'" '+(!fs.ok?'disabled':'')+'>重新邀请</button>':'')+
+        (c.status==='bought'?'<span class="pill good">已形成持仓</span>':'')+
+      '</div>'+
+    '</div>';
+  }).join('')+'</div>';
 }
 function bindRecommend(){
   el('newOffer')?.addEventListener('click',()=>editOffer());
