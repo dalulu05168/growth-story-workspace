@@ -1662,6 +1662,19 @@ groupsHoverFinalStyle.textContent=`
 `;
 document.head.appendChild(groupsHoverFinalStyle);
 
+/* Keep overview labels readable on the unified light surfaces. */
+const overviewReadabilityStyle=document.createElement('style');
+overviewReadabilityStyle.id='chennanOverviewReadability20261003';
+overviewReadabilityStyle.textContent=`
+.app.app-ready #overview .eyebrow{color:#684400!important}
+.app.app-ready #overview .overview-metric-icon{color:#31483a!important}
+.app.app-ready #overview .overview-metric-arrow{color:#344a3b!important}
+.app.app-ready #overview .cn-empty-icon{color:#3b5043!important}
+.app.app-ready #overview .cn-empty-title{color:#26352d!important}
+.app.app-ready #overview .cn-empty-desc{color:#43534a!important}
+`;
+document.head.appendChild(overviewReadabilityStyle);
+
 /* 概览离开后，顶部操作按钮隐藏；返回概览恢复。 */
 function syncHeaderActions(){
  const active=$('.section.active');
