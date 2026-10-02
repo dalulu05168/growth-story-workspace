@@ -1,14 +1,19 @@
-/* 固定黑金主题；旧查询参数与历史偏好不再改变视觉。 */
+/* 辰南撰写 · 固定参考图工作台主题 */
 (function(){
  'use strict';
  function apply(){
-  document.documentElement.dataset.theme='night';
-  document.body?.setAttribute?.('data-theme','night');
+  document.documentElement.dataset.theme='reference';
+  document.body?.setAttribute?.('data-theme','reference');
   document.documentElement.classList.remove('theme-fade-out','theme-fade-in');
-  return 'night';
+  return 'reference';
  }
- window.ChenNanTheme={apply,transitionTo:apply,get:()=> 'night',
-  labels:Object.freeze({night:'星空金黑'}),
-  options:()=>'<option value="night">星空金黑</option>',buttons:()=>''};
+ window.ChenNanTheme={
+   apply,
+   transitionTo:apply,
+   get:()=> 'reference',
+   labels:Object.freeze({reference:'高级灰工作台'}),
+   options:()=>'<option value="reference">高级灰工作台</option>',
+   buttons:()=>''
+ };
  apply();
 })();
