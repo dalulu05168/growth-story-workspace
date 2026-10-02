@@ -860,6 +860,240 @@ body{font:14px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","M
   }
 }
 
+
+/* ===== Final product polish · hierarchy / typography / hover / data ===== */
+:root,html[data-theme="reference"]{
+  --surface-0:#eef0ed;
+  --surface-1:rgba(249,250,247,.94);
+  --surface-2:rgba(241,243,239,.92);
+  --surface-3:#e7eae6;
+  --border-soft:rgba(45,52,48,.10);
+  --border-mid:rgba(45,52,48,.18);
+  --border-strong:rgba(45,52,48,.28);
+  --border-focus:rgba(85,111,101,.42);
+  --shadow-1:0 8px 22px rgba(35,40,37,.045);
+  --shadow-2:0 14px 34px rgba(35,40,37,.075);
+  --shadow-hover:0 18px 46px rgba(35,40,37,.12);
+  --gold-deep:#7a590f;
+  --gold-line:#c6ad70;
+}
+
+/* Typography scale: explicit and readable. */
+.app.app-ready .page-title{
+  font-size:clamp(30px,2.35vw,42px)!important;
+  line-height:1.08!important;
+  font-weight:680!important;
+  letter-spacing:-.035em!important;
+  color:#101311!important;
+}
+.app.app-ready .panel-head h2,
+.app.app-ready .card>h2,
+.app.app-ready .panel>h2{
+  font-size:18px!important;
+  line-height:1.28!important;
+  font-weight:680!important;
+  color:#151816!important;
+}
+.app.app-ready :is(.card h3,.panel h3,.section-label){
+  font-size:14px!important;
+  line-height:1.4!important;
+  font-weight:700!important;
+  color:#222724!important;
+}
+.app.app-ready :is(p,li,td,.members-preview,.event p,.trade-meta,.candidate-card .meta){
+  font-size:13px!important;
+  line-height:1.68!important;
+}
+.app.app-ready :is(.sub,.muted,.meta,.metric .label,.offer-stat span,.detail-box span,.detail-line span){
+  font-size:12px!important;
+  line-height:1.55!important;
+}
+.app.app-ready :is(.metric strong,.offer-stat b,.detail-kpi strong,.fr70-stat b){
+  font-variant-numeric:tabular-nums lining-nums!important;
+  letter-spacing:-.02em!important;
+}
+
+/* Two-level surface system: major containers vs nested information blocks. */
+.app.app-ready :is(
+  .card,.panel,.metric,.group-card,.custom-group,.detail-card,
+  .batch-card,.candidate-card,.holding-person,.memory-person-card,
+  .fr70-card,.fr70-stat
+){
+  background:linear-gradient(145deg,var(--surface-1),var(--surface-2))!important;
+  border:1px solid var(--border-mid)!important;
+  box-shadow:var(--shadow-1),inset 0 1px rgba(255,255,255,.72)!important;
+}
+.app.app-ready :is(
+  .profile-row,.event,.detail-box,.detail-line,.offer-stat,.offer-row,
+  .trade-item,.trade-mini,.person-mini,.mini-person,.memory-row,.doc-item,
+  .fr70-bubble,.fr70-history button,.fr70-memory-row,.check-box
+){
+  background:rgba(249,250,247,.82)!important;
+  border:1px solid var(--border-soft)!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.62)!important;
+}
+.app.app-ready :is(.panel-head,.section-label){
+  border-color:var(--border-soft)!important;
+}
+
+/* Selected/important states use border and tone, not heavy fills. */
+.app.app-ready :is(.offer-row.active,.daily-tab.active,.nav button.active){
+  border-color:var(--border-focus)!important;
+}
+.app.app-ready :is(.status.vip,.vip-badge,[data-vip="true"],[data-category="老女"],[data-category="老男"]){
+  color:var(--gold-deep)!important;
+  border-color:var(--gold-line)!important;
+}
+
+/* Table rhythm and borders. */
+.app.app-ready .people-data-table{
+  border-collapse:separate!important;
+  border-spacing:0!important;
+}
+.app.app-ready .people-data-table :is(th,td){
+  border-bottom:1px solid var(--border-soft)!important;
+}
+.app.app-ready .people-data-table th{
+  background:#e7eae6!important;
+  color:#363c38!important;
+  font-size:11px!important;
+  letter-spacing:.025em!important;
+}
+.app.app-ready .people-data-table tbody tr:hover td{
+  background:#eef4f1!important;
+}
+
+/* Hover elevation: cards float, content remains stable. */
+@media(hover:hover) and (pointer:fine){
+  .app.app-ready :is(
+    .metric,.group-card,.custom-group,.profile-row,.event,.detail-card,
+    .offer-stat,.offer-row,.candidate-card,.batch-card,.trade-item,
+    .person-mini,.mini-person,.holding-person,.memory-row,.memory-person-card,
+    .fr70-stat,.fr70-bubble,.fr70-history button,.fr70-memory-row
+  ){
+    transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease,background-color .18s ease!important;
+    will-change:transform;
+  }
+  .app.app-ready :is(
+    .metric,.group-card,.custom-group,.profile-row,.event,.detail-card,
+    .offer-stat,.offer-row,.candidate-card,.batch-card,.trade-item,
+    .person-mini,.mini-person,.holding-person,.memory-row,.memory-person-card,
+    .fr70-stat,.fr70-bubble,.fr70-history button,.fr70-memory-row
+  ):hover{
+    transform:translateY(-3px)!important;
+    border-color:var(--border-strong)!important;
+    box-shadow:var(--shadow-hover),inset 0 1px rgba(255,255,255,.78)!important;
+    background:#fbfcfa!important;
+  }
+  .app.app-ready .metric:hover strong,
+  .app.app-ready .offer-stat:hover b,
+  .app.app-ready .detail-kpi:hover strong,
+  .app.app-ready .fr70-stat:hover b{
+    transform:translateY(-1px) scale(1.035);
+    transform-origin:left center;
+  }
+}
+.app.app-ready :is(.metric strong,.offer-stat b,.detail-kpi strong,.fr70-stat b){
+  transition:transform .18s ease,color .18s ease!important;
+}
+
+/* Buttons and inputs: visible focus and edge definition. */
+.app.app-ready :is(.btn,.input,.select,textarea,input:not([type=checkbox]):not([type=radio]),select){
+  border-color:var(--border-mid)!important;
+}
+.app.app-ready :is(.input,.select,textarea,input:not([type=checkbox]):not([type=radio]),select):focus{
+  border-color:var(--border-focus)!important;
+  box-shadow:0 0 0 3px rgba(198,214,207,.52)!important;
+}
+.app.app-ready .btn.ghost:hover{
+  border-color:var(--border-strong)!important;
+  box-shadow:var(--shadow-1)!important;
+}
+
+/* Holdings chart: clear hover target + floating data tooltip. */
+.app.app-ready .hold-chart{
+  background:
+    repeating-linear-gradient(to top,transparent 0,transparent 43px,rgba(68,77,72,.08) 44px,rgba(68,77,72,.08) 45px),
+    rgba(248,249,247,.72)!important;
+  border:1px solid var(--border-mid)!important;
+  border-radius:16px!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.72)!important;
+}
+.app.app-ready .hold-bar-wrap{
+  position:relative!important;
+  padding:8px 6px 4px!important;
+  border-radius:12px!important;
+  transition:transform .18s ease,background .18s ease,box-shadow .18s ease!important;
+}
+.app.app-ready .hold-bar{
+  transition:transform .18s ease,filter .18s ease,box-shadow .18s ease!important;
+  transform-origin:center bottom!important;
+}
+.app.app-ready .hold-bar-count{
+  color:#171a18!important;
+  font-weight:760!important;
+}
+.app.app-ready .hold-bar-label b{color:#171a18!important}
+.app.app-ready .hold-bar-label span{color:#626965!important}
+.app.app-ready .hold-bar-wrap::after{
+  content:attr(data-tooltip);
+  position:absolute;
+  left:50%;
+  bottom:calc(100% + 8px);
+  transform:translate(-50%,6px);
+  width:max-content;
+  max-width:220px;
+  padding:8px 10px;
+  border-radius:9px;
+  background:#242725;
+  color:#f7f8f6;
+  font-size:11px;
+  line-height:1.45;
+  font-weight:600;
+  white-space:normal;
+  text-align:left;
+  box-shadow:0 10px 30px rgba(24,28,25,.22);
+  opacity:0;
+  pointer-events:none;
+  z-index:20;
+  transition:opacity .16s ease,transform .16s ease;
+}
+@media(hover:hover) and (pointer:fine){
+  .app.app-ready .hold-bar-wrap:hover{
+    transform:translateY(-5px)!important;
+    background:rgba(239,243,240,.82)!important;
+    box-shadow:0 10px 26px rgba(35,40,37,.08)!important;
+  }
+  .app.app-ready .hold-bar-wrap:hover .hold-bar{
+    transform:scaleX(1.08)!important;
+    filter:brightness(1.08) saturate(1.05)!important;
+    box-shadow:0 8px 20px rgba(50,63,56,.16)!important;
+  }
+  .app.app-ready .hold-bar-wrap:hover::after{
+    opacity:1;
+    transform:translate(-50%,0);
+  }
+}
+
+/* Mobile: no hover transforms; preserve clear borders and touch density. */
+@media(max-width:760px){
+  .app.app-ready :is(
+    .metric,.group-card,.custom-group,.profile-row,.event,.detail-card,
+    .offer-stat,.offer-row,.candidate-card,.batch-card,.trade-item,
+    .person-mini,.mini-person,.holding-person,.memory-row,.memory-person-card,
+    .fr70-stat,.fr70-bubble,.fr70-history button,.fr70-memory-row
+  ){
+    transform:none!important;
+    box-shadow:0 7px 20px rgba(35,40,37,.045),inset 0 1px rgba(255,255,255,.66)!important;
+  }
+  .app.app-ready .hold-bar-wrap::after{display:none!important}
+  .app.app-ready .panel-head{gap:10px!important}
+  .app.app-ready :is(.card,.panel,.detail-card,.fr70-card){padding:16px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .app.app-ready *{transition-duration:.01ms!important;animation-duration:.01ms!important}
+}
+
 `;
 document.head.appendChild(st);
 })();
