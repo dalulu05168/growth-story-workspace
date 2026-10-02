@@ -16,9 +16,9 @@ test('cinematic intro has a critical pre-auth stylesheet and external scene asse
   assert.match(auth,/waitForCloudRuntime/,'session resume must wait for cloud-sync runtime instead of racing script load order');
   assert.match(auth,/data\.introPhase|dataset\.introPhase/,'intro must expose a testable lifecycle state');
 
-  const ui=fs.readFileSync('theme-ui.js','utf8');
-  assert.ok(!ui.includes('data:image/webp;base64'),'large scene images must not be embedded in theme-ui.js');
-  assert.ok(fs.statSync('theme-ui.js').size<150000,'theme-ui.js must remain small enough not to race the intro clock');
+  const ui=fs.readFileSync('design-system.js','utf8');
+  assert.ok(!ui.includes('data:image/webp;base64'),'large scene images must not be embedded in the workspace design runtime');
+  assert.ok(!html.includes('theme-ui.js')&&!html.includes('ui-shell.js')&&!html.includes('workspace-glass.css'),'legacy workspace UI layers must stay removed');
 
   for(const file of ['intro.css','assets/login/landscape.webp','assets/login/brush.webp','assets/login/bitcoin.webp','login-scene.js']){
     assert.ok(fs.existsSync(file),'missing intro asset '+file);
