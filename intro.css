@@ -1,79 +1,291 @@
-/* 固定黑金登录：真实插画 + 真实表单；不从登录截图裁切动画素材。 */
-:root{--scene:url('./assets/login/landscape.webp');--gold:#f5ca72;--gold-strong:#ffe9a7}
-#authRoot{position:fixed;z-index:9999;inset:0;isolation:isolate;background:#080d14!important;color:#fff;overflow:auto!important;padding:0!important;display:block!important;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans CJK SC','PingFang SC','Microsoft YaHei',sans-serif}
-#authRoot.hidden{display:none!important;pointer-events:none}
-#authRoot:before,#authRoot:after{display:none!important}
-#authRoot .auth-cinematic{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;filter:none!important;opacity:1!important;transition:none!important}
-#authRoot .cinematic-brand{position:absolute;inset:0;background-image:url('./assets/login/landscape.webp');background-size:cover;background-position:center;opacity:0;transform:scale(1.035);filter:brightness(.35)}
-#authRoot.auth-intro-active .cinematic-brand{animation:cnBrand 2.6s cubic-bezier(.2,.65,.2,1) forwards!important}
-#authRoot.auth-intro-finish .cinematic-brand{opacity:1;transform:none;filter:none}
-@keyframes cnBrand{0%{opacity:0;transform:scale(1.035);filter:brightness(.35)}42%{opacity:1;filter:brightness(.8)}100%{opacity:1;transform:none;filter:none}}
-#authRoot #authStage{position:relative;z-index:2;display:block!important;width:100%!important;min-height:100svh!important;margin:0!important;opacity:0;transform:translateY(12px);filter:none!important;transition:opacity .6s ease,transform .6s ease!important}
-#authRoot #authStage.auth-stage-visible{opacity:1;transform:none}
-#authRoot .login-shell{position:relative!important;display:block!important;width:100%!important;min-height:100svh!important;height:100svh;max-height:none!important;padding:0!important;margin:0!important;background:none!important;border:0!important;box-shadow:none!important;overflow:visible!important;transform:none!important;filter:none!important;gap:0!important}
-#authRoot .login-accessible-brand,#authRoot .auth-field>label{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
-#authRoot .login-language{position:absolute;right:2.2%;top:3.5%;display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:22px;background:rgba(20,23,29,.84);color:#fff;font-size:clamp(12px,1.1vw,17px)}
-#authRoot .login-language img{width:19px;height:19px}
-#authRoot .login-shell .auth-card{position:absolute!important;left:59.7%!important;right:auto!important;top:28.4%!important;bottom:auto!important;width:29.3%!important;max-width:none!important;min-height:0!important;padding:clamp(18px,1.4vw,28px) clamp(20px,1.8vw,36px)!important;background:rgba(14,16,21,.86)!important;color:#fff!important;border:2px solid #f4cf80!important;border-radius:17px!important;box-shadow:0 0 0 1px rgba(255,217,129,.14),0 0 20px rgba(252,188,70,.72),inset 0 0 18px rgba(246,195,95,.05),0 22px 64px rgba(0,0,0,.5)!important;backdrop-filter:blur(16px)!important;-webkit-backdrop-filter:blur(16px);transform:none!important;animation:none!important;filter:none!important;align-self:auto!important;justify-self:auto!important}
-#authRoot .auth-title{margin:0 0 5px!important;font-size:clamp(24px,2.2vw,38px)!important;line-height:1.2!important;font-weight:800!important;letter-spacing:0!important;font-family:inherit!important;color:#ffe6a5!important}
-#authRoot .auth-sub{margin:0 0 12px!important;font-size:clamp(12px,1.1vw,18px)!important;color:#d9d7d1!important;line-height:1.5!important}
-#authRoot .auth-field{display:block!important;margin:0 0 12px!important}
-#authRoot .auth-input-wrap{position:relative}
-#authRoot .auth-input-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:21px;height:21px;pointer-events:none}
-#authRoot .auth-field input{display:block;width:100%!important;min-height:45px!important;height:clamp(45px,3.5vw,62px);padding:10px 42px!important;background:rgba(18,20,25,.85)!important;border:1px solid #56534a!important;border-radius:11px!important;font-size:clamp(14px,1.1vw,19px)!important;color:#f4f2ed!important;outline:none!important;box-shadow:inset 0 1px 4px rgba(0,0,0,.18)!important}
-#authRoot .auth-field input::placeholder{color:#aaa8a4}
-#authRoot .auth-field input:focus{border-color:#f7d385!important;box-shadow:0 0 0 3px rgba(244,193,86,.18)!important}
-#authRoot .auth-password-toggle{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:32px;height:32px;background:transparent;border:0;display:grid;place-items:center;padding:5px;cursor:pointer}
-#authRoot .auth-password-toggle img{width:21px;height:21px;filter:grayscale(1) brightness(1.8)}
-#authRoot .auth-btn{width:100%!important;min-height:45px!important;height:clamp(45px,3.5vw,62px);margin:0!important;border-radius:11px!important;border:1px solid #ffe4a1!important;background:linear-gradient(115deg,#ffe783,#ffd268 48%,#eba12e)!important;color:#211908!important;letter-spacing:0!important;font-weight:800!important;font-size:clamp(14px,1.1vw,19px)!important;box-shadow:0 3px 16px rgba(255,186,57,.25),inset 0 1px 0 #fff0ba!important;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer}
-#authRoot .auth-btn img{width:19px;height:19px;filter:brightness(.15)}
-#authRoot .auth-btn:hover{background:#ffdb7d!important;transform:none!important;filter:none!important}
-#authRoot .auth-btn:disabled{opacity:.65;cursor:wait}
-#authRoot .auth-error{font-size:12px!important;line-height:1.4;color:#ffb9ab!important;margin:7px 0 0!important;min-height:0!important}
-#authRoot .auth-error:empty{display:none}
-#authRoot .auth-assist{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;color:#e0ded8;font-size:clamp(12px,1vw,16px)}
-#authRoot .auth-assist label{display:flex;align-items:center;gap:7px;cursor:pointer}
-#authRoot .auth-assist input{width:16px;height:16px;accent-color:#e9b64f;margin:0}
-#authRoot #passwordHelp{background:none;color:#e0ded8;padding:0;font-size:inherit}
-#authRoot #authHelp{font-size:12px;line-height:1.5;margin:12px 0 0;color:#eee4cd}
-#authRoot .login-features{position:absolute;left:26.5%;right:26.5%;bottom:1.7%;height:9.2%;display:grid;grid-template-columns:repeat(4,1fr);align-items:center;border-top:1px solid rgba(247,198,106,.26);color:#ede9df;background:rgba(8,12,18,.3)}
-#authRoot .login-features>div{display:flex;flex-direction:column;align-items:center;gap:7px;font-size:clamp(12px,1.05vw,18px);border-right:1px solid rgba(235,216,175,.35)}
-#authRoot .login-features>div:last-child{border-right:0}
-#authRoot .login-features img{width:clamp(24px,2.2vw,38px);height:clamp(24px,2.2vw,38px)}
-#authRoot .intro-skip{position:fixed;right:20px;bottom:20px;z-index:4;min-height:44px;padding:10px 18px;background:rgba(9,13,20,.85);border:1px solid rgba(245,202,114,.65);border-radius:9px;color:#fff}
-#authRoot :is(button,input):focus-visible{outline:2px solid #ffe49d;outline-offset:3px}
-#authRoot .auth-card-resume{position:absolute;right:11%;top:30%;width:375px;padding:26px;background:rgba(14,16,21,.92);border:1px solid #c89a4a;border-radius:17px}
-#authRoot.auth-success #authStage{opacity:0;transition:opacity .6s ease!important}
-/* 电脑端优先；小屏保留真实表单可用，不改变主设计。 */
-@media(max-width:800px){
- #authRoot .cinematic-brand{background-position:40% center}
- #authRoot .login-shell{min-height:740px!important;height:100svh}
- #authRoot .login-shell .auth-card{left:50%!important;top:34%!important;width:min(420px,calc(100% - 32px))!important;transform:translateX(-50%)!important;padding:24px!important}
- #authRoot .login-features{left:6%;right:6%;bottom:2%;height:76px}
- #authRoot .login-features>div{font-size:11px}
- #authRoot .login-features img{width:25px;height:25px}
+/* 辰南登录场景 · 鱼跃龙门 / 墨金白灰主题 · 2026-10-03 */
+:root{
+  --cn-login-ink:#111312;
+  --cn-login-ink-soft:#3f4541;
+  --cn-login-gold:#bd8730;
+  --cn-login-gold-2:#e3ba63;
+  --cn-login-line:#ddd9d0;
+  --cn-login-paper:#f7f6f2;
+  --cn-login-paper-2:#efefec;
 }
-@media(min-width:801px) and (max-height:620px){
- #authRoot .login-shell{min-height:680px!important;height:100svh}
- #authRoot .login-shell .auth-card{top:26%!important;width:32%!important;left:58%!important}
+#authRoot{
+  position:fixed;z-index:9999;inset:0;isolation:isolate;
+  display:block!important;overflow:hidden!important;
+  background:
+    radial-gradient(circle at 47% 18%,rgba(225,180,87,.16),transparent 22%),
+    linear-gradient(115deg,#f0f1ef 0%,#f7f7f4 54%,#f1f0ec 100%)!important;
+  color:var(--cn-login-ink)!important;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+}
+#authRoot.hidden{display:none!important;pointer-events:none}
+#authRoot:before{
+  content:"";position:absolute;z-index:0;inset:0;
+  background-image:linear-gradient(rgba(109,103,90,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(109,103,90,.025) 1px,transparent 1px);
+  background-size:46px 46px;mask-image:linear-gradient(90deg,#000 0%,transparent 70%);pointer-events:none;
+}
+#authRoot .auth-cinematic{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+#authRoot .cinematic-brand{
+  position:absolute;left:0;top:0;width:67%;height:100%;
+  opacity:0;transform:scale(1.025);transform-origin:48% 48%;
+  overflow:hidden;background:
+    radial-gradient(circle at 64% 12%,rgba(255,221,134,.22),transparent 23%),
+    linear-gradient(135deg,#f6f7f5 0%,#eceeeb 62%,#faf9f5 100%);
+}
+#authRoot .cinematic-brand:after{
+  content:"";position:absolute;z-index:8;inset:0 0 0 auto;width:19%;
+  background:linear-gradient(90deg,transparent,rgba(246,246,242,.82) 68%,#f4f3ef 100%);
+}
+#authRoot.auth-intro-active .cinematic-brand{animation:cnBrand 2.65s cubic-bezier(.2,.68,.2,1) forwards!important}
+#authRoot.auth-intro-finish .cinematic-brand{opacity:1;transform:none}
+@keyframes cnBrand{
+  0%{opacity:0;transform:scale(1.04);filter:brightness(1.12) blur(3px)}
+  34%{opacity:.72;filter:brightness(1.06) blur(1px)}
+  100%{opacity:1;transform:none;filter:none}
+}
+#authRoot .scene-lake{
+  position:absolute;z-index:0;inset:0;width:100%;height:100%;display:block;
+  opacity:.16;filter:grayscale(.82) sepia(.12) contrast(.88) brightness(1.42);
+  mix-blend-mode:multiply;
+}
+#authRoot .scene-haze{
+  position:absolute;z-index:1;left:-8%;right:-8%;bottom:-4%;height:42%;
+  background:
+    radial-gradient(ellipse at 38% 48%,rgba(255,255,255,.95),transparent 48%),
+    radial-gradient(ellipse at 72% 66%,rgba(226,222,211,.74),transparent 46%),
+    linear-gradient(180deg,transparent,rgba(255,255,255,.92));
+  filter:blur(12px);opacity:.86;animation:cnMist 11s ease-in-out infinite alternate;
+}
+#authRoot .scene-koi-art{
+  position:absolute;z-index:4;left:16%;top:-2%;width:min(57vw,870px);height:auto;overflow:visible;
+  filter:drop-shadow(0 20px 32px rgba(44,35,20,.08));
+}
+#authRoot .portal-ring{stroke-dasharray:34 11;animation:cnPortalDash 18s linear infinite}
+#authRoot .portal-core{animation:cnPortalPulse 3.8s ease-in-out infinite}
+#authRoot .koi-body{transform-box:fill-box;transform-origin:center;animation:cnKoiRise 7.5s ease-in-out infinite alternate}
+#authRoot .koi-glint{opacity:.38;animation:cnKoiGlint 3.6s ease-in-out infinite}
+#authRoot .ink-splash{transform-box:fill-box;transform-origin:center;animation:cnInkBreath 6.5s ease-in-out infinite alternate}
+#authRoot .scene-brand-copy{
+  position:absolute;z-index:7;left:4.6vw;top:12.5vh;width:min(35vw,520px);pointer-events:none;
+}
+#authRoot .scene-brand-en{
+  display:block;margin-bottom:15px;color:#30332f;font-size:clamp(9px,.72vw,12px);
+  font-weight:700;letter-spacing:.42em;text-transform:uppercase;
+}
+#authRoot .scene-cn-title{
+  display:block;color:#11100e;
+  font-family:"STXingkai","Xingkai SC","STKaiti","KaiTi","Kaiti SC",serif;
+  font-size:clamp(94px,10.5vw,190px);font-weight:900;line-height:.82;letter-spacing:-.15em;
+  text-shadow:1px 1px 0 #c69031,3px 3px 0 rgba(184,126,28,.22);
+  transform:rotate(-4deg) skewX(-6deg);transform-origin:left center;
+  filter:drop-shadow(0 9px 9px rgba(27,22,14,.13));
+}
+#authRoot .scene-brand-seal{
+  position:absolute;left:min(29vw,430px);top:58%;display:grid;place-items:center;width:34px;height:48px;
+  border:2px solid #a32f24;border-radius:6px;color:#9d2b22;background:rgba(255,250,241,.72);
+  font-family:"STKaiti","KaiTi",serif;font-size:15px;font-weight:800;line-height:1.05;letter-spacing:.1em;
+}
+#authRoot .scene-brand-rule{display:flex;align-items:center;gap:14px;margin-top:30px;color:#202421;font-size:clamp(13px,1vw,18px);font-weight:700;letter-spacing:.46em}
+#authRoot .scene-brand-rule:before,#authRoot .scene-brand-rule:after{content:"";width:36px;height:1px;background:#797b75}
+#authRoot .scene-brand-sub{margin:13px 0 0 50px;color:#525751;font-size:clamp(11px,.82vw,14px);letter-spacing:.34em}
+#authRoot .scene-particles{position:absolute;z-index:6;inset:0}
+#authRoot .scene-particles i{
+  position:absolute;width:5px;height:5px;border-radius:50%;background:#c18a2e;
+  box-shadow:0 0 12px rgba(207,154,54,.55);opacity:.62;animation:cnParticle 7s ease-in-out infinite;
+}
+#authRoot .scene-particles i:nth-child(1){left:52%;top:18%;animation-delay:-1s}
+#authRoot .scene-particles i:nth-child(2){left:58%;top:30%;width:3px;height:3px;animation-delay:-3s}
+#authRoot .scene-particles i:nth-child(3){left:43%;top:43%;width:4px;height:4px;animation-delay:-5s}
+#authRoot .scene-particles i:nth-child(4){left:37%;top:60%;animation-delay:-2s}
+#authRoot .scene-particles i:nth-child(5){left:54%;top:68%;width:3px;height:3px;animation-delay:-4s}
+#authRoot .scene-particles i:nth-child(6){left:27%;top:74%;width:4px;height:4px;animation-delay:-6s}
+#authRoot .scene-particles i:nth-child(7){left:47%;top:80%;animation-delay:-2.6s}
+#authRoot .scene-particles i:nth-child(8){left:61%;top:49%;width:3px;height:3px;animation-delay:-4.7s}
+#authRoot .scene-particles i:nth-child(9){left:32%;top:29%;width:3px;height:3px;animation-delay:-5.8s}
+
+/* 保留旧测试锚点，但移出可视区；动画仍真实运行，不影响新视觉。 */
+#authRoot .scene-brush{position:absolute;left:-200vw;top:-200vh;width:20px;height:auto;opacity:0;animation:cnBrushDrift 9s ease-in-out infinite}
+#authRoot .scene-coin{position:absolute;left:-180vw;top:-180vh;width:20px;aspect-ratio:1;opacity:0;transform-style:preserve-3d;animation:cnCoinRotate 18s linear infinite}
+#authRoot .scene-coin img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;backface-visibility:hidden;transform:translateZ(2px)}
+#authRoot .scene-coin .coin-back{transform:rotateY(180deg) translateZ(2px)}
+
+#authRoot #authStage{
+  position:relative;z-index:10;display:block!important;width:100%!important;min-height:100svh!important;
+  margin:0!important;opacity:0;transform:none!important;filter:none!important;transition:opacity .55s ease!important;
+}
+#authRoot #authStage.auth-stage-visible{opacity:1}
+#authRoot .login-shell{
+  position:relative!important;display:block!important;width:100%!important;height:100svh!important;min-height:100svh!important;
+  margin:0!important;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important;
+}
+#authRoot .login-accessible-brand,#authRoot .auth-field>label{
+  position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;
+}
+#authRoot .login-topline{
+  position:absolute;z-index:13;right:4.4vw;top:3.3vh;display:flex;align-items:center;gap:18px;
+  color:#555952;font-size:12px;letter-spacing:.08em;
+}
+#authRoot .login-topline span+span:before{content:"";display:inline-block;width:1px;height:12px;margin-right:18px;background:#c8c6bf;vertical-align:-2px}
+#authRoot .login-language{
+  position:absolute;z-index:13;right:4.5vw;top:9.2vh;display:flex;align-items:center;gap:8px;
+  padding:8px 13px;border:1px solid #dedbd3;border-radius:12px;background:rgba(255,255,255,.74);
+  box-shadow:0 5px 18px rgba(74,65,47,.04);color:#343834;font-size:12px;
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+}
+#authRoot .login-language img{width:17px;height:17px;filter:brightness(.36)}
+
+#authRoot .login-shell .auth-card{
+  position:absolute!important;z-index:12;right:4.2vw!important;left:auto!important;top:12.4vh!important;
+  width:clamp(410px,31vw,560px)!important;max-width:none!important;min-height:0!important;
+  padding:clamp(28px,2.35vw,44px)!important;
+  background:linear-gradient(145deg,rgba(255,255,255,.93),rgba(247,246,242,.88))!important;
+  color:#151715!important;border:1px solid rgba(190,139,54,.64)!important;border-radius:24px!important;
+  box-shadow:0 22px 70px rgba(71,58,34,.12),inset 0 1px 0 rgba(255,255,255,.95)!important;
+  backdrop-filter:blur(22px) saturate(115%)!important;-webkit-backdrop-filter:blur(22px) saturate(115%)!important;
+}
+#authRoot #authStage.auth-stage-visible .auth-card{animation:cnLoginRise 1.15s cubic-bezier(.16,.72,.2,1) both!important}
+#authRoot .auth-kicker{margin:0 0 12px;color:#9a6b1c;font-size:10px;font-weight:800;letter-spacing:.28em}
+#authRoot .auth-title{
+  margin:0 0 7px!important;font-family:"STKaiti","KaiTi",serif!important;
+  color:#111412!important;font-size:clamp(34px,3vw,52px)!important;line-height:1.1!important;font-weight:900!important;letter-spacing:-.03em!important;
+}
+#authRoot .auth-title em{font-style:normal;color:#b47a20;text-shadow:0 1px 0 #f4dfb4}
+#authRoot .auth-sub{margin:0 0 28px!important;color:#646862!important;font-size:clamp(12px,1vw,16px)!important;letter-spacing:.16em!important}
+#authRoot .auth-field{display:block!important;margin:0 0 14px!important}
+#authRoot .auth-input-wrap{position:relative}
+#authRoot .auth-input-icon{
+  position:absolute;z-index:2;left:16px;top:50%;transform:translateY(-50%);width:20px;height:20px;pointer-events:none;filter:brightness(.42);
+}
+#authRoot .auth-field input{
+  display:block;width:100%!important;height:58px!important;min-height:58px!important;
+  padding:10px 48px!important;border:1px solid #d8d7d2!important;border-radius:13px!important;
+  background:rgba(255,255,255,.86)!important;color:#171917!important;
+  font-size:14px!important;outline:none!important;box-shadow:inset 0 1px 2px rgba(70,63,49,.025)!important;transition:.2s ease!important;
+}
+#authRoot .auth-field input::placeholder{color:#969a95!important}
+#authRoot .auth-field input:hover{border-color:#c8c4b9!important}
+#authRoot .auth-field input:focus{border-color:#c08a33!important;box-shadow:0 0 0 4px rgba(192,138,51,.10)!important;background:#fff!important}
+#authRoot .auth-password-toggle{
+  position:absolute;z-index:3;right:10px;top:50%;transform:translateY(-50%);width:36px;height:36px;
+  padding:7px;border:0!important;border-radius:9px;background:transparent!important;display:grid;place-items:center;cursor:pointer;
+}
+#authRoot .auth-password-toggle:hover{background:#f2efe8!important}
+#authRoot .auth-password-toggle img{width:20px;height:20px;filter:brightness(.42)}
+#authRoot .auth-btn{
+  position:relative;overflow:hidden;width:100%!important;height:60px!important;min-height:60px!important;margin:8px 0 0!important;
+  border:1px solid #b97d26!important;border-radius:13px!important;
+  background:linear-gradient(110deg,#a86f24 0%,#c18b35 38%,#8c5b20 66%,#d6a94d 100%)!important;
+  color:#fff!important;font-size:15px!important;font-weight:800!important;letter-spacing:.12em!important;
+  box-shadow:0 11px 28px rgba(165,111,34,.21),inset 0 1px 0 rgba(255,240,193,.5)!important;
+  display:flex;align-items:center;justify-content:center;gap:9px;cursor:pointer;transition:transform .16s ease,box-shadow .16s ease!important;
+}
+#authRoot .auth-btn:before{
+  content:"";position:absolute;top:-40%;bottom:-40%;left:-42%;width:24%;transform:skewX(-18deg);
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.58),transparent);animation:cnButtonShine 4.8s ease-in-out infinite;
+}
+#authRoot .auth-btn img{width:19px;height:19px;filter:brightness(0) invert(1)}
+#authRoot .auth-btn:hover{transform:translateY(-2px)!important;box-shadow:0 15px 32px rgba(158,103,27,.27)!important}
+#authRoot .auth-btn:active{transform:translateY(0)!important}
+#authRoot .auth-btn:disabled{opacity:.66;cursor:wait;transform:none!important}
+#authRoot .auth-error{font-size:12px!important;line-height:1.45;color:#a93b2f!important;margin:8px 0 0!important;min-height:0!important}
+#authRoot .auth-error:empty{display:none}
+#authRoot .auth-assist{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:15px;color:#555b56;font-size:12px}
+#authRoot .auth-assist label{display:flex;align-items:center;gap:8px;cursor:pointer}
+#authRoot .auth-assist input{width:16px;height:16px;accent-color:#ad7728;margin:0}
+#authRoot #passwordHelp{border:0;background:none!important;color:#95631e!important;padding:0;font-size:12px}
+#authRoot #authHelp{font-size:12px;line-height:1.55;margin:12px 0 0;padding:10px 12px;border-radius:10px;background:#f6f1e7;color:#67583e}
+#authRoot .auth-security-note{
+  display:flex;align-items:center;gap:8px;margin-top:22px;padding-top:18px;border-top:1px solid #e5e1d8;
+  color:#70746e;font-size:11px;letter-spacing:.05em;
+}
+#authRoot .auth-security-note:before{content:"◆";color:#b37a24;font-size:9px}
+
+#authRoot .login-features{
+  position:absolute;z-index:11;left:4.5vw;right:4.5vw;bottom:2.2vh;height:72px;
+  display:grid;grid-template-columns:repeat(4,1fr);align-items:center;
+  border-top:1px solid rgba(170,153,118,.28);background:linear-gradient(180deg,transparent,rgba(248,247,243,.72));color:#333833;
+}
+#authRoot .login-features>div{min-width:0;display:grid;grid-template-columns:42px minmax(0,1fr);align-items:center;gap:10px;padding:0 24px;border-right:1px solid #d8d5cd}
+#authRoot .login-features>div:last-child{border-right:0}
+#authRoot .login-features img{width:32px;height:32px;padding:7px;border:1px solid #e1d7c5;border-radius:50%;background:#fff;filter:sepia(.4) saturate(.8)}
+#authRoot .login-features b{display:block;color:#2d312d;font-size:12px;margin-bottom:3px}
+#authRoot .login-features small{display:block;color:#7b7f79;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+#authRoot .intro-skip{
+  position:fixed;right:24px;bottom:22px;z-index:30;min-height:40px;padding:8px 14px;
+  border:1px solid rgba(171,125,48,.45);border-radius:10px;background:rgba(255,255,255,.78);color:#5c4b2e;
+  box-shadow:0 8px 24px rgba(50,42,28,.06);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+}
+#authRoot :is(button,input):focus-visible{outline:2px solid #b47b21;outline-offset:3px}
+#authRoot .auth-card-resume{
+  position:absolute;right:8%;top:31%;width:min(390px,84vw);padding:30px;border:1px solid #c18b36;border-radius:22px;
+  background:rgba(255,255,255,.92);box-shadow:0 22px 64px rgba(70,57,32,.12);color:#181b18;
+}
+#authRoot .brand-calligraphy{
+  display:inline-block;color:#111;font-family:"STXingkai","Xingkai SC","STKaiti","KaiTi",serif;font-size:56px;font-weight:900;
+  transform:rotate(-3deg);text-shadow:1px 1px 0 #c18b35;
+}
+#authRoot.auth-success #authStage{opacity:0;transition:opacity .55s ease!important}
+
+@keyframes cnMist{from{transform:translate3d(-1.4%,0,0) scale(1)}to{transform:translate3d(1.5%,-2%,0) scale(1.035)}}
+@keyframes cnPortalDash{to{stroke-dashoffset:-380}}
+@keyframes cnPortalPulse{0%,100%{opacity:.62;transform:scale(.985)}50%{opacity:1;transform:scale(1.03)}}
+@keyframes cnKoiRise{0%{transform:translate3d(-2px,9px,0) rotate(-.7deg)}100%{transform:translate3d(5px,-9px,0) rotate(.9deg)}}
+@keyframes cnKoiGlint{0%,100%{opacity:.18}48%{opacity:.76}62%{opacity:.34}}
+@keyframes cnInkBreath{from{opacity:.72;transform:scale(.98)}to{opacity:1;transform:scale(1.025)}}
+@keyframes cnParticle{0%,100%{transform:translate3d(0,7px,0);opacity:.2}50%{transform:translate3d(4px,-14px,0);opacity:.78}}
+@keyframes cnBrushDrift{0%,100%{transform:translate(0,0) rotate(-3deg)}50%{transform:translate(7px,5px) rotate(2deg)}}
+@keyframes cnCoinRotate{0%{transform:perspective(900px) rotateY(0deg)}50%{transform:perspective(900px) rotateY(180deg) translateY(-7px)}100%{transform:perspective(900px) rotateY(360deg)}}
+@keyframes cnLoginRise{from{opacity:0;transform:translate3d(0,34px,0);filter:blur(5px)}to{opacity:1;transform:none;filter:none}}
+@keyframes cnButtonShine{0%,62%{left:-42%;opacity:0}72%{opacity:1}88%,100%{left:125%;opacity:0}}
+
+@media(max-width:1100px){
+  #authRoot .cinematic-brand{width:61%}
+  #authRoot .scene-koi-art{left:11%;width:min(62vw,720px)}
+  #authRoot .scene-brand-copy{left:3.6vw;top:13vh}
+  #authRoot .scene-cn-title{font-size:clamp(82px,10vw,130px)}
+  #authRoot .scene-brand-seal{left:min(30vw,350px)}
+  #authRoot .login-shell .auth-card{right:2.4vw!important;width:clamp(390px,36vw,470px)!important;padding:26px!important}
+  #authRoot .login-language,#authRoot .login-topline{right:2.8vw}
+  #authRoot .login-features{left:2.5vw;right:2.5vw}
+  #authRoot .login-features>div{padding:0 14px}
+}
+@media(max-width:820px){
+  #authRoot{overflow:auto!important;background:#f4f4f0!important}
+  #authRoot .cinematic-brand{position:absolute;width:100%;height:46vh;min-height:330px}
+  #authRoot .cinematic-brand:after{display:none}
+  #authRoot .scene-koi-art{left:25%;top:-6%;width:78vw;max-width:650px;opacity:.92}
+  #authRoot .scene-brand-copy{left:6vw;top:7vh;width:58vw}
+  #authRoot .scene-brand-en{font-size:8px}
+  #authRoot .scene-cn-title{font-size:clamp(70px,20vw,118px)}
+  #authRoot .scene-brand-rule{margin-top:18px;font-size:11px;letter-spacing:.28em}
+  #authRoot .scene-brand-sub{display:none}
+  #authRoot .scene-brand-seal{left:48vw;top:56%;width:28px;height:40px;font-size:12px}
+  #authRoot .login-shell{height:auto!important;min-height:930px!important;padding-top:40vh!important;padding-bottom:110px!important}
+  #authRoot .login-topline{display:none}
+  #authRoot .login-language{position:absolute;top:41vh;right:22px}
+  #authRoot .login-shell .auth-card{
+    position:relative!important;top:auto!important;right:auto!important;left:auto!important;
+    width:calc(100% - 28px)!important;max-width:520px!important;margin:66px auto 0!important;padding:26px 22px!important;
+  }
+  #authRoot .auth-field input{height:54px!important;min-height:54px!important}
+  #authRoot .auth-btn{height:56px!important;min-height:56px!important}
+  #authRoot .login-features{position:relative;left:auto;right:auto;bottom:auto;width:calc(100% - 28px);height:auto;margin:22px auto 0;grid-template-columns:repeat(2,1fr);border:1px solid #e2ded5;border-radius:16px;background:rgba(255,255,255,.72)}
+  #authRoot .login-features>div{min-height:64px;padding:8px 12px;border-right:0;border-bottom:1px solid #e2ded5}
+  #authRoot .login-features>div:nth-child(odd){border-right:1px solid #e2ded5}
+  #authRoot .login-features>div:nth-last-child(-n+2){border-bottom:0}
+}
+@media(min-width:821px) and (max-height:720px){
+  #authRoot .login-shell .auth-card{top:9vh!important;padding:24px 28px!important}
+  #authRoot .auth-sub{margin-bottom:18px!important}
+  #authRoot .auth-field input{height:50px!important;min-height:50px!important}
+  #authRoot .auth-btn{height:52px!important;min-height:52px!important}
+  #authRoot .auth-security-note{margin-top:14px;padding-top:12px}
+  #authRoot .login-features{height:58px}
 }
 @media(prefers-reduced-motion:reduce){
- #authRoot.auth-intro-active .cinematic-brand{animation-duration:.01ms!important;filter:none!important;transform:none!important}
- #authRoot #authStage,#authRoot.auth-success #authStage{transition:none!important;transform:none!important}
+  #authRoot.auth-intro-active .cinematic-brand{animation-duration:.01ms!important;filter:none!important;transform:none!important}
+  #authRoot .scene-haze,#authRoot .portal-ring,#authRoot .portal-core,#authRoot .koi-body,#authRoot .koi-glint,#authRoot .ink-splash,#authRoot .scene-particles i,
+  #authRoot .scene-brush,#authRoot .scene-coin,#authRoot .auth-btn:before,#authRoot #authStage.auth-stage-visible .auth-card{animation:none!important}
+  #authRoot #authStage,#authRoot.auth-success #authStage{transition:none!important}
+  #authRoot .auth-card{backdrop-filter:none!important}
 }
-/* 分层持续动态场景，登录卡从下方缓缓进入。 */
-#authRoot .cinematic-brand{background-image:url('./assets/login/landscape.webp')}
-#authRoot .scene-lake{position:absolute;inset:0;width:100%;height:100%;display:block}
-#authRoot .scene-brush{position:absolute;left:-7%;top:-2%;width:39%;height:auto;transform-origin:15% 15%;animation:cnBrushDrift 9s ease-in-out infinite;filter:drop-shadow(0 10px 20px #0005);pointer-events:none}
-#authRoot .scene-coin{position:absolute;left:32%;top:31%;width:24%;aspect-ratio:1;transform-style:preserve-3d;animation:cnCoinRotate 18s linear infinite;perspective:1200px;pointer-events:none}
-#authRoot .scene-coin img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;backface-visibility:hidden;transform:translateZ(4px);filter:drop-shadow(0 0 18px #ffc34466)}
-#authRoot .scene-coin .coin-back{transform:rotateY(180deg) translateZ(4px)}
-#authRoot #authStage{transform:none!important;transition:opacity .5s ease!important}
-#authRoot #authStage.auth-stage-visible .auth-card{animation:cnLoginRise 1.8s cubic-bezier(.16,.7,.2,1) both!important}
-#authRoot .auth-card{backdrop-filter:blur(12px)!important;background:rgba(14,16,21,.9)!important}
-@keyframes cnBrushDrift{0%,100%{transform:translate(0,0) rotate(-3deg)}50%{transform:translate(6px,4px) rotate(1deg)}}
-@keyframes cnCoinRotate{0%{transform:perspective(1200px) rotateY(0deg) rotateZ(-7deg) translateY(0)}50%{transform:perspective(1200px) rotateY(180deg) rotateZ(-7deg) translateY(-10px)}100%{transform:perspective(1200px) rotateY(360deg) rotateZ(-7deg) translateY(0)}}
-@keyframes cnLoginRise{from{opacity:0;translate:0 100px}to{opacity:1;translate:0 0}}
-@media(prefers-reduced-motion:reduce){#authRoot .scene-brush,#authRoot .scene-coin,#authRoot #authStage.auth-stage-visible .auth-card{animation:none!important;translate:none!important;transform:none!important}#authRoot .auth-card{backdrop-filter:none!important}}
-
-@media(prefers-reduced-motion:reduce){#authRoot #authStage,#authRoot.auth-success #authStage{transition:none!important}}
