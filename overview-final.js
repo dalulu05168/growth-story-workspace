@@ -1688,6 +1688,7 @@ overviewReadabilityStyle.textContent=`
 .app.app-ready #topics :is(.muted,.cn-empty-icon,.cn-empty-title,.cn-empty-desc){color:#43534a!important}
 .app.app-ready :is(#trades,#tradeRecommend,#holdingsV2,#france70chat) :is(.muted,.cn-empty-icon,.cn-empty-title,.cn-empty-desc){color:#43534a!important}
 .app.app-ready :is(#trades,#tradeRecommend,#holdingsV2,#france70chat) :is(.trade-summary-card,.offer-stat,.holding-kpi,.fr70-stat) :is(span,small){color:#43534a!important}
+.app.app-ready #trades .trade-tab:not(.active){color:#43534a!important}
 @media(max-width:900px){
  .app.app-ready>.main,
  .app.app-ready #people,
