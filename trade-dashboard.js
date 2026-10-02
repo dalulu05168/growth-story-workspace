@@ -156,7 +156,7 @@ function renderDashboard(){
       '<div class="card metric click-card" data-dash="unholding"><span class="label">未持仓人员</span><strong>'+noHold+'</strong><span class="trend">点击查看名单</span></div>'+
       '<div class="card metric click-card" data-dash="sell"><span class="label">今日待售</span><strong>'+sell.length+'</strong><span class="trend">'+sell.filter(dueSoon).length+' 笔临近/到时</span></div>'+
       '<div class="card metric click-card" data-dash="buy"><span class="label">今日待买人员</span><strong>'+buy.length+'</strong><span class="trend">按规则生成</span></div>'+
-      '<div class="card metric click-card" data-dash="groups"><span class="label">自定义小组</span><strong>'+db.customGroups.length+'</strong><span class="trend">人员规划</span></div>';
+      '<div class="card metric click-card" data-dash="groups"><span class="label">均衡小组</span><strong>'+db.customGroups.length+'</strong><span class="trend">人员规划</span></div>';
   }
   const ov=byId('tradeOverview');
   if(ov){
