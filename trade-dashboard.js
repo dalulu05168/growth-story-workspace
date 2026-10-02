@@ -98,6 +98,47 @@ function renderTabs(){
   t.querySelectorAll('[data-trade-tab]').forEach(function(b){b.onclick=function(){tradeTab=b.dataset.tradeTab;renderTrades()}});
 }
 
+function buildHoldingMixRows(holds){
+  const map=new Map();
+  holds.forEach(function(row){
+    const symbol=String(row.symbol||'').trim().toUpperCase()||'--';
+    const name=String(row.name||row.stockName||symbol||'未命名股票').trim();
+    const key=symbol+'|'+name;
+    if(!map.has(key))map.set(key,{symbol:symbol,name:name,people:new Set(),count:0});
+    const item=map.get(key);
+    item.count+=1;
+    if(row.personId!=null&&String(row.personId).trim())item.people.add(String(row.personId).trim());
+  });
+  const rows=[...map.values()].map(function(item){
+    return {symbol:item.symbol,name:item.name,count:item.people.size||item.count};
+  }).sort(function(a,b){return b.count-a.count||a.symbol.localeCompare(b.symbol)});
+  const max=Math.max(1,...rows.map(function(x){return x.count}));
+  return rows.slice(0,6).map(function(row){
+    return {symbol:row.symbol,name:row.name,count:row.count,width:Math.max(10,Math.round(row.count/max*100))};
+  });
+}
+function renderHoldingMixChart(holds){
+  const rows=buildHoldingMixRows(holds);
+  if(!rows.length)return '<div class="empty overview-empty">暂无持仓数据</div>';
+  return '<div class="hold-chart-overview">'+rows.map(function(row){
+    return '<div class="hold-chart-row">'+
+      '<div class="hold-chart-label"><b>'+safe(row.symbol)+'</b><small>'+safe(row.name)+'</small></div>'+
+      '<div class="hold-chart-track"><i class="hold-chart-fill" style="width:'+row.width+'%"></i></div>'+
+      '<span class="hold-chart-count">'+row.count+'人</span>'+
+    '</div>';
+  }).join('')+'</div>';
+}
+function renderOverviewSellList(rows){
+  if(!rows.length)return '<div class="empty overview-empty">今天没有待卖出股票</div>';
+  return '<div class="overview-sell-list">'+rows.slice(0,6).map(function(h){
+    const p=person(h.personId),hot=dueSoon(h)?' hot':'';
+    return '<div class="overview-sell-item'+hot+'">'+
+      '<div class="overview-sell-main"><b>'+safe(h.symbol||h.name||'未命名股票')+'</b><small>'+safe(pCode(p))+' · '+safe(pLabel(p))+'</small></div>'+
+      '<div class="overview-sell-time"><strong>'+safe(localDateTime(h.plannedSellAt))+'</strong><span>'+safe(countdown(h))+'</span></div>'+
+    '</div>';
+  }).join('')+'</div>';
+}
+
 function renderDashboard(){
   ensureTradeState();
   const holds=activeHoldings(),hid=holdingIds(),sell=todaySell(),buy=todayBuy();
@@ -119,15 +160,15 @@ function renderDashboard(){
   }
   const ov=byId('tradeOverview');
   if(ov){
-    const sellHtml=sell.slice(0,6).map(function(h){
-      const p=person(h.personId),cls=dueSoon(h)?' due':'';
-      return '<div class="trade-item'+cls+'"><div><b>'+safe(h.symbol||h.name||'未命名股票')+' · '+safe(pCode(p))+' · '+safe(pLabel(p))+'</b><div class="trade-meta">计划卖出 '+safe(localDateTime(h.plannedSellAt))+' · '+safe(countdown(h))+'</div></div><button class="link-btn" data-person-detail="'+safe(h.personId)+'">人物详情</button></div>';
-    }).join('')||'<div class="empty">今天没有待售持仓</div>';
-    const buyHtml=buy.slice(0,6).map(function(x){
-      const p=person(x.personId);
-      return '<div class="trade-item"><div><b>'+safe(pCode(p))+' · '+safe(pLabel(p))+'</b><div class="trade-meta">'+safe(x.symbol||'股票待定')+' '+safe(x.stockName||'')+' · '+safe(x.reason||x.source||'规则名单')+'</div></div><button class="link-btn" data-person-detail="'+safe(x.personId)+'">人物详情</button></div>';
-    }).join('')||'<div class="empty">尚未生成今日待买入名单</div>';
-    ov.innerHTML='<div class="trade-grid"><div class="card panel"><div class="panel-head"><h2>今日待售股票与人员</h2><button class="link-btn" data-dash="sell">进入模块 →</button></div><div class="trade-list">'+sellHtml+'</div></div><div class="card panel"><div class="panel-head"><h2>今日待买入人员名单</h2><button class="link-btn" data-dash="buy">进入模块 →</button></div><div class="trade-list">'+buyHtml+'</div></div></div>';
+    ov.innerHTML=
+      '<div class="card panel overview-bottom-panel">'+
+        '<div class="panel-head"><h2>股票持仓组合图</h2><button class="link-btn" data-dash="holding">持仓管理 →</button></div>'+
+        renderHoldingMixChart(holds)+
+      '</div>'+
+      '<div class="card panel overview-bottom-panel">'+
+        '<div class="panel-head"><h2>今日待卖出股票</h2><button class="link-btn" data-dash="sell">交易计划 →</button></div>'+
+        renderOverviewSellList(sell)+
+      '</div>';
   }
   document.querySelectorAll('[data-dash]').forEach(function(el){el.onclick=function(){openDash(el.dataset.dash)}});
   document.querySelectorAll('[data-person-detail]').forEach(function(el){el.onclick=function(){viewPerson(el.dataset.personDetail)}});
