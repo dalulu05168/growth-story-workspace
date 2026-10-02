@@ -1,5 +1,5 @@
 {
-  "sourceSha": "764d5bde5c99cd4a425f858eff95b2e858eb76ab",
+  "sourceSha": "78b4059bac870b07915bc4f98fe5ed4692b0074a",
   "files": {
     "CNAME": "7f3352e8682740e6da414b7eb847d82c921ddf397bf3c175a9ae794ff8dd18f9",
     "assets/brand/chennan-logo.jpg": "f9cddb9644e71f715628511ec375b9baa7d24ba3d8b3ab0b934d87e047a1d982",
@@ -28,7 +28,7 @@
     "icons/lock-key.svg": "d8bdf1b9399f973662e000036b09da5b4ff581ecfcb67299ba99169f0e2f79fe",
     "icons/user.svg": "fc75ff764c4c7e35dc54ad7b2df491de9c04a6e5f56fac342cf7359d1d4f89f0",
     "icons/users-four.svg": "75730ed755c47c39d6b41352c53a8c1fa1226c586ce89e1b1249b4f74457ffd1",
-    "index.html": "84ad45e53bfcdfbf9eda3db8398216a719b8cbd725fb6a6d4871e44c32d105eb",
+    "index.html": "1624f33f01bde2d1e98d3f3c9c2e0f7b944274fc29c6b47a8acb7b80d2412831",
     "intro.css": "304cff3b731e36a67867433663ff64234087f0a76263ed08ad8ffbf03c24696b",
     "login-scene.js": "24cfba757f095beef098f7ac6aea5f9ff790ed4dc4ce2b58f0ba97c201e83f25",
     "offline-register.js": "f3dce74ae3114047f66e2fd302555ac5ae6dc7bbeead759884670dc6a41c9681",
@@ -36,11 +36,11 @@
     "people-detail.js": "e96a861c0903a6e0d916d6d050ae0732ac9b83d33edcdbc6b629314da7c0759d",
     "security-ui.js": "5bb64abf6dd1db87d7d16c063629d4eeb59fd0eb957c18aaa9ce937477c84772",
     "theme-system.js": "682adea186383ce423c4cfff609d502e6e247bec38a9cf13ea73a1f4f19f8077",
-    "theme-ui.js": "b0d25e3fd56657b68f7e435d2ece2ef1512050142faeff0b1b0759bc64146771",
+    "theme-ui.js": "db23adc5b9e96b9ea2e53176c7e8ccc7cff29154777b82ca9fa8df01e8cf7369",
     "trade-dashboard.js": "d2cec99c2054318d2e2177e5e8fde56abe33624a63ad9ce6eed7abd685e0e242",
     "trading-simulator.js": "17aa899f1b3727662243d436e7bac2dd1cfa3a37a5e59be41326ad98d86b0cfa",
     "ui-shell.js": "c1b9ad5eacd5dde3559de9b3e103980aadae15d6809d8672aaec8dd594beb7f0",
     "workspace-core.js": "b2842b18fe9d670715a1ce78c517ced1bb5581e247e7adc3e90dff2acb082e88",
-    "workspace-glass.css": "44b3bbfbc18412f9b80c0f6806d492b16f04718f5147f1284c14b61f18b88b49"
+    "workspace-glass.css": "5235d207a83429962c20059ea3469ec870159c66984a01b47c31ce4f7d5a32be"
   }
 }
