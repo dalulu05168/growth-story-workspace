@@ -1673,6 +1673,7 @@ overviewReadabilityStyle.textContent=`
 .app.app-ready #overview .cn-empty-title{color:#26352d!important}
 .app.app-ready #overview .cn-empty-desc{color:#43534a!important}
 .app.app-ready #groups .muted,.app.app-ready #groups .balanced-group-head small{color:#4d5b52!important}
+.app.app-ready #groups .balanced-member-head,.app.app-ready #groups .balanced-member-head *{color:#42534a!important}
 .app.app-ready #novel .writing-summary-card small,
 .app.app-ready #novel .speech-head small,
 .app.app-ready #novel #dailyStatus,
