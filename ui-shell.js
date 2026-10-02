@@ -7,8 +7,81 @@ if(!app||!sidebar||!main||!nav)return;
 const brand=document.querySelector('.brand');
 if(brand)brand.innerHTML='<div class="cn-wordmark"><span>辰</span><span>南</span></div><div class="brand-copy"><b>辰南</b><small>投资管理系统</small></div>';
 const sideNote=document.querySelector('.side-note');if(sideNote)sideNote.innerHTML='<span class="cloud-live-dot"></span> Supabase 云端自动保存<br><small>人物 · 群聊 · 交易 · 持仓 · 文档</small>';
-const labelMap={overview:'概览',people:'人物库',groups:'分组管理',records:'人物记录',novel:'文档中心',france70chat:'France 70 群聊',topics:'一致性检查',trades:'交易计划',tradeRecommend:'人物交易列表',holdingsV2:'持仓管理'};
+const labelMap={overview:'概览',people:'人物库',groups:'分组管理',records:'人物记录',novel:'撰写',france70chat:'France 70 群聊',topics:'一致性检查',trades:'交易计划',tradeRecommend:'人物交易列表',holdingsV2:'持仓管理'};
+
 nav.querySelectorAll('button[data-page]').forEach(b=>{const span=b.querySelector('span'),label=labelMap[b.dataset.page];if(span&&label)span.textContent=label});
+
+/* Mobile navigation: 4 primary modules + one explicit More panel.
+   No feature is hidden behind horizontal scrolling. */
+(function setupMobileModules(){
+  nav.classList.add('mobile-nav-enhanced');
+  const primaryPages=new Set(['overview','people','novel','france70chat']);
+  const moduleMeta={
+    groups:['分组管理','系统分组、自定义小组、成员管理'],
+    tradeRecommend:['人物交易列表','股票机会、候选人物、参与状态'],
+    holdingsV2:['持仓管理','当前持仓、买卖记录、收益与状态'],
+    trades:['交易计划','今日待买、待售、全部持仓与规则设置'],
+    records:['人物记录','重要事件、发言与历史记录'],
+    topics:['一致性检查','人物逻辑、主题与状态冲突检查']
+  };
+
+  nav.querySelectorAll('button[data-page]').forEach(btn=>{
+    btn.classList.toggle('mobile-primary',primaryPages.has(btn.dataset.page));
+    btn.classList.toggle('mobile-extra',!primaryPages.has(btn.dataset.page));
+  });
+
+  let more=document.getElementById('mobileMoreBtn');
+  if(!more){
+    more=document.createElement('button');
+    more.id='mobileMoreBtn';
+    more.type='button';
+    more.className='mobile-more-button';
+    more.innerHTML='<i>•••</i><span>更多</span>';
+    nav.appendChild(more);
+  }
+
+  let sheet=document.getElementById('mobileModuleSheet');
+  if(!sheet){
+    sheet=document.createElement('div');
+    sheet.id='mobileModuleSheet';
+    sheet.className='mobile-module-sheet';
+    sheet.innerHTML='<div class="mobile-module-backdrop" data-close-modules></div><div class="mobile-module-panel"><div class="mobile-module-head"><div><b>全部功能</b><small>辰南撰写工作台</small></div><button type="button" data-close-modules>×</button></div><div class="mobile-module-list" id="mobileModuleList"></div></div>';
+    document.body.appendChild(sheet);
+  }
+
+  const list=sheet.querySelector('#mobileModuleList');
+  const rebuild=()=>{
+    if(!list)return;
+    const extras=[...nav.querySelectorAll('button[data-page].mobile-extra')];
+    const rows=extras.map(btn=>{
+      const page=btn.dataset.page;
+      const meta=moduleMeta[page]||[(btn.querySelector('span')?.textContent||page),'进入该功能模块'];
+      const icon=btn.querySelector('i')?.textContent||'◇';
+      return '<button type="button" class="mobile-module-item" data-module-target="'+page+'"><i>'+icon+'</i><span><b>'+meta[0]+'</b><small>'+meta[1]+'</small></span><em>›</em></button>';
+    });
+    const logout=document.getElementById('logoutBtn');
+    if(logout)rows.push('<button type="button" class="mobile-module-item danger" data-module-logout="1"><i>↪</i><span><b>退出登录</b><small>保存完成后退出当前账户</small></span><em>›</em></button>');
+    list.innerHTML=rows.join('');
+    list.querySelectorAll('[data-module-target]').forEach(row=>row.onclick=()=>{
+      const target=nav.querySelector('button[data-page="'+row.dataset.moduleTarget+'"]');
+      if(target)target.click();
+      sheet.classList.remove('show');
+    });
+    const out=list.querySelector('[data-module-logout]');
+    if(out)out.onclick=()=>{document.getElementById('logoutBtn')?.click();sheet.classList.remove('show')};
+  };
+
+  more.onclick=()=>{rebuild();sheet.classList.add('show')};
+  sheet.querySelectorAll('[data-close-modules]').forEach(x=>x.onclick=()=>sheet.classList.remove('show'));
+
+  const syncMoreActive=()=>{
+    const active=nav.querySelector('button[data-page].active');
+    more.classList.toggle('active',!!active&&active.classList.contains('mobile-extra'));
+  };
+  nav.addEventListener('click',()=>setTimeout(syncMoreActive,0));
+  document.addEventListener('chennan:cloud-ready',()=>{rebuild();syncMoreActive()});
+  setTimeout(()=>{rebuild();syncMoreActive()},0);
+})();
 
 if(!document.querySelector('.nav-collapse')){
   const btn=document.createElement('button');btn.className='nav-collapse';btn.type='button';btn.innerHTML='<span class="collapse-icon">‹‹</span><span class="collapse-text">收起导航</span>';sidebar.appendChild(btn);
