@@ -222,7 +222,7 @@ function renderBatches(bs){
         '<div class="batch-summary-grid">'+
           '<span><em>买入时间</em><strong>'+h(dt(b.buyAt))+'</strong></span>'+
           '<span><em>持仓人数</em><strong>'+b.rows.length+' 人</strong></span>'+
-          '<span><em>本批投入</em><strong>'+h(money(total,b.currency||'USD'))+'</strong></span>'+
+          '<span><em>本批投入 · '+h(b.currency||'USD')+'</em><strong>'+h(money(total,b.currency||'USD'))+'</strong></span>'+
           '<span><em>下一节点</em><strong>'+h(left)+'</strong></span>'+
         '</div>'+
       '</div><button class="btn '+(st.key==='ready'?'primary':'ghost')+' small" data-sell-batch="'+h(b.key)+'" '+(canSell?'':'disabled')+'>卖出</button></div>'+
@@ -236,7 +236,7 @@ function renderBatches(bs){
             '<div class="holding-person-head"><b>'+h(pCode(p)+(genderRelationLabel(p)||'')+' · '+nm(p))+'</b>'+(vip(p)?vipBadge(p):'')+'</div>'+
             '<div class="holding-info-grid">'+
               '<div><span>买入股数</span><strong>'+h(x.quantity)+' 股</strong></div>'+
-              '<div><span>买入价</span><strong>'+h(money(x.buyPrice,currency))+'</strong></div>'+
+              '<div><span>买入价 · '+h(currency)+'</span><strong>'+h(money(x.buyPrice,currency))+'</strong></div>'+
               '<div><span>买入金额</span><strong>'+h(money(amount,currency))+'</strong></div>'+
               '<div><span>买入时间</span><strong>'+h(dt(x.buyAt||b.buyAt))+'</strong></div>'+
               '<div><span>最早卖出</span><strong>'+h(dt(x.plannedSellAt))+'</strong></div>'+
