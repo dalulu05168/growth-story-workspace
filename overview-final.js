@@ -46,6 +46,46 @@ if(logout){
   nav.appendChild(logout);
 }
 
+
+/* 左上品牌：保留金色“辰南”字色，只让蓝色电流在文字外部运动。 */
+const brandNode=$('.brand');
+if(brandNode){
+  brandNode.innerHTML='<div class="cn-electric-logo" aria-label="辰南"><span class="cn-brush-logo-text">辰南</span><i class="cn-current cn-current-a" aria-hidden="true"></i><i class="cn-current cn-current-b" aria-hidden="true"></i><i class="cn-current cn-current-c" aria-hidden="true"></i></div>';
+}
+
+/* ESC 返回上一模块：输入/编辑与弹窗状态下不抢占 Esc。 */
+const pageHistory=[];
+let lastActivePage=$('.section.active')?.id||'overview';
+let escReturning=false;
+function syncPageHistory(){
+  const current=$('.section.active')?.id;
+  if(!current||current===lastActivePage)return;
+  if(escReturning){
+    lastActivePage=current;
+    escReturning=false;
+    return;
+  }
+  if(lastActivePage)pageHistory.push(lastActivePage);
+  if(pageHistory.length>24)pageHistory.shift();
+  lastActivePage=current;
+}
+new MutationObserver(syncPageHistory).observe(main,{subtree:true,attributes:true,attributeFilter:['class']});
+document.addEventListener('keydown',event=>{
+  if(event.key!=='Escape'||event.defaultPrevented)return;
+  const target=event.target;
+  if(target?.closest?.('input,textarea,select,[contenteditable="true"],.modal-wrap.show,dialog[open]'))return;
+  const current=$('.section.active')?.id||'overview';
+  let previous=pageHistory.pop();
+  while(previous===current)previous=pageHistory.pop();
+  if(!previous&&current!=='overview')previous='overview';
+  if(!previous)return;
+  const button=nav.querySelector('button[data-page="'+previous+'"]');
+  if(!button)return;
+  event.preventDefault();
+  escReturning=true;
+  button.click();
+});
+
 /* 全部内部页面取消顶部“搜索 / 同步 / 管理员”整排；页面直接从标题与主体开始。 */
 const header=$('.app-global-header');
 const overviewTop=$('#overview .topbar');
@@ -828,6 +868,133 @@ rectStyle.textContent=`
 }
 `;
 document.head.appendChild(rectStyle);
+
+
+/* 2026-10-03 最终细化：灰白渐变边线、底部齐线、导航铺满、金字蓝电流。 */
+const polishOld=$('#chennanFinalPolish20261003');if(polishOld)polishOld.remove();
+const polishStyle=document.createElement('style');
+polishStyle.id='chennanFinalPolish20261003';
+polishStyle.textContent=`
+/* 品牌：不再使用黑底图片与黄色圆环。金色字本身不受蓝色电流影响。 */
+.app.app-ready>.sidebar .brand{
+ border:0!important;background:transparent!important;box-shadow:none!important;overflow:visible!important
+}
+.app.app-ready>.sidebar .cn-electric-logo{
+ position:relative!important;width:116px!important;height:60px!important;display:grid!important;place-items:center!important;
+ overflow:visible!important;isolation:isolate!important
+}
+.app.app-ready>.sidebar .cn-brush-logo-text{
+ position:relative!important;z-index:2!important;display:block!important;
+ color:#b77b12!important;
+ font-family:"STKaiti","KaiTi","FangSong","Microsoft YaHei",serif!important;
+ font-size:40px!important;font-weight:900!important;line-height:1!important;letter-spacing:-5px!important;
+ transform:skew(-5deg) rotate(-2deg)!important;
+ text-shadow:0 1px 0 #7a5008,0 2px 1px rgba(224,171,55,.55),0 0 2px rgba(183,123,18,.25)!important;
+ white-space:nowrap!important
+}
+.app.app-ready>.sidebar .cn-current{
+ position:absolute!important;z-index:1!important;display:block!important;pointer-events:none!important;
+ opacity:.92!important;filter:drop-shadow(0 0 2px #86d9ff) drop-shadow(0 0 5px #279cff)!important
+}
+.app.app-ready>.sidebar .cn-current-a{
+ inset:4px 2px 5px 1px!important;border-radius:48% 52% 44% 56%!important;
+ border-top:2px solid #62c8ff!important;border-right:2px solid #2d9fff!important;
+ border-left:2px solid transparent!important;border-bottom:2px solid transparent!important;
+ animation:cnElectricA 1.55s linear infinite!important
+}
+.app.app-ready>.sidebar .cn-current-b{
+ inset:8px 7px 1px 8px!important;border-radius:55% 45% 58% 42%!important;
+ border-left:2px solid #8bdcff!important;border-bottom:2px solid #349fff!important;
+ border-top:2px solid transparent!important;border-right:2px solid transparent!important;
+ animation:cnElectricB 1.85s linear infinite!important
+}
+.app.app-ready>.sidebar .cn-current-c{
+ right:2px!important;top:5px!important;width:24px!important;height:17px!important;
+ background:linear-gradient(125deg,transparent 0 32%,#8adfff 33% 40%,transparent 41% 57%,#309fff 58% 66%,transparent 67%)!important;
+ clip-path:polygon(0 48%,35% 36%,25% 72%,58% 51%,52% 86%,100% 22%,67% 34%,76% 0,43% 29%,49% 4%)!important;
+ animation:cnElectricSpark 1.15s steps(2,end) infinite!important
+}
+@keyframes cnElectricA{0%{transform:rotate(-5deg) scale(.98);opacity:.45}50%{transform:rotate(5deg) scale(1.03);opacity:1}100%{transform:rotate(-5deg) scale(.98);opacity:.45}}
+@keyframes cnElectricB{0%{transform:rotate(7deg);opacity:.95}50%{transform:rotate(-4deg);opacity:.35}100%{transform:rotate(7deg);opacity:.95}}
+@keyframes cnElectricSpark{0%,100%{opacity:.25;transform:translate(0,0)}25%{opacity:1;transform:translate(-2px,1px)}55%{opacity:.45;transform:translate(2px,-1px)}75%{opacity:1;transform:translate(-1px,-2px)}}
+
+/* 灰白渐变边线：主框保持白灰内层，只改变四周边缘层次。 */
+.app.app-ready .section :is(
+ .card,.panel,.metric,.group-card,.custom-group,.profile-row,.event,.detail-box,
+ .batch-card,.offer-card,.candidate-card,.holding-person-card,.person-buy-card,.fr70-card,.fr70-stat
+){
+ border:1px solid rgba(187,194,190,.58)!important;
+ box-shadow:
+  inset 1px 1px 0 rgba(255,255,255,.98),
+  inset -1px -1px 0 rgba(160,168,163,.14),
+  0 0 0 1px rgba(246,248,247,.68),
+  0 6px 18px rgba(52,62,56,.04)!important
+}
+.app.app-ready #overview .overview-titlebar{
+ border:1px solid transparent!important;
+ background:
+  linear-gradient(rgba(252,253,252,.97),rgba(252,253,252,.97)) padding-box,
+  linear-gradient(135deg,#f9faf9 0%,#c9cfcb 26%,#ffffff 50%,#bfc6c2 74%,#f6f8f7 100%) border-box!important
+}
+.app.app-ready>.sidebar{
+ border:1px solid transparent!important;
+ background:
+  linear-gradient(rgba(250,251,250,.96),rgba(250,251,250,.96)) padding-box,
+  linear-gradient(150deg,#fafcfb 0%,#c5ccc8 32%,#ffffff 58%,#bcc4bf 100%) border-box!important
+}
+
+/* 桌面导航：模块之间拉开，纵向铺满导航栏；名称略增字距。 */
+@media(min-width:1180px) and (min-aspect-ratio:4/3){
+ .app.app-ready>.sidebar .brand{
+  height:62px!important;margin:0 0 7px!important
+ }
+ .app.app-ready>.sidebar .nav{
+  height:calc(100% - 69px)!important;min-height:0!important;margin:0!important;
+  display:flex!important;flex-direction:column!important;justify-content:space-between!important;
+  gap:0!important;overflow:hidden!important
+ }
+ .app.app-ready>.sidebar .nav button{
+  flex:0 0 45px!important;height:45px!important;min-height:45px!important;
+  width:100%!important;margin:0!important;padding:0 9px!important
+ }
+ .app.app-ready>.sidebar .nav button span{letter-spacing:.045em!important}
+ .app.app-ready>.sidebar #logoutBtn{margin:0!important}
+
+ /* 概览本体改为严格四行网格；最后一行自动吃满剩余高度，底边与导航栏齐平。 */
+ .app.app-ready>.main{padding:8px 14px 8px 8px!important}
+ .app.app-ready #overview.active{
+  display:grid!important;
+  grid-template-rows:92px 217px 246px minmax(0,1fr)!important;
+  gap:9px!important;height:100%!important;max-height:100%!important;min-height:0!important;
+  overflow:hidden!important
+ }
+ .app.app-ready #overview .overview-titlebar{height:auto!important;min-height:0!important;margin:0!important}
+ .app.app-ready #overview .dashboard{
+  height:217px!important;min-height:0!important;margin:0!important;
+  grid-template-rows:repeat(2,104px)!important
+ }
+ .app.app-ready #overview>.grid{
+  height:246px!important;min-height:0!important;margin:0!important
+ }
+ .app.app-ready #overview>.grid>.panel{height:100%!important;min-height:0!important}
+ .app.app-ready #overview #tradeOverview{
+  height:100%!important;min-height:0!important;margin:0!important;
+  align-self:stretch!important
+ }
+ .app.app-ready #overview #tradeOverview .overview-bottom-panel{
+  height:100%!important;min-height:0!important;align-self:stretch!important
+ }
+}
+
+/* 中型桌面也隐藏“更多”，但不强行使用16:9四行网格。 */
+@media(min-width:901px) and (max-width:1179px){
+ .app.app-ready>.sidebar #mobileMoreBtn,.app.app-ready>.sidebar .mobile-more-button{display:none!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .app.app-ready>.sidebar .cn-current{animation:none!important;opacity:.65!important}
+}
+`;
+document.head.appendChild(polishStyle);
 
 /* 概览离开后，顶部操作按钮隐藏；返回概览恢复。 */
 function syncHeaderActions(){
