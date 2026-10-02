@@ -87,7 +87,13 @@ async function workspaceVisuals(browser,url){
    }
    await page.setViewportSize({width:390,height:844});
    for(const id of ['overview','people','groups','records','novel','topics','trades','tradeRecommend','holdingsV2']){
-    await page.locator('.nav [data-page="'+id+'"]').click();
+    const direct=page.locator('.nav [data-page="'+id+'"]');
+    if(await direct.isVisible())await direct.click();
+    else{
+     await page.locator('#mobileMoreBtn').click();
+     await page.locator('#mobileModuleSheet.show').waitFor({state:'visible'});
+     await page.locator('[data-module-target="'+id+'"]').click();
+    }
     await page.locator('#'+id+'.active').waitFor({state:'visible'});await settle(page);
     assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'mobile page overflow '+id);
     await contrastAudit(page);
