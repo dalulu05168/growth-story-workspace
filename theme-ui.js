@@ -688,6 +688,133 @@ body{font:14px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","M
   }
 }
 
+
+/* ===== Final readability + portrait guarantee ===== */
+:root,html[data-theme="reference"]{
+  --text-primary:#111312;
+  --text-strong:#1d211f;
+  --text-body:#2a2f2c;
+  --text-muted:#5f6661;
+  --deep-gold:#8f6a18;
+  --deep-gold-strong:#6f4f0b;
+  --deep-gold-bg:#efe4c8;
+  --deep-gold-border:#c6ab68;
+  --green-strong:#3f6f5e;
+  --red-strong:#944d4a;
+}
+
+/* Hard contrast rules for all light workspace surfaces. */
+.app.app-ready :is(
+  .page-title,h1,h2,h3,
+  .panel-head h2,.panel-head h3,
+  .metric strong,.person b,.table-name,
+  .detail-box b,.detail-line b,.offer-stat b,
+  .batch-card b,.candidate-card b,.person-mini b,
+  .holding-person b,.memory-person-card b,
+  .fr70-stat b,.fr70-meta b,.fr70-bubble p,.fr70-history b,.fr70-memory-row b
+){
+  color:var(--text-primary)!important;
+  text-shadow:none!important;
+}
+.app.app-ready :is(
+  p,td,.event p,.members-preview,
+  .detail-box,.detail-line,.offer-stat,
+  .batch-card,.candidate-card,.person-mini,
+  .holding-person,.memory-row,.memory-person-card,
+  .fr70-note
+){
+  color:var(--text-body)!important;
+}
+.app.app-ready :is(
+  .sub,.muted,.meta,small,
+  .person small,.detail-box span,.detail-line span,
+  .fr70-stat span,.fr70-meta span,.fr70-history small,.fr70-memory-row small
+){
+  color:var(--text-muted)!important;
+}
+.app.app-ready .eyebrow{
+  color:var(--deep-gold)!important;
+  font-weight:760!important;
+}
+.app.app-ready :is(.status.vip,.vip-badge,[data-vip="true"],[data-category="老男"]){
+  color:var(--deep-gold-strong)!important;
+  background:var(--deep-gold-bg)!important;
+  border-color:var(--deep-gold-border)!important;
+  font-weight:750!important;
+}
+.app.app-ready .status.warn{
+  color:var(--deep-gold-strong)!important;
+  background:#f0e6cf!important;
+  border-color:#cfb978!important;
+}
+.app.app-ready .metric .trend,.app.app-ready .profit-pos{color:var(--green-strong)!important}
+.app.app-ready :is(.danger,.profit-neg){color:var(--red-strong)!important}
+
+/* Inputs/tables must stay high contrast. */
+.app.app-ready :is(
+  .input,.select,textarea,
+  input:not([type=checkbox]):not([type=radio]),select,
+  .rich-editor,.editor,.editor-area,[contenteditable=true]
+){
+  color:var(--text-primary)!important;
+}
+.app.app-ready :is(input,textarea)::placeholder{color:#7a817c!important}
+.app.app-ready .people-data-table :is(td,th),
+.app.app-ready .mini-table :is(td,th){color:var(--text-strong)!important}
+.app.app-ready .people-data-table th{color:#3e4541!important;font-weight:760!important}
+
+/* Absolute portrait guarantee. */
+.app.app-ready .person-portrait{
+  display:block!important;
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  min-width:100%!important;
+  min-height:100%!important;
+  border-radius:inherit!important;
+  background-image:url('./assets/people/avatar-atlas.webp')!important;
+  background-repeat:no-repeat!important;
+  background-size:1000% 700%!important;
+  background-position:var(--portrait-x) var(--portrait-y)!important;
+  background-color:#dfe2de!important;
+  opacity:1!important;
+  visibility:visible!important;
+  z-index:1!important;
+  filter:none!important;
+}
+.app.app-ready :is(.avatar,.gender-avatar,.detail-avatar,.table-avatar){
+  display:block!important;
+  position:relative!important;
+  overflow:hidden!important;
+  flex:0 0 auto!important;
+  padding:0!important;
+  background:#dfe2de!important;
+  border:1px solid rgba(30,34,31,.18)!important;
+  border-radius:50%!important;
+  box-shadow:0 3px 10px rgba(35,40,37,.08)!important;
+  opacity:1!important;
+  visibility:visible!important;
+}
+.app.app-ready .avatar{width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important}
+.app.app-ready .gender-avatar{width:48px!important;height:48px!important;min-width:48px!important;min-height:48px!important}
+.app.app-ready .table-avatar{width:42px!important;height:42px!important;min-width:42px!important;min-height:42px!important}
+.app.app-ready .detail-avatar{width:82px!important;height:82px!important;min-width:82px!important;min-height:82px!important}
+
+/* Header admin avatar fallback remains visible. */
+.app.app-ready .header-user{display:flex!important;align-items:center!important}
+.app.app-ready .user-avatar{
+  display:grid!important;
+  place-items:center!important;
+  width:36px!important;height:36px!important;min-width:36px!important;
+  border-radius:50%!important;
+  background:#202321!important;
+  color:#a77c22!important;
+  font-weight:800!important;
+  opacity:1!important;
+  visibility:visible!important;
+}
+
 `;
 document.head.appendChild(st);
 })();
