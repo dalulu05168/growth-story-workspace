@@ -1421,6 +1421,135 @@ balancedGroupsStyle.textContent=`
 `;
 document.head.appendChild(balancedGroupsStyle);
 
+
+/* 人物库分页版：4页切换，放宽列宽，表头纯黑，尾列与筛选区右边缘对齐。 */
+const peoplePaginationOld=$('#chennanPeoplePagination20261003');if(peoplePaginationOld)peoplePaginationOld.remove();
+const peoplePaginationStyle=document.createElement('style');
+peoplePaginationStyle.id='chennanPeoplePagination20261003';
+peoplePaginationStyle.textContent=`
+.app.app-ready #people .toolbar{
+ width:100%!important;
+ grid-template-columns:minmax(260px,1.28fr) minmax(175px,.82fr) minmax(175px,.82fr) minmax(180px,.84fr)!important;
+ gap:8px!important
+}
+.app.app-ready #people .toolbar :is(.input,.select){
+ width:100%!important;color:#111!important
+}
+.app.app-ready #people #peopleCount{
+ color:#5f6863!important;font-size:9.5px!important
+}
+
+/* 桌面表格直接使用全部可用宽度，不再为塞列而过度压缩。 */
+.app.app-ready #people .people-table-wrap{
+ width:100%!important;max-width:100%!important;overflow-x:hidden!important;overflow-y:hidden!important
+}
+.app.app-ready #people .people-data-table{
+ width:100%!important;min-width:0!important;table-layout:fixed!important
+}
+.app.app-ready #people .people-data-table col{width:auto}
+.app.app-ready #people .people-data-table thead th{
+ color:#050606!important;background:#f2f4f3!important;
+ font-size:9px!important;font-weight:800!important;letter-spacing:0!important;
+ padding:5px 7px!important;height:29px!important;line-height:19px!important;
+ border-bottom:1px solid #cfd5d1!important
+}
+.app.app-ready #people .people-data-table tbody td{
+ color:#111514!important;
+ padding:4px 7px!important;height:32px!important;min-height:32px!important;
+ font-size:9px!important;line-height:1.12!important
+}
+.app.app-ready #people .people-data-table td:first-child{
+ color:#080a09!important;font-weight:700!important
+}
+.app.app-ready #people .people-data-table .table-person{
+ gap:7px!important
+}
+.app.app-ready #people .people-data-table .table-avatar{
+ width:26px!important;height:26px!important;min-width:26px!important;min-height:26px!important
+}
+.app.app-ready #people .people-data-table .table-name{
+ max-width:none!important;color:#050606!important;font-size:9.5px!important;font-weight:760!important;
+ line-height:1.05!important
+}
+.app.app-ready #people .people-data-table .table-name>small{
+ margin-top:1px!important
+}
+.app.app-ready #people .person-category{
+ font-size:7px!important;padding:1px 4px!important;color:#39352a!important
+}
+.app.app-ready #people .vip-level,
+.app.app-ready #people .vip-none{
+ font-size:8px!important;min-width:36px!important;height:20px!important;padding:0 5px!important
+}
+
+/* 操作列四项等距排开，并把最后一项贴近表格右侧边缘。 */
+.app.app-ready #people .people-data-table td:nth-child(14){
+ padding-left:6px!important;padding-right:7px!important;overflow:visible!important
+}
+.app.app-ready #people .people-actions{
+ width:100%!important;display:flex!important;align-items:center!important;justify-content:space-between!important;
+ gap:4px!important;white-space:nowrap!important
+}
+.app.app-ready #people .people-actions .link-btn{
+ flex:0 0 auto!important;padding:1px 2px!important;margin:0!important;
+ font-size:8px!important;line-height:1.15!important
+}
+
+/* 分页按钮 */
+.app.app-ready #people .people-pagination{
+ height:31px!important;margin-top:6px!important;
+ display:flex!important;align-items:center!important;justify-content:center!important;gap:6px!important
+}
+.app.app-ready #people .people-page-btn{
+ width:29px!important;height:27px!important;min-width:29px!important;padding:0!important;
+ display:grid!important;place-items:center!important;
+ border:1px solid #d8ddda!important;border-radius:7px!important;
+ background:#fff!important;color:#26302c!important;
+ font-size:10px!important;font-weight:700!important;
+ transition:.15s ease!important
+}
+.app.app-ready #people .people-page-btn:hover{
+ background:#f2f5f3!important;border-color:#c4ccc7!important
+}
+.app.app-ready #people .people-page-btn.active{
+ background:#252a27!important;color:#fff!important;border-color:#252a27!important
+}
+
+/* 16:9 桌面：人物页固定在当前工作区高度内，不再整页向下无限滚。 */
+@media(min-width:1180px) and (min-aspect-ratio:4/3){
+ .app.app-ready #people.active{
+  height:100%!important;max-height:100%!important;min-height:0!important;
+  overflow:hidden!important;display:flex!important;flex-direction:column!important
+ }
+ .app.app-ready #people .topbar{
+  flex:0 0 92px!important;min-height:92px!important;height:92px!important;margin:0 0 9px!important
+ }
+ .app.app-ready #people>.card.panel{
+  flex:1 1 auto!important;min-height:0!important;height:auto!important;
+  display:flex!important;flex-direction:column!important;overflow:hidden!important
+ }
+ .app.app-ready #people .toolbar{flex:0 0 38px!important}
+ .app.app-ready #people #peopleCount{flex:0 0 14px!important}
+ .app.app-ready #people #peopleList{
+  flex:1 1 auto!important;min-height:0!important;
+  display:flex!important;flex-direction:column!important
+ }
+ .app.app-ready #people .people-table-wrap{
+  flex:1 1 auto!important;min-height:0!important
+ }
+ .app.app-ready #people .people-data-table{
+  height:auto!important
+ }
+}
+
+/* 窄桌面与手机仍允许横向滚动，避免列内容被硬截断。 */
+@media(max-width:1179px){
+ .app.app-ready #people .people-table-wrap{overflow-x:auto!important}
+ .app.app-ready #people .people-data-table{min-width:1180px!important}
+}
+`;
+document.head.appendChild(peoplePaginationStyle);
+
 /* 概览离开后，顶部操作按钮隐藏；返回概览恢复。 */
 function syncHeaderActions(){
  const active=$('.section.active');
