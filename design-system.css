@@ -95,6 +95,11 @@ body{letter-spacing:0!important}
   font-style:normal!important;font-size:15px!important;
 }
 .app.app-ready>.sidebar .nav button span{font-size:13px!important;color:inherit!important}
+.app.app-ready>.sidebar .nav button i svg{
+  width:17px!important;height:17px!important;display:block!important;
+  fill:none!important;stroke:currentColor!important;stroke-width:1.8!important;
+  stroke-linecap:round!important;stroke-linejoin:round!important;
+}
 .app.app-ready>.sidebar .nav button:hover{
   background:#f5f3ec!important;color:#333127!important;transform:none!important;
 }
