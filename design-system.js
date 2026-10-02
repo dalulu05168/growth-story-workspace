@@ -41,9 +41,9 @@ function normalizePrimaryHeader(section){
   let eyebrow=left.querySelector('.eyebrow');
   let title=left.querySelector('.page-title');
   let sub=left.querySelector('.sub');
-  if(eyebrow)eyebrow.textContent=meta.eyebrow;
-  if(title)title.textContent=meta.title;
-  if(sub)sub.textContent=meta.sub;
+  if(eyebrow&&eyebrow.textContent!==meta.eyebrow)eyebrow.textContent=meta.eyebrow;
+  if(title&&title.textContent!==meta.title)title.textContent=meta.title;
+  if(sub&&sub.textContent!==meta.sub)sub.textContent=meta.sub;
 }
 
 function tagSections(){
@@ -96,7 +96,7 @@ function normalizeDetailPage(){
   const head=sec.querySelector('.detail-head');
   if(head)head.classList.add('cn-page-header');
   const eyebrow=sec.querySelector('.detail-head .eyebrow');
-  if(eyebrow)eyebrow.textContent='PERSON PROFILE';
+  if(eyebrow&&eyebrow.textContent!=='PERSON PROFILE')eyebrow.textContent='PERSON PROFILE';
 }
 
 function normalizeAll(root=document){
