@@ -145,11 +145,9 @@ function scheduleSave(delay=450){
 }
 async function login(username,password){
   const data=await call('login',{username,password},false);
-  if(data.requiresMfa)return data;
   setToken(data.token);sessionStorage.setItem(ACCOUNT_KEY,JSON.stringify(data.account||{}));
   await hydrate();return data;
 }
-async function verifyMfa(challenge,code,recoveryCode){const data=await call('mfa_verify',{challenge,code,recoveryCode},false);setToken(data.token);sessionStorage.setItem(ACCOUNT_KEY,JSON.stringify(data.account||{}));await hydrate();return data}
 async function resume(){
   if(!getToken())return false;
   try{await hydrate();return true}catch(err){if(err.status===401){setToken('');sessionStorage.removeItem(ACCOUNT_KEY)}return false}
@@ -173,5 +171,5 @@ window.addEventListener?.('online',()=>{retryAttempt=0;flush().catch(()=>{})});
 window.addEventListener?.('pagehide',()=>{window.ChenNanDocumentWorkspace?.saveDraft?.();if(editGeneration!==savedGeneration)writeJournal()});
 document.addEventListener?.('visibilitychange',()=>{if(document.visibilityState==='hidden'){window.ChenNanDocumentWorkspace?.saveDraft?.();flush().catch(()=>{})}});
 
-window.ChenNanCloud={login,verifyMfa,securityStatus:()=>call('mfa_status'),enrollMfa:password=>call('mfa_enroll',{password}),resume,logout,hydrate,flush,hasSession:()=>!!getToken(),account,pending:()=>readJournal(),exportPending:()=>{let pending;try{pending=JSON.parse(localStorage.getItem?.(journalKey()+':conflict')||'null')||readJournal()}catch(_){pending=readJournal()}if(!pending&&hydrated)pending={version:cloudVersion,payload:db};if(!pending)return false;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(pending,null,2)],{type:'application/json'}));a.download='chennan-unsynced-'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);return true},get version(){return cloudVersion},get hydrated(){return hydrated}};
+window.ChenNanCloud={login,resume,logout,hydrate,flush,hasSession:()=>!!getToken(),account,pending:()=>readJournal(),exportPending:()=>{let pending;try{pending=JSON.parse(localStorage.getItem?.(journalKey()+':conflict')||'null')||readJournal()}catch(_){pending=readJournal()}if(!pending&&hydrated)pending={version:cloudVersion,payload:db};if(!pending)return false;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(pending,null,2)],{type:'application/json'}));a.download='chennan-unsynced-'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);return true},get version(){return cloudVersion},get hydrated(){return hydrated}};
 })();
