@@ -225,7 +225,7 @@ function renderGroups(){
     const members=(g.members||[]).map(id=>person(id)).filter(Boolean);
     const counts={old_female:0,new_female:0,old_male:0,new_male:0};
     members.forEach(p=>{const k=balancedGroupCategory(p);if(counts[k]!=null)counts[k]++});
-    const memberHtml=members.map(p=>'<button class="balanced-member" type="button" data-person-detail="'+esc(p.id)+'"><span class="balanced-member-avatar">'+pAvatar(p)+'</span><span><b>'+esc(pCode(p))+'</b><small>'+esc(pName(p))+'</small></span></button>').join('');
+    const memberHtml=members.map(p=>'<button class="balanced-member" type="button" data-person-detail="'+esc(p.id)+'"><span class="balanced-member-code">'+esc(pCode(p))+'</span><span class="balanced-member-name">'+esc(pName(p))+'</span><span class="balanced-member-type">'+esc(genderRelationLabel(p)||'未分类')+'</span></button>').join('');
     return '<div class="card custom-group balanced-group-card" data-group-index="'+index+'">'+
       '<div class="balanced-group-head"><div><small>GROUP '+String(index+1).padStart(2,'0')+'</small><h3>'+esc(g.name)+'</h3></div><span class="balanced-group-total">'+members.length+'人</span></div>'+
       '<div class="balanced-composition"><span>老女 '+counts.old_female+'</span><span>新女 '+counts.new_female+'</span><span>老男 '+counts.old_male+'</span><span>新男 '+counts.new_male+'</span></div>'+
