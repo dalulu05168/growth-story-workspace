@@ -1739,6 +1739,8 @@ dialog.growth-notice{
 .app.app-ready #tradeRecommend .candidate-state-rejected{color:#8f2f2f!important}
 
 /* Holdings */
+.app.app-ready #holdingsV2 :is(.stock-chart-axis,.stock-chart-legend,.stock-chart-legend *){color:#43534a!important}
+
 .app.app-ready #holdingsV2 .holding-kpis,
 .app.app-ready #records .record-summary-grid,
 .app.app-ready #novel .writing-summary-grid,
