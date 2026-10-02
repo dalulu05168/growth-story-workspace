@@ -142,22 +142,87 @@ function personSearchBlob(p){
   return [p.id,pCode(p),p.legacy_id,pName(p),pGender(p),p.age,pRelationName(p),p.location?.city,p.location?.region,p.occupation?.title_zh,p.occupation?.title_fr,p.occupation?.industry_zh,p.personality?.summary,p.crm?.notes,...(p.tags||[])].join(' ').toLowerCase();
 }
 function renderPeople(){
-  const q=($('#personSearch')?.value||'').trim().toLowerCase(),sort=$('#personSort')?.value||'id';
+  const q=($('#personSearch')?.value||'').trim().toLowerCase(),sort=$('#personSort')?.value||'recent';
+  const vipFilter=$('#peopleVipFilter')?.value||'all',statusFilter=$('#peopleStatusFilter')?.value||'all';
   const sg=systemGroup($('#systemGroupFilter')?.value||'all'),cgid=$('#customGroupFilter')?.value||'all',cg=customGroup(cgid);
-  let list=db.people.filter(p=>sg.test(p)&&(!cg||cg.members.includes(String(p.id)))&&(!q||personSearchBlob(p).includes(q)));
-  list.sort((a,b)=>sort==='name'?pName(a).localeCompare(pName(b),'fr'):sort==='enthusiasm'?pEnthusiasm(b)-pEnthusiasm(a):sort==='assets'?pAssets(b)-pAssets(a):String(a.id).localeCompare(String(b.id),undefined,{numeric:true}));
-  $('#peopleCount').textContent=`当前显示 ${list.length} / ${db.people.length} 人`;
-  $('#peopleList').innerHTML=list.map(p=>`<div class="profile-row">
-    <div class="avatar">${pAvatar(p)}</div>
-    <div class="person"><b>${esc(pCode(p))} · ${esc(pName(p))}</b><small>${esc(genderRelationLabel(p)||'未分类')} · ${esc(p.age||'--')}岁 · ${esc(p.location?.city||'城市未填')} · ${esc(p.occupation?.title_zh||p.occupation?.title_fr||'职业未填')}</small></div>
-    ${pVip(p)?'<span class="status vip vip-level vip-level-'+esc(String(p.vip?.level||'VIP').replace(/\D/g,'')||'x')+'">'+esc(p.vip?.level||'VIP')+'</span>':''}
-    <span class="status ${pOpened(p)?'good':'warn'}">${pOpened(p)?'已开户':'未开户'}</span>
-    <span class="status ${pJoined(p)?'good':''}">${pJoined(p)?'已入群':'未入群'}</span>
-    <span class="sort-badge">股票热情 ${pEnthusiasm(p)}</span>
-    <button class="link-btn view-person" data-id="${esc(p.id)}">详情</button>
-    <button class="link-btn edit-person" data-id="${esc(p.id)}">编辑</button>
-    <button class="link-btn danger delete-person" data-id="${esc(p.id)}">删除</button>
-  </div>`).join('')||'<div class="empty">没有匹配人物</div>';
+
+  const latestInteraction=p=>{
+    const rows=(db.records||[]).filter(r=>String(r.personId)===String(p.id));
+    const best=rows.sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')))[0];
+    return String(best?.date||p.crm?.last_contact_at||p.crm?.last_contact_date||'');
+  };
+  const vipPass=p=>{
+    if(vipFilter==='all')return true;
+    if(vipFilter==='vip')return pVip(p);
+    if(vipFilter==='normal')return !pVip(p);
+    return pVip(p)&&String(p.vip?.level||'').toUpperCase()===vipFilter.toUpperCase();
+  };
+  const statusPass=p=>{
+    if(statusFilter==='all')return true;
+    if(statusFilter==='opened')return pOpened(p);
+    if(statusFilter==='not_opened')return !pOpened(p);
+    if(statusFilter==='joined')return pJoined(p);
+    if(statusFilter==='not_joined')return !pJoined(p);
+    return true;
+  };
+
+  let list=db.people.filter(p=>sg.test(p)&&(!cg||cg.members.includes(String(p.id)))&&vipPass(p)&&statusPass(p)&&(!q||personSearchBlob(p).includes(q)));
+  list.sort((a,b)=>
+    sort==='recent'?String(latestInteraction(b)).localeCompare(String(latestInteraction(a))):
+    sort==='name'?pName(a).localeCompare(pName(b),'fr'):
+    sort==='enthusiasm'?pEnthusiasm(b)-pEnthusiasm(a):
+    sort==='assets'?pAssets(b)-pAssets(a):
+    String(a.id).localeCompare(String(b.id),undefined,{numeric:true})
+  );
+
+  const total=db.people.length;
+  const openedCount=db.people.filter(pOpened).length;
+  const vipCount=db.people.filter(pVip).length;
+  const joinedCount=db.people.filter(pJoined).length;
+  const pct=n=>total?((n/total)*100).toFixed(1):'0.0';
+  if($('#peopleDirectorySummary'))$('#peopleDirectorySummary').textContent=`共 ${total} 位投资者，管理人物资料与分组标签`;
+  if($('#peopleMetricTotal'))$('#peopleMetricTotal').textContent=total;
+  if($('#peopleMetricOpened'))$('#peopleMetricOpened').textContent=openedCount;
+  if($('#peopleMetricVip'))$('#peopleMetricVip').textContent=vipCount;
+  if($('#peopleMetricJoined'))$('#peopleMetricJoined').textContent=joinedCount;
+  if($('#peopleMetricOpenedRate'))$('#peopleMetricOpenedRate').textContent=`开户率 ${pct(openedCount)}%`;
+  if($('#peopleMetricVipRate'))$('#peopleMetricVipRate').textContent=`占比 ${pct(vipCount)}%`;
+  if($('#peopleMetricJoinedRate'))$('#peopleMetricJoinedRate').textContent=`入群率 ${pct(joinedCount)}%`;
+  $('#peopleCount').textContent=`当前显示 ${list.length} / ${total} 人`;
+
+  const rowHtml=list.map(p=>{
+    const relation=pRelationCode(p)==='OLD'?'老':'新';
+    const vip=pVip(p)?esc(p.vip?.level||'VIP'):'普通';
+    const vipClass=pVip(p)?'is-vip':'is-normal';
+    const opened=pOpened(p);
+    const joined=pJoined(p);
+    const city=[p.location?.city,p.location?.country||'法国'].filter(Boolean).join(' · ');
+    const last=latestInteraction(p)||'—';
+    return `<tr class="people-table-row ${pVip(p)?'is-vip':''}" data-person-id="${esc(p.id)}">
+      <td class="people-code">${esc(pCode(p))}</td>
+      <td class="people-name-cell"><button class="people-name-button view-person" data-id="${esc(p.id)}"><span class="table-avatar">${pAvatar(p)}</span><b class="table-name">${esc(pName(p))}</b></button></td>
+      <td>${esc(pGender(p)||'—')}</td>
+      <td>${esc(p.age||'—')}</td>
+      <td><span class="people-pill relation ${relation==='老'?'old':'new'}">${relation}</span></td>
+      <td class="vip-cell"><span class="people-pill vip-state ${vipClass}">${pVip(p)?'♛ ':''}${vip}</span></td>
+      <td><span class="people-pill state ${opened?'good':'bad'}"><i></i>${opened?'已开户':'未开户'}</span></td>
+      <td><span class="people-pill state ${joined?'good':'bad'}"><i></i>${joined?'已入群':'未入群'}</span></td>
+      <td class="people-region"><span class="people-pin">◆</span>${esc(city||'—')}</td>
+      <td class="people-last">${esc(last)}</td>
+      <td class="people-actions-cell">
+        <button class="people-more" type="button" aria-label="人物操作" data-person-menu="${esc(p.id)}">•••</button>
+        <div class="people-row-actions-menu" data-person-actions="${esc(p.id)}">
+          <button class="view-person" data-id="${esc(p.id)}">查看详情</button>
+          <button class="edit-person" data-id="${esc(p.id)}">编辑人物</button>
+          <button class="delete-person danger" data-id="${esc(p.id)}">删除人物</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  $('#peopleList').innerHTML=rowHtml
+    ? `<div class="people-table-wrap"><table class="people-data-table people-directory-table"><thead><tr><th>编号</th><th>姓名</th><th>性别</th><th>年龄</th><th>新/老</th><th>VIP</th><th>开户</th><th>入群</th><th>所在地区</th><th>最近互动</th><th>操作</th></tr></thead><tbody>${rowHtml}</tbody></table></div>`
+    : '<div class="empty">没有匹配人物</div>';
 }
 function renderGroups(){
   $('#systemGroups').innerHTML=SYSTEM_GROUPS.filter(g=>g.id!=='all').map(g=>`<div class="group-card"><button class="system-group-open" data-group="${g.id}"><small>系统分组</small><strong>${db.people.filter(g.test).length}</strong><b>${esc(g.name)}</b></button></div>`).join('');
@@ -216,7 +281,7 @@ function go(page){
   }
 }
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>go(b.dataset.page));document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));document.addEventListener('click',e=>{const b=e.target.closest?.('.nav button[data-page]');if(b){e.preventDefault();go(b.dataset.page)}});
-$('#personSearch').oninput=renderPeople;$('#personSort').onchange=renderPeople;$('#systemGroupFilter').onchange=renderPeople;$('#customGroupFilter').onchange=renderPeople;
+$('#personSearch').oninput=renderPeople;$('#personSort').onchange=renderPeople;$('#systemGroupFilter').onchange=renderPeople;$('#customGroupFilter').onchange=renderPeople;if($('#peopleVipFilter'))$('#peopleVipFilter').onchange=renderPeople;if($('#peopleStatusFilter'))$('#peopleStatusFilter').onchange=renderPeople;
 ['recordPerson','recordType','recordSearch'].forEach(id=>$('#'+id).addEventListener(id==='recordSearch'?'input':'change',renderRecords));
 
 function closeModal(){$('#modal').classList.remove('show')}
