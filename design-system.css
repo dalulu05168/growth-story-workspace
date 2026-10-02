@@ -304,7 +304,7 @@ body{letter-spacing:0!important}
 .app.app-ready .empty:not(td){
   min-height:110px!important;padding:22px!important;
   display:grid!important;place-items:center!important;align-content:center!important;gap:6px!important;
-  color:#87908b!important;text-align:center!important;font-size:10px!important;
+  color:#43534a!important;text-align:center!important;font-size:10px!important;
   border:1px dashed #d9dfdb!important;border-radius:9px!important;background:#fafbfa!important;
 }
 .app.app-ready .empty:not(td)::before{
@@ -977,7 +977,7 @@ dialog.growth-notice{
   border:1px dashed #d8ded9!important;
   border-radius:var(--cn-radius-md)!important;
   background:#fafbfa!important;
-  color:#7d8782!important;
+  color:#43534a!important;
 }
 .app.app-ready .empty[data-ui-empty="true"]:not(td)::before{display:none!important}
 .app.app-ready .cn-empty-icon{
@@ -990,7 +990,7 @@ dialog.growth-notice{
   color:#3d4742!important;font-size:10px!important;font-weight:760!important;
 }
 .app.app-ready .cn-empty-desc{
-  color:#858f8a!important;font-size:9px!important;line-height:1.45!important;text-align:center!important;
+  color:#43534a!important;font-size:9px!important;line-height:1.45!important;text-align:center!important;
 }
 
 /* ---------- Modal = unified secondary editor ---------- */
@@ -1824,7 +1824,7 @@ dialog.growth-notice{
 .app.app-ready #holdingsV2 .holding-next-row b{font-size:9px!important;color:#111514!important}
 .app.app-ready #holdingsV2 .holding-next-row small,
 .app.app-ready #holdingsV2 .holding-next-row span{
-  display:block!important;font-size:7.5px!important;color:#737e78!important;margin-top:2px!important;
+  display:block!important;font-size:11px!important;color:#43534a!important;margin-top:2px!important;
 }
 .app.app-ready #holdingsV2 .holding-next-row strong{
   display:block!important;font-size:8px!important;color:#2c3530!important;
@@ -1876,7 +1876,7 @@ dialog.growth-notice{
 .app.app-ready #trades .trade-plan-table-row.due{background:#fbf8ef!important}
 .app.app-ready #trades .trade-plan-table-row.overdue{background:#fbf2f1!important}
 .app.app-ready #trades .trade-plan-table-row b{display:block!important;color:#111514!important;font-size:9px!important}
-.app.app-ready #trades .trade-plan-table-row small{display:block!important;color:#7b8580!important;font-size:7.5px!important;margin-top:2px!important}
+.app.app-ready #trades .trade-plan-table-row small{display:block!important;color:#43534a!important;font-size:11px!important;margin-top:2px!important}
 .app.app-ready #trades .trade-table-actions{
   display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:6px!important;white-space:nowrap!important;
 }
@@ -1897,8 +1897,8 @@ dialog.growth-notice{
   background:#fff!important;
 }
 .app.app-ready #trades .unholding-row b{font-size:9px!important;color:#111514!important}
-.app.app-ready #trades .unholding-row small{display:block!important;font-size:7.5px!important;color:#7b8580!important;margin-top:2px!important}
-.app.app-ready #trades .unholding-row>div:nth-child(2) span{display:block!important;color:#7b8580!important;font-size:7.5px!important}
+.app.app-ready #trades .unholding-row small{display:block!important;font-size:11px!important;color:#43534a!important;margin-top:2px!important}
+.app.app-ready #trades .unholding-row>div:nth-child(2) span{display:block!important;color:#43534a!important;font-size:11px!important}
 .app.app-ready #trades .trade-settings-layout{
   display:grid!important;
   grid-template-columns:minmax(0,1.05fr) minmax(320px,.95fr)!important;
