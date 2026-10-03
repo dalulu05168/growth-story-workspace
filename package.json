@@ -8,7 +8,8 @@
     "test:e2e": "node tests/business-e2e.cjs",
     "build:static": "node scripts/build-static.cjs",
     "test:prelogin": "node tests/prelogin-e2e.cjs",
-    "test:public-login": "node tests/public-login.cjs"
+    "test:public-login": "node tests/public-login.cjs",
+    "build:cloudflare": "npm run build:static"
   },
   "devDependencies": {
     "acorn": "8.15.0",

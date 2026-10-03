@@ -1,0 +1,7 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "chennan-workspace",
+  "pages_build_output_dir": "./dist/pages",
+  "compatibility_date": "2026-10-03",
+  "send_metrics": false
+}
