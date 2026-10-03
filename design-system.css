@@ -392,7 +392,7 @@ dialog.growth-notice{
   background:repeating-linear-gradient(to top,#fff 0,#fff 36px,#edf0ee 37px,#edf0ee 38px)!important;
 }
 .app.app-ready #holdingsV2 .stock-chart-legend{
-  display:flex!important;gap:12px!important;flex-wrap:wrap!important;margin-top:8px!important;color:var(--cn-muted)!important;font-size:8px!important;
+  display:flex!important;gap:12px!important;flex-wrap:wrap!important;margin-top:8px!important;color:#65706a!important;font-size:8px!important;
 }
 .app.app-ready #holdingsV2 .holding-batch{padding:12px!important;margin-top:8px!important}
 .app.app-ready #holdingsV2 .holding-batch-head{
@@ -647,7 +647,7 @@ dialog.growth-notice{
 
 /* Holding chart details */
 .app.app-ready #holdingsV2 .stock-chart-axis{
-  color:var(--cn-muted)!important;font-size:8px!important;margin:0 0 6px!important;
+  color:#65706a!important;font-size:8px!important;margin:0 0 6px!important;
 }
 .app.app-ready #holdingsV2 .hold-bar-wrap{
   min-width:54px!important;display:flex!important;align-items:flex-end!important;justify-content:center!important;height:100%!important;
