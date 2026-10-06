@@ -332,6 +332,17 @@ function bindNav(){
     if(b.dataset.page==='holdingsV2')b.onclick=()=>{go('holdingsV2');renderHoldings()};
   });
 }
-if(typeof window!=='undefined')window.ChenNanTrading={sellHolding:id=>{const holding=db.portfolio.holdings.find(x=>x.id===id);if(holding)openSellBatch(stockKey(holding))}};
+// Projection of actual simulator records; never writes invitations, plans or holdings.
+function scriptSnapshot({date,offerId,toId}={}){
+  const map=toId||((id)=>String(id)),facts=[],required=new Set(),targets=[],holders=[];
+  const selected=(db.tradeSim?.offers||[]).find(o=>o.id===offerId);
+  if(offerId&&!selected)throw Error('模拟交易计划不存在');
+  const recs=(db.tradeSim?.recommendations||[]).filter(r=>r.date===date&&r.offerId===offerId);
+  for(const r of recs)for(const c of r.candidates||[]){const id=map(c.personId);if(!id)throw Error('交易人物编号无法映射');const kind=c.status==='bought'?'bought':c.status==='invited'?'invited':c.status==='rejected'?'rejected':'pending';facts.push({id:'candidate:'+r.id+':'+c.personId,character_id:id,kind,offer_id:r.offerId,status:c.status});targets.push(id);required.add(id);}
+  const rows=(db.portfolio?.holdings||[]).filter(h=>!offerId||h.offerId===offerId);
+  for(const row of rows){const id=map(row.personId);if(!id)throw Error('持仓人物编号无法映射');facts.push({id:'holding:'+row.id,character_id:id,kind:row.status==='sold'?'sold':'holding',record:JSON.parse(JSON.stringify(row))});if(row.status!=='sold')holders.push(id);if(row.status==='sold'&&String(row.soldAt||'').slice(0,10)===date)required.add(id);}
+  return {source:'trading-simulator.js',date,offer_id:offerId||null,offer:selected?JSON.parse(JSON.stringify(selected)):null,eligible_participants:[...new Set(recs.flatMap(r=>(r.candidates||[]).filter(c=>c.status==='invited'||c.status==='bought').map(c=>map(c.personId))))],current_holders:[...new Set(holders)],trade_targets:[...new Set(targets)],reservation_state:'not_required',execution_state:facts,required_participants:[...required],facts};
+}
+if(typeof window!=='undefined')window.ChenNanTrading={scriptSnapshot,sellHolding:id=>{const holding=db.portfolio.holdings.find(x=>x.id===id);if(holding)openSellBatch(stockKey(holding))}};
 setupUI();bindNav();
 })();

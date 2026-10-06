@@ -18,7 +18,7 @@
 <link rel="stylesheet" href="./intro.css?v=20261003-koi-final-1">
 <link rel="stylesheet" href="./france70-chat.css?v=20261002-reference-1">
 <link rel="stylesheet" href="./design-system.css?v=20261003-module-rebuild-5" id="chennanDesignSystemStyles">
-<link rel="preload" href="./data/france70-v6.1.json" as="fetch" crossorigin="anonymous">
+<link rel="preload" href="./data/72人物整合汇总.json" as="fetch" crossorigin="anonymous">
 <script src="./theme-system.js?v=20261002-final-ui-2"></script>
 </head>
 <body>
@@ -31,7 +31,7 @@
     <button data-page="groups"><i>◫</i><span>分组管理</span></button>
     <button data-page="records"><i>▤</i><span>重要事件</span></button>
     <button data-page="novel"><i>✎</i><span>小说文档</span></button>
-    <button data-page="france70chat"><i>✦</i><span>France 70 群聊</span></button>
+    <button data-page="france70chat"><i>✦</i><span>辰南 Script Engine 2.0</span></button>
     <button data-page="topics"><i>◌</i><span>主题检查</span></button>
   </nav>
   <div class="side-note">70 位人物为全量虚构测试数据<br>修改内容保存在当前浏览器</div>
@@ -79,9 +79,9 @@
 <section id="france70chat" class="section">
   <div class="topbar">
     <div>
-      <div class="eyebrow">FRANCE 70 · FREE CHAT & MEMORY</div>
-      <h1 class="page-title">France 70 群聊与长期记忆</h1>
-      <p class="sub">70位虚构法国人物 · v6.1 Voice DNA · 作者正史 · 关系网 · 动态记忆。网页不调用额外付费 AI API。</p>
+      <div class="eyebrow">CHENNAN SCRIPT ENGINE 2.0</div>
+      <h1 class="page-title">辰南 Script Engine 2.0与长期记忆</h1>
+      <p class="sub">70位虚构罗马尼亚成员 · 完整人物背景 · 课程与模拟状态 · 正式记忆。网页不调用额外付费 AI API。</p>
     </div>
     <div class="actions">
       <span class="status good">✓ 0 额外 API 费用</span>
@@ -89,7 +89,7 @@
     </div>
   </div>
 
-  <div id="fr70LoadStatus" class="notice">正在读取 v6.1 角色库…</div>
+  <div id="fr70LoadStatus" class="notice">正在读取正式人物库…</div>
 
   <div class="fr70-stats">
     <div class="fr70-stat"><span>历史会话</span><b id="fr70SessionCount">0</b></div>
@@ -100,12 +100,12 @@
   <div class="card panel" style="margin-bottom:18px">
     <div class="panel-head">
       <h2>免费工作流</h2>
-      <span class="muted">一个入口 · 一个记忆源 · 一个 v6.1 主档</span>
+      <span class="muted">上午09:00–12:00 · 下午13:00–17:00 · 晚间19:00–21:00</span>
     </div>
     <div class="check-box">
       <b>① 输入助理 / 教授内容</b>：系统先从70人中筛选真正有理由参与的人。<br>
       <b>② 生成并复制提示词</b>：把人物人设、关系、Canon、近期记忆一并交给 ChatGPT。<br>
-      <b>③ 粘贴 JSON 回来</b>：先做问句比例、分号、重复话术等 QA，再写入本轮历史和人物动态记忆。
+      <b>③ 粘贴 JSON 回来</b>：先检查草稿；只有点击采用并保存，才更新正式会话和人物记忆。
     </div>
   </div>
 
@@ -124,14 +124,11 @@
         </div>
         <textarea id="fr70Source" class="fr70-textarea" placeholder="粘贴今天助理或教授的发言…"></textarea>
         <div class="fr70-options">
-          <div class="field">
-            <label>候选人物数量</label>
-            <select id="fr70Count" class="select">
-              <option value="10">10 人</option>
-              <option value="15">15 人</option>
-              <option value="20" selected>20 人</option>
-            </select>
-          </div>
+          <div class="field"><label>课程日期</label><input id="seDate" class="input" type="date"></div>
+          <div class="field"><label>课程时间</label><input id="seTime" class="input" type="time" value="09:00"></div>
+          <div class="field"><label>模拟交易计划</label><select id="seOffer" class="select"></select></div>
+          <div class="field"><label>话题复杂度</label><select id="seComplexity" class="select"><option value="0">普通</option><option value="3">多角度</option><option value="5">复杂</option></select></div>
+          <label><input id="seClose" type="checkbox"> 本条用户原话为闭群消息</label>
           <label class="fr70-check"><input id="fr70Reuse" type="checkbox"> 优先延续上一轮人物，但仍允许根据话题调整</label>
         </div>
         <div class="button-row" style="margin-top:13px">
@@ -145,8 +142,8 @@
       <div class="card fr70-card" style="margin-top:18px">
         <div class="eyebrow">STEP 2</div>
         <h2 style="margin:3px 0 10px">复制提示词到 ChatGPT</h2>
-        <textarea id="fr70Prompt" class="fr70-prompt" readonly placeholder="点击“生成提示词”后，这里会包含所选人物 v6.1 人设、关系网和动态记忆。"></textarea>
-        <div class="fr70-note">提示词已写入真实性规则：直接问句目标约25%–35%，牵引不能等于人人提问，也不能强迫观望者和质疑者统一结论。</div>
+        <textarea id="fr70Prompt" class="fr70-prompt" readonly placeholder="点击“生成提示词”后，这里会包含所选人物 完整人物资料、关系网和动态记忆。"></textarea>
+        <div class="fr70-note">成员可提问、补充、质疑或沉默。模拟状态决定交易事实；草稿不会写入正式记忆。</div>
       </div>
 
       <div class="card fr70-card" style="margin-top:18px">
@@ -154,8 +151,9 @@
         <h2 style="margin:3px 0 10px">粘贴 ChatGPT 返回的 JSON</h2>
         <textarea id="fr70Result" class="fr70-output" placeholder='粘贴 {"messages":[...],"memory_events":[...]}'></textarea>
         <div class="button-row" style="margin-top:12px">
-          <button class="btn primary" type="button" id="fr70Import">检查并导入群聊</button>
+          <button class="btn primary" type="button" id="fr70Import">检查草稿</button>
         </div>
+        <button class="btn primary" type="button" id="seAdopt">采用并保存正式会话</button>
         <div id="fr70Qa" class="fr70-qa"></div>
       </div>
     </div>
@@ -200,6 +198,7 @@
 <script src="./people-detail.js?v=20261003-unified-2"></script>
 <script src="./trading-simulator.js?v=20261003-module-rebuild-3"></script>
 <script src="./character-memory.js?v=20261001-reliable-1"></script>
+<script src="./script-engine.js?v=20261006-2"></script>
 <script src="./france70-chat.js?v=20261003-detail-2"></script>
 <script src="./document-workspace.js?v=20261003-module-rebuild-2"></script>
 <script src="./security-ui.js?v=20261002-no-mfa-1"></script>

@@ -1,7 +1,7 @@
 
 const STORAGE_KEY='growth-workspace-db';
 const DATA_URL='./data/people.json';
-const DEFAULT_DATASET_VERSION='3.0';
+const DEFAULT_DATASET_VERSION='4.0.0-script-engine-2';
 const emptyDB={people:[],records:[],docs:[],dailyDocs:{},customGroups:[],meta:{}};
 let db=loadLocal();
 let selectedDocId=db.docs[0]?.id||null;
@@ -50,7 +50,7 @@ function normalizePerson(raw={}){
   p.customer_relation=p.customer_relation&&typeof p.customer_relation==='object'?p.customer_relation:{type:(p.genderAge||'').includes('老')?'老客户':'新客户',type_code:(p.genderAge||'').includes('老')?'OLD':'NEW'};
   p.vip=p.vip&&typeof p.vip==='object'?p.vip:{is_vip:false,level:null,reason:null};
   p.account=p.account&&typeof p.account==='object'?p.account:{opened:false,status:'未开户',status_code:'NOT_OPENED',opened_date:null};
-  p.location=p.location&&typeof p.location==='object'?p.location:{country:'法国',country_code:'FR',city:'',region:''};
+  p.location=p.location&&typeof p.location==='object'?p.location:{country:'罗马尼亚',country_code:'RO',city:'',region:''};
   p.occupation=p.occupation&&typeof p.occupation==='object'?p.occupation:{title_fr:'',title_zh:'',industry_fr:'',industry_zh:'',employment_status:'',years_in_role:null,education:'',career_stage:''};
   p.family=p.family&&typeof p.family==='object'?p.family:{};
   p.finance=p.finance&&typeof p.finance==='object'?p.finance:{annual_income_eur:0,estimated_investable_assets_eur:0,estimated_liquid_assets_eur:0,available_investment_capital_eur:0};
@@ -78,7 +78,7 @@ async function seedDefaultPeople(){
       let added=0;
       list.map(normalizePerson).forEach(p=>{if(!existing.has(String(p.id))){db.people.push(p);added++}});
       db.meta.defaultDatasetVersion=DEFAULT_DATASET_VERSION;
-      db.meta.defaultDatasetName=dataset.dataset_name||'法国人物70位';
+      db.meta.defaultDatasetName=dataset.dataset_name||'罗马尼亚人物70位';
       save();
       $('#seedNotice').textContent=`默认人物数据已就绪：${list.length} 人；本次补充 ${added} 人。`;
     }else{
@@ -421,7 +421,7 @@ function openPerson(id){
     x.id=pid;x.name=String(f.get('name')).trim();x.frenchName=x.name;
     x.gender=f.get('gender');x.gender_code=x.gender==='女'?'F':'M';x.age=Number(f.get('age'))||null;
     x.customer_relation=x.customer_relation||{};x.customer_relation.type_code=f.get('relation');x.customer_relation.type=x.customer_relation.type_code==='OLD'?'老客户':'新客户';
-    x.location=x.location||{};x.location.country=x.location.country||'法国';x.location.country_code=x.location.country_code||'FR';x.location.city=String(f.get('city')).trim();
+    x.location=x.location||{};x.location.country=x.location.country||'罗马尼亚';x.location.country_code=x.location.country_code||'RO';x.location.city=String(f.get('city')).trim();
     x.occupation=x.occupation||{};x.occupation.title_zh=String(f.get('occupation')).trim();x.occupation.industry_zh=String(f.get('industry')).trim();
     x.finance=x.finance||{};x.finance.annual_income_eur=Number(f.get('income'))||0;x.finance.estimated_investable_assets_eur=Number(f.get('assets'))||0;
     x.investment_profile=x.investment_profile||{};x.investment_profile.stock_enthusiasm_index=Math.max(0,Math.min(100,Number(f.get('enthusiasm'))||0));x.investment_profile.risk_tolerance=String(f.get('risk')).trim();

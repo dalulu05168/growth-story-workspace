@@ -57,7 +57,7 @@ const PAGE_META={
   trades:{eyebrow:'TRADING PLAN',title:'交易计划',sub:'集中管理今日待售、待买、持仓、未持仓人员与名单生成规则。'},
   records:{eyebrow:'INVESTOR RECORDS',title:'人物记录',sub:'统一记录人物重要事件、发言与联系信息，并辅助检查重复与状态冲突。'},
   novel:{eyebrow:'WRITING WORKSPACE',title:'撰写',sub:'每日文档、人物发言、长期记忆与一致性提醒统一写作工作台。'},
-  france70chat:{eyebrow:'FRANCE 70',title:'France 70 群聊与长期记忆',sub:'使用既有人设、关系网、Voice DNA 与动态记忆组织群聊内容。'},
+  france70chat:{eyebrow:'SCRIPT ENGINE 2.0',title:'辰南群聊与正式记忆',sub:'按课程、完整罗马尼亚人物资料和模拟交易状态生成成员互动。'},
   topics:{eyebrow:'CONSISTENCY CHECK',title:'一致性检查',sub:'汇总人物数据规则、主题标签与逻辑检查信息，辅助保持长期内容一致。'}
 };
 

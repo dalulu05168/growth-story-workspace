@@ -10,7 +10,7 @@ test('release verifier rejects altered payloads even with a matching source comm
   execFileSync(process.execPath,['scripts/build-static.cjs'],{cwd:root});
   let tamper=false,missing=false;
   const server=http.createServer((req,res)=>{
-    const file=new URL(req.url,'http://localhost').pathname.slice(1);
+    const file=decodeURIComponent(new URL(req.url,'http://localhost').pathname.slice(1));
     if(missing&&file==='release.json'){res.writeHead(404);res.end();return}
     const content=fs.readFileSync(path.join(root,'dist/pages',file));
     res.end(tamper&&file==='auth.js'?Buffer.concat([content,Buffer.from('\n/* changed */')]):content);

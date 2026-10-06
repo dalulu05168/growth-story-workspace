@@ -74,7 +74,7 @@ async function ensureDefaultPeople(){
   const {res,data:src}=await requestJson(DATA_URL,{cache:'no-store'},'dataset');
   if(!res.ok)throw new Error('人物资料加载失败，请稍后重试');
   const list=Array.isArray(src)?src:(Array.isArray(src.people)?src.people:[]);
-  if(list.length){db.people=list.map(normalizePerson);db.meta.defaultDatasetVersion=DEFAULT_DATASET_VERSION;db.meta.defaultDatasetName=src.dataset_name||'法国人物70位'}
+  if(list.length){db.people=list.map(normalizePerson);db.meta.defaultDatasetVersion=DEFAULT_DATASET_VERSION;db.meta.defaultDatasetName=src.dataset_name||'罗马尼亚人物70位'}
 }
 async function hydrate(){
   const pending=readJournal();

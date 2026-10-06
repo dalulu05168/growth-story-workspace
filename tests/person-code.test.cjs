@@ -6,6 +6,6 @@ test('C.01–C.70 aliases resolve existing people without breaking data referenc
  const ctx={db:{people}};vm.createContext(ctx);vm.runInContext(functions,ctx);
  for(let i=0;i<70;i++){const code='C.'+String(i+1).padStart(2,'0');assert.equal(ctx.pCode(people[i]),code);assert.equal(ctx.person(code),people[i]);assert.equal(ctx.person(people[i].id),people[i]);assert.equal(people[i].display_id,code)}
  assert.equal(new Set(people.map(ctx.pCode)).size,70);assert.equal(ctx.person('C.71'),null);
- const expected=[['OLD','女',10],['NEW','女',20],['OLD','男',20],['NEW','男',20]];let offset=0;
- for(const [relation,gender,count] of expected){for(const p of people.slice(offset,offset+count)){assert.equal(p.gender,gender);assert.equal(p.customer_relation.type_code,relation)}offset+=count}
+ const formal=JSON.parse(fs.readFileSync('data/72人物整合汇总.json')).profiles;
+ for(const p of people){const source=formal.find(x=>x.character_id===p.character_id);assert.equal(p.gender,source.gender==='female'?'女':'男');assert.equal(p.customer_relation.type_code,source.member_type.toUpperCase());assert.equal(p.account.opened,source.account_opened);assert.equal(p.vip.is_vip,source.vip)}
 });
