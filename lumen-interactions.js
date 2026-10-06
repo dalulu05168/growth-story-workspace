@@ -2,8 +2,6 @@
  * Zero-write-on-load mode: visual enhancement must not mutate business state.
  */
 (() => {
-  document.documentElement.dataset.uiPlugin = 'lumen-polish-v1';
-
   const chartSelector = [
     '[data-cn-chart]',
     '.cn-chart',
