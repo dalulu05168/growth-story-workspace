@@ -14,6 +14,8 @@ function ensureStylesheetLast(){
     link.href='./design-system.css?v=20261003-unified-2';
   }
   document.head.appendChild(link);
+  const polish=document.getElementById('chennanLumenPolishStyles');
+  if(polish)document.head.appendChild(polish);
 }
 ensureStylesheetLast();
 
