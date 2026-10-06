@@ -156,6 +156,10 @@ async function runIntro(root){
 }
 
 function injectAuth(){
+  // Login UI must be a singleton. If this script is evaluated twice, do not create a second form.
+  if(document.getElementById('authRoot'))return;
+  document.querySelectorAll('.auth-root').forEach((node,index)=>{if(index>0)node.remove()});
+
   const app=document.querySelector('.app');
   if(app)app.classList.add('app-lock');
 
@@ -200,6 +204,32 @@ async function showAuthCard(){
     stage.classList.add('auth-stage-pending');
   }
 
+
+function enforceSingleLoginFields(stage){
+  if(!stage)return;
+  const users=Array.from(stage.querySelectorAll('#loginUser,[name="user"]'));
+  const passwords=Array.from(stage.querySelectorAll('#loginPassword,[name="password"]'));
+  users.slice(1).forEach(node=>node.closest('.auth-field')?.remove()||node.remove());
+  passwords.slice(1).forEach(node=>node.closest('.auth-field')?.remove()||node.remove());
+
+  const user=stage.querySelector('#loginUser');
+  const password=stage.querySelector('#loginPassword');
+  if(user){
+    user.id='loginUser';
+    user.name='user';
+    user.type='text';
+    user.autocomplete='username';
+    user.placeholder='请输入账号 / 邮箱 / 手机号';
+  }
+  if(password){
+    password.id='loginPassword';
+    password.name='password';
+    password.type='password';
+    password.autocomplete='current-password';
+    password.placeholder='请输入密码';
+  }
+}
+
   stage.innerHTML='<div class="login-shell">'
     +'<h1 class="login-accessible-brand">辰南 · 创作工作台</h1>'
     +'<div class="auth-card">'
@@ -216,6 +246,7 @@ async function showAuthCard(){
     +'</div>'
   +'</div>';
 
+  enforceSingleLoginFields(stage);
   try{const remembered=localStorage.getItem('chennan-login-account');if(remembered){byId('loginUser').value=remembered;byId('rememberAccount').checked=true}}catch{}
   stage.querySelector('.auth-password-toggle').onclick=function(){
     const visible=byId('loginPassword').type==='password';byId('loginPassword').type=visible?'text':'password';
