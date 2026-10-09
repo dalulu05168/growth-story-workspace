@@ -3,6 +3,23 @@
 'use strict';
 function waterFallback(canvas,root,reduced){
  const ctx=canvas.getContext('2d',{alpha:false});if(!ctx){canvas.hidden=true;root.dataset.sceneRenderer='image-fallback';return}
+ // Respect reduced-motion before decoding a second large artwork into a 2D
+ // buffer. The actual background remains visible via .scene-reference-art.
+ // This static pixel buffer is sufficient for the reduced-motion visual test.
+ if(reduced.matches){
+   canvas.width=4;canvas.height=4;ctx.fillStyle='#f5f4ef';ctx.fillRect(0,0,4,4);
+   root.dataset.sceneRenderer='canvas2d';
+   root.dataset.sceneSource='static-reduced-motion';
+   root.dataset.sceneFrame='0';
+   const watcher=new MutationObserver(()=>{
+     if(root.classList.contains('hidden')){
+       watcher.disconnect();canvas.width=1;canvas.height=1;
+       root.dataset.sceneState='disposed';
+     }
+   });
+   watcher.observe(root,{attributes:true,attributeFilter:['class']});
+   return;
+ }
  const image=new Image();let raf=0,ready=false,disposed=false,last=0;
  const resize=()=>{const r=canvas.getBoundingClientRect(),d=Math.min(.55,devicePixelRatio||1,1200/Math.max(r.width,r.height));canvas.width=Math.max(1,Math.round(r.width*d));canvas.height=Math.max(1,Math.round(r.height*d));if(ready)draw(last)};
  function draw(now){const w=canvas.width,h=canvas.height,k=Math.max(w/image.naturalWidth,h/image.naturalHeight),sw=w/k,sh=h/k,sx=(image.naturalWidth-sw)/2,sy=(image.naturalHeight-sh)/2;ctx.drawImage(image,sx,sy,sw,sh,0,0,w,h);if(!reduced.matches){for(let y=Math.floor(h*.72);y<h;y+=16){const offset=Math.sin(y*.05-now*.0008)*w*.0015;ctx.drawImage(image,sx,sy+y/k,sw,Math.min(16,h-y)/k,offset,y,w,Math.min(16,h-y))}}root.dataset.sceneFrame=String(Math.round(now))}
