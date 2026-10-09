@@ -33,6 +33,14 @@ jobs:
       - run: npm run test:gate
       - run: npm run build:static
       - run: npm run test:prelogin
+      - name: Capture responsive UI preview screenshots (synthetic fixtures only)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: workspace-ui-preview-${{ github.sha }}
+          path: evidence/*.png
+          if-no-files-found: warn
+          retention-days: 7
       - uses: actions/upload-artifact@v4
         with:
           name: pages-${{ github.sha }}
