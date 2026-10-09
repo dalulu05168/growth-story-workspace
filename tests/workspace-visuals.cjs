@@ -13,7 +13,7 @@ async function workspaceVisuals(browser,url){
   const calls=[];
   await context.route('**/functions/v1/workspace-cloud',async route=>{
    const request=route.request().postDataJSON();calls.push(request.action);
-   assert(['login','load'].includes(request.action),'visual tests may not modify cloud data');
+   assert(['login','load'].includes(request.action),'visual tests may not modify cloud data; unexpected action: '+String(request.action));
    const body=request.action==='login'?{ok:true,token:'local-visual-session',account:{username:'e2e_local_visual'}}:
     {ok:true,version:1,payload:{people,records:[],docs:[],dailyDocs:{},customGroups:[],meta:{},portfolio:{},tradeSim:{offers:[{id:'visual-offer',symbol:'SOTA',name:'Elbo EU',market:'美股',currency:'USD',unitPrice:32,minShares:300,discountPct:15,holdDays:3,participantCount:10}],recommendations:[]}}};
    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(body)});
