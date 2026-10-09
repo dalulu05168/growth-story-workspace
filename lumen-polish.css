@@ -826,3 +826,10 @@ body::before{
     scroll-behavior:auto!important;
   }
 }
+
+/* Mobile navigation must stack above scrolled member rows.
+   The main content must not intercept taps on the fixed bottom navigation. */
+@media(max-width:700px){
+  .app.app-ready>.main{position:relative!important;z-index:0!important;}
+  .app.app-ready>.sidebar{z-index:250!important;isolation:isolate!important;pointer-events:auto!important;}
+}
