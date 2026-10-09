@@ -182,7 +182,7 @@ function syncSecondaryNav(){
   const active=$('.main>.section.active');if(!active)return;
   const parent=active.dataset.uiParent||SECONDARY_PARENT[active.id];
   if(!parent)return;
-  $('.sidebar .nav button[data-page]').forEach(b=>{const expected=b.dataset.page===parent;if(b.classList.contains('active')!==expected)b.classList.toggle('active',expected)});
+  document.querySelectorAll('.sidebar .nav button[data-page]').forEach(b=>{const expected=b.dataset.page===parent;if(b.classList.contains('active')!==expected)b.classList.toggle('active',expected)});
 }
 function normalizeSurfaceRoles(root=document){
   $$('.section>.card,.section>.panel,.section>.grid>.card,.section>.grid>.panel',root).forEach(x=>x.dataset.uiSurface='parent');
