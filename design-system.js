@@ -81,7 +81,7 @@ function normalizePrimaryHeader(section){
   const meta=PAGE_META[section.id];
   const top=section.querySelector(':scope > .topbar')||section.querySelector('.topbar');
   if(!top)return;
-  top.classList.add('cn-page-header');
+  if(!top.classList.contains('cn-page-header'))top.classList.add('cn-page-header');
   const left=top.firstElementChild;
   if(!left)return;
   let eyebrow=left.querySelector('.eyebrow');
@@ -151,7 +151,7 @@ function normalizeModals(root=document){
       eye.textContent=modalEyebrow(title.textContent);
       title.before(eye);
     }else if(title&&m.querySelector('.cn-modal-eyebrow')){
-      m.querySelector('.cn-modal-eyebrow').textContent=modalEyebrow(title.textContent);
+      const eyebrow=m.querySelector('.cn-modal-eyebrow');const expected=modalEyebrow(title.textContent);if(eyebrow.textContent!==expected)eyebrow.textContent=expected;
     }
   });
   $$('dialog',root).forEach(d=>{
@@ -170,9 +170,9 @@ function normalizeDetailPages(){
     const sec=$('#'+id);if(!sec)return;
     sec.dataset.uiPageType='detail';
     sec.dataset.uiParent=SECONDARY_PARENT[id];
-    sec.classList.add('cn-secondary-page');
+    if(!sec.classList.contains('cn-secondary-page'))sec.classList.add('cn-secondary-page');
     const head=sec.querySelector('.detail-head');
-    if(head)head.classList.add('cn-page-header');
+    if(head&&!head.classList.contains('cn-page-header'))head.classList.add('cn-page-header');
   });
   const person=$('#personDetailPage');
   const eyebrow=person?.querySelector('.detail-head .eyebrow');
@@ -182,7 +182,7 @@ function syncSecondaryNav(){
   const active=$('.main>.section.active');if(!active)return;
   const parent=active.dataset.uiParent||SECONDARY_PARENT[active.id];
   if(!parent)return;
-  $$('.sidebar .nav button[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===parent));
+  $('.sidebar .nav button[data-page]').forEach(b=>{const expected=b.dataset.page===parent;if(b.classList.contains('active')!==expected)b.classList.toggle('active',expected)});
 }
 function normalizeSurfaceRoles(root=document){
   $$('.section>.card,.section>.panel,.section>.grid>.card,.section>.grid>.panel',root).forEach(x=>x.dataset.uiSurface='parent');
