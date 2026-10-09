@@ -45,7 +45,7 @@ async function sceneVisuals(browser,url){
    await p.locator('.nav [data-page=people]').click();assert.equal(await p.locator('.people-data-table tbody tr:first-child td:first-child').innerText(),'C.01');assert.equal(await p.locator('.people-data-table .person-portrait').count(),18,'first page shows 18 portraits from the 70 loaded people');
    await p.locator('[data-open-person="FR0001"]').click();await p.locator('#personDetailPage.active').waitFor({state:'visible'});assert.match(await p.locator('#personDetailContent .sub').innerText(),/^C\.01/);
    assert.equal(await p.locator('#personDetailContent .detail-line b').first().isVisible(),true,'profile detail remains readable');
-   await p.locator('.nav [data-page=novel]').click();await p.locator('#speechRanking [data-sp="FR0001"]').click();assert.match(await p.locator('#memoryPerson').innerText(),/Claire Dubois/);assert.match(await p.locator('#speechRanking').innerText(),/C\.01/);
+   await p.locator('.nav [data-page=novel]').click();await p.locator('#speechRanking [data-sp="FR0001"]').click();assert.match(await p.locator('#memoryPerson').innerText(),new RegExp(people[0].name.replace(/[.*+?^${}()|[\]\\]/g,'\\assert.match(await p.locator('#memoryPerson').innerText(),/Claire Dubois/);')));assert.match(await p.locator('#speechRanking').innerText(),/C\.01/);
    assert.deepEqual(errors,[]);console.log('PASS independent lake, brush, coin, scene disposal, avatars, profile and writing ('+reducedMotion+')');
   }finally{await context.close()}
  }
