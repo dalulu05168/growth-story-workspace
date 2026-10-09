@@ -18,6 +18,7 @@ function registry(profiles,people){
  for(const p of people||[]){const id=identity(p);if(ids.includes(id)){if(Object.values(external).includes(id))throw Error('工作区编号重复 '+id);external[p.id]=id;}}
  return {byId,external,toId(value){const id=String(value||'');return byId[id]?id:external[id]||null;}};
 }
+function newestSessions(state){return (state.sessions||[]).map((s,i)=>({s,i})).sort((a,b)=>String(b.s.createdAt||b.s.date||'').localeCompare(String(a.s.createdAt||a.s.date||''))||a.i-b.i).map(x=>x.s);}
 function memberType(p){return p.member_type||String(p.customer_relation&&p.customer_relation.type_code||'').toLowerCase();}
 function migrate(legacy,reg,baseline){
  const state={schemaVersion:'2.0',revision:0,sessions:[],memory:{},questions:[],disagreements:[],facts:[],interactions:[],dailySummaries:{},closed:[],migrationIssues:[]};
@@ -36,7 +37,7 @@ function select(reg,state,sc,simulation,options={}){
  if(sc.closed||state.closed.includes(sc.date+'|'+sc.period))return [];
  const must=new Set((simulation&&simulation.required_participants||[]).map(id=>reg.toId(id)).filter(Boolean));
  const direct=new Set((options.directTargets||[]).map(id=>reg.toId(id)).filter(Boolean));
- const history=state.sessions.flatMap(s=>s.messages||[]).slice(-100),recent=history.slice(-20);
+ const history=newestSessions(state).flatMap(s=>[...(s.messages||[])].reverse()).slice(0,100),recent=history.slice(0,20);
  const text=String(sc.topic||''),scored=ids.map(id=>{const p=reg.byId[id],count=recent.filter(m=>(m.character_id||m.speaker_id)===id).length,group=p.group_role||p.novel_profile&&p.novel_profile.style_cluster||'',details=JSON.stringify(p),words=text.match(/[\p{L}]{2,}/gu)||[];let score=words.filter(w=>details.includes(w)).length*3-count*8;
  if(state.questions.some(q=>q.character_id===id&&q.status==='open'))score+=12;
  if(options.reuse&&recent.some(m=>m.character_id===id))score+=2;
@@ -52,7 +53,7 @@ function select(reg,state,sc,simulation,options={}){
  return out;
 }
 function prompt(reg,state,sc,simulation,selected){
- return {engine:'辰南 Script Engine 2.0',status:'draft',scene:clone(sc),source:{message_id:'source',kind:sc.sourceKind,text:sc.sourceText},selected_characters:selected.map(id=>({...clone(reg.byId[id]),character_id:id,member_type:memberType(reg.byId[id])})),character_memories:Object.fromEntries(selected.map(id=>[id,clone(state.memory[id]||state.profileMemories&&state.profileMemories[id]||{})])),recent_sessions:clone(state.sessions.slice(-5)),open_questions:clone(state.questions.filter(q=>q.status==='open')),disagreements:clone(state.disagreements),established_facts:clone(state.facts),simulation:clone(simulation),instructions:[
+ return {engine:'辰南 Script Engine 2.0',status:'draft',scene:clone(sc),source:{message_id:'source',kind:sc.sourceKind,text:sc.sourceText},selected_characters:selected.map(id=>({...clone(reg.byId[id]),character_id:id,member_type:memberType(reg.byId[id])})),character_memories:Object.fromEntries(selected.map(id=>[id,clone(state.memory[id]||state.profileMemories&&state.profileMemories[id]||{})])),recent_sessions:clone(newestSessions(state).slice(0,5)),open_questions:clone(state.questions.filter(q=>q.status==='open')),disagreements:clone(state.disagreements),established_facts:clone(state.facts),simulation:clone(simulation),instructions:[
  '所有内容是虚构演练。仅生成01–70成员互动；助理和教授原话由用户提供，原样保留，不代写、补写或闭群。',
  '人物完整资料是唯一背景来源。姓名仅用于显示，身份和所有关联使用character_id。新人/老人、VIP、开户分别读取，不相互推导。',
  '模拟程序当前状态 > 正式会话记忆 > 正式人物配置 > 课程规则 > 草稿建议。对白不得改变交易状态。',
