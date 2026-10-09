@@ -13,9 +13,15 @@ function ensureStylesheetLast(){
     link.rel='stylesheet';
     link.href='./design-system.css?v=20261003-unified-2';
   }
-  document.head.appendChild(link);
+  const head=document.head;
   const polish=document.getElementById('chennanLumenPolishStyles');
-  if(polish)document.head.appendChild(polish);
+  // Do not detach/re-attach a loaded stylesheet on every DOM mutation.
+  // Keep the correct ordering only if the links actually moved.
+  if(link.parentNode!==head)head.appendChild(link);
+  if(polish){
+    if(link.nextElementSibling!==polish)head.insertBefore(link,polish);
+    if(polish!==head.lastElementChild)head.appendChild(polish);
+  }else if(link!==head.lastElementChild){head.appendChild(link);}
 }
 ensureStylesheetLast();
 
