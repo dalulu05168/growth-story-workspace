@@ -43,6 +43,7 @@ async function workspaceVisuals(browser,url){
    const animation=await page.locator('.sidebar').evaluate(e=>getComputedStyle(e).animationName);
    assert.equal(animation,'none','the unified workspace sidebar should remain stable after login');
    assert.equal(await page.locator('.app').evaluate(e=>getComputedStyle(e).transform),'none');
+   assert.equal(await page.locator('.nav [data-page="france70chat"] span').innerText(),'群聊引擎','group engine navigation must remain Chinese');
    await settle(page);
    for(const theme of ['reference']){
     assert.equal(await page.locator('[data-theme-button]').count(),0);
