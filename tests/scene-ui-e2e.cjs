@@ -6,7 +6,13 @@ async function sceneVisuals(browser,url){
   const people=JSON.parse(fs.readFileSync('data/people.json')).people;
   await context.route('**/functions/v1/workspace-cloud',route=>{const r=route.request().postDataJSON();assert(['login','load'].includes(r.action));return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(r.action==='login'?{ok:true,token:'local-scene-session',account:{username:'e2e_local_scene'}}:{ok:true,version:1,payload:{people,records:[],docs:[],dailyDocs:{},customGroups:[],meta:{romanianProfiles2:true,defaultDatasetVersion:'4.0.0-script-engine-2'},portfolio:{},tradeSim:{}}})})});
   try{
-   const p=await context.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));await p.goto(url);await p.waitForFunction(()=>document.querySelector('#authRoot')?.dataset.introPhase==='login-ready');await p.evaluate(async()=>{await Promise.all(document.getAnimations().filter(a=>a.effect.getComputedTiming().iterations!==Infinity).map(a=>a.finished.catch(()=>{})))});
+   const p=await context.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));
+   if(browser.browserType().name()==='webkit'){
+    p.on('crash',()=>console.error('WEBKIT_DIAG page crashed'));
+    p.on('close',()=>console.error('WEBKIT_DIAG page closed'));
+    browser.on('disconnected',()=>console.error('WEBKIT_DIAG browser disconnected'));
+   }
+   await p.goto(url);await p.waitForFunction(()=>document.querySelector('#authRoot')?.dataset.introPhase==='login-ready');await p.evaluate(async()=>{await Promise.all(document.getAnimations().filter(a=>a.effect.getComputedTiming().iterations!==Infinity).map(a=>a.finished.catch(()=>{})))});
    await p.waitForFunction(()=>['webgl','canvas2d'].includes(document.querySelector('#authRoot').dataset.sceneRenderer));
    // Sample a complete 18-second cycle: opaque brush pixels must stay outside the coin's conservative circular envelope.
    const separated=await p.evaluate(()=>{
@@ -43,7 +49,12 @@ async function sceneVisuals(browser,url){
    await p.locator('.sidebar .cn-electric-logo:visible').waitFor({state:'visible'});
    assert.equal(await p.locator('.cn-electric-logo:visible').count(),1,'one visible brand logo');assert.equal(await p.locator('.cn-electric-logo .cn-brush-logo-text').innerText(),'辰南');assert.equal(await p.locator('.brand-copy small:visible,.header-brand span:visible').count(),0,'no duplicate brand title or subtitle');
    await p.locator('.nav [data-page=people]').click();assert.equal(await p.locator('.people-data-table tbody tr:first-child td:first-child').innerText(),'C.01');assert.equal(await p.locator('.people-data-table .person-portrait').count(),18,'first page shows 18 portraits from the 70 loaded people');
-   await p.locator('[data-open-person="FR0001"]').click();await p.locator('#personDetailPage.active').waitFor({state:'visible'});assert.match(await p.locator('#personDetailContent .sub').innerText(),/^C\.01/);
+   if(browser.browserType().name()==='webkit')console.log('WEBKIT_DIAG opening profile, page open:',!p.isClosed());
+   await p.locator('[data-open-person="FR0001"]').click();
+   if(browser.browserType().name()==='webkit'){
+    try{const state=await p.evaluate(()=>({active:document.querySelector('.section.active')?.id,detail:document.querySelector('#personDetailContent')?.childElementCount,ready:document.readyState,body:document.body?.children.length}));console.log('WEBKIT_DIAG after profile click',JSON.stringify(state));}catch(err){console.error('WEBKIT_DIAG after-click state unavailable',err.message);}
+   }
+   await p.locator('#personDetailPage.active').waitFor({state:'visible',timeout:10000});assert.match(await p.locator('#personDetailContent .sub').innerText(),/^C\.01/);
    assert.equal(await p.locator('#personDetailContent .detail-line b').first().isVisible(),true,'profile detail remains readable');
    await p.locator('.nav [data-page=novel]').click();await p.locator('#speechRanking [data-sp="FR0001"]').click();assert((await p.locator('#memoryPerson').innerText()).includes(people[0].name),'writing panel must show the current Romanian character name');assert.match(await p.locator('#speechRanking').innerText(),/C\.01/);
    assert.deepEqual(errors,[]);console.log('PASS independent lake, brush, coin, scene disposal, avatars, profile and writing ('+reducedMotion+')');
