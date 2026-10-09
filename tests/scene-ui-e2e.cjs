@@ -23,8 +23,13 @@ async function sceneVisuals(browser,url){
     for(let t=0;t<=18000&&clear;t+=1000){
      animations.forEach(a=>{a.pause();a.currentTime=t});const style=getComputedStyle(brush),matrix=new DOMMatrix(style.transform==='none'?undefined:style.transform),origin=style.transformOrigin.split(' ').map(Number.parseFloat);
      ctx.resetTransform();ctx.clearRect(0,0,canvas.width,canvas.height);ctx.translate(brush.offsetLeft+origin[0],brush.offsetTop+origin[1]);ctx.transform(matrix.a,matrix.b,matrix.c,matrix.d,matrix.e,matrix.f);ctx.translate(-origin[0],-origin[1]);ctx.drawImage(brush,0,0,brush.clientWidth,brush.clientHeight);
-     const pixels=ctx.getImageData(0,0,canvas.width,canvas.height).data,cx=coin.offsetLeft+coin.clientWidth/2,cy=coin.offsetTop+coin.clientHeight/2-5,radius=coin.clientWidth*.53;
-     for(let y=0;y<canvas.height&&clear;y+=3)for(let x=0;x<canvas.width;x+=3)if(pixels[(y*canvas.width+x)*4+3]>100&&(x-cx)**2+(y-cy)**2<radius**2){clear=false;break}
+     // Inspect exactly the coin's full collision envelope, not the whole large 16:9 canvas.
+     // This preserves all temporal collision samples while avoiding large WebKit pixel buffers.
+     const cx=coin.offsetLeft+coin.clientWidth/2,cy=coin.offsetTop+coin.clientHeight/2-5,radius=coin.clientWidth*.53;
+     const x0=Math.max(0,Math.floor(cx-radius)),y0=Math.max(0,Math.floor(cy-radius));
+     const w=Math.max(1,Math.min(canvas.width-x0,Math.ceil(cx+radius)-x0)),h=Math.max(1,Math.min(canvas.height-y0,Math.ceil(cy+radius)-y0));
+     const pixels=ctx.getImageData(x0,y0,w,h).data;
+     for(let y=0;y<h&&clear;y+=3)for(let x=0;x<w;x+=3)if(pixels[(y*w+x)*4+3]>100&&(x+x0-cx)**2+(y+y0-cy)**2<radius**2){clear=false;break}
     }
     animations.forEach((a,i)=>{a.currentTime=times[i];if(states[i]==='running')a.play()});return clear;
    });assert.equal(separated,true,'brush must stay outside the bitcoin throughout the full motion cycle');
