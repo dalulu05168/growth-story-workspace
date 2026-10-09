@@ -15,12 +15,13 @@ test('forged memory evidence, wrong member, fake image, bad replies rejected',()
 test('all records beyond forty retained and name changes preserve identity and memory',()=>{const state=blank(),messages=Array.from({length:51},(_,i)=>({...message('01','不同内容'+i),message_id:'m'+i})),report=E.validate({messages},reg,state,sc(),{},['01']);assert.equal(report.errors.length,0);const next=E.adopt(state,report,sc(),{confirmed:true,expectedRevision:0,sessionId:'s1',simulation:{}});assert.equal(next.sessions[0].messages.length,52);const renamed=JSON.parse(JSON.stringify(full));renamed.profiles[0].name='新姓名';const r=E.registry(renamed,people);assert.equal(r.toId('FR0001'),'01');assert.equal(E.prompt(r,next,sc(),{},['01']).selected_characters[0].name,'新姓名');assert.equal(next.sessions[0].messages[1].character_id,'01');});
 test('closed session allows raw host archive but suppresses member generation',()=>{const scene={...sc('11:40'),closed:true},state=blank();assert.deepEqual(E.select(reg,state,scene,{}),[]);const report=E.validate({messages:[]},reg,state,scene,{},[]);const next=E.adopt(state,report,scene,{confirmed:true,expectedRevision:0,sessionId:'close',simulation:{}});assert.deepEqual(E.select(reg,next,sc(),{}),[]);assert.ok(E.select(reg,next,sc('13:00'),{}).length);});
 
-// Regression: director's 19:30 lesson start and the latest five formal sessions.
-test('Romanian professor lesson begins at 19:30, not 20:00',()=>{
+// Regression: the standalone workspace's originally defined evening course times.
+test('workspace evening stages remain independent from external SKILL courses',()=>{
  assert.equal(E.stageAt('19:14').stage,'opening');
- assert.equal(E.stageAt('19:15').stage,'review');
- assert.equal(E.stageAt('19:29').stage,'review');
- assert.equal(E.stageAt('19:30').stage,'lecture');
+ assert.equal(E.stageAt('19:15').stage,'opening');
+ assert.equal(E.stageAt('19:29').stage,'opening');
+ assert.equal(E.stageAt('19:30').stage,'review');
+ assert.equal(E.stageAt('19:59').stage,'review');
  assert.equal(E.stageAt('20:00').stage,'lecture');
  assert.equal(E.stageAt('20:30').stage,'discussion');
 });

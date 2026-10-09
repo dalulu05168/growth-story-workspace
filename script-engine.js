@@ -7,7 +7,7 @@ const hosts=['assistant','professor'];
 const courses={
  morning:[['opening','09:00','09:30',5,8],['indicators','09:30','10:00',5,8],['news','10:00','10:30',6,8],['theme','10:30','10:50',3,5],['lecture','10:50','11:30',6,8],['discussion','11:30','11:40',3,8],['summary','11:40','12:00',0,5]],
  afternoon:[['opening','13:00','13:30',5,8],['holdings','13:30','14:00',3,6],['sell','14:00','14:30',0,8],['news','14:30','15:00',6,8],['buy','15:00','15:30',0,8],['lecture','15:30','16:20',6,8],['summary','16:20','17:00',0,5]],
- evening:[['opening','19:00','19:15',5,8],['review','19:15','19:30',5,8],['lecture','19:30','20:30',5,7],['discussion','20:30','20:50',3,8],['summary','20:50','21:00',0,5]]
+ evening:[['opening','19:00','19:30',5,8],['review','19:30','20:00',5,8],['lecture','20:00','20:30',5,7],['discussion','20:30','20:50',3,8],['summary','20:50','21:00',0,5]]
 };
 function stageAt(time){if(!/^\d{2}:\d{2}$/.test(time))throw Error('时间须为 HH:mm');for(const [period,stages] of Object.entries(courses))for(const s of stages)if(time>=s[1]&&time<s[2])return {period,stage:s[0],start:s[1],end:s[2],reference:[s[3],s[4]]};return {period:'rest',stage:'rest',reference:[0,0]};}
 function identity(p){return String(p.character_id||p.legacy_id||'');}
