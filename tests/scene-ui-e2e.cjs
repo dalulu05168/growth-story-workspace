@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict');const fs=require('node:fs');
-async function sceneVisuals(browser,url){
+async function sceneVisuals(browser,url,modes=['no-preference','reduce']){
  assert.equal(new URL(url).hostname,'127.0.0.1');
- for(const reducedMotion of ['no-preference','reduce']){
+ for(const reducedMotion of modes){
   const context=await browser.newContext({serviceWorkers:"block",viewport:{width:1440,height:900},reducedMotion});
   const people=JSON.parse(fs.readFileSync('data/people.json')).people;
   await context.route('**/functions/v1/workspace-cloud',route=>{const r=route.request().postDataJSON();assert(['login','load'].includes(r.action));return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(r.action==='login'?{ok:true,token:'local-scene-session',account:{username:'e2e_local_scene'}}:{ok:true,version:1,payload:{people,records:[],docs:[],dailyDocs:{},customGroups:[],meta:{romanianProfiles2:true,defaultDatasetVersion:'4.0.0-script-engine-2'},portfolio:{},tradeSim:{}}})})});
