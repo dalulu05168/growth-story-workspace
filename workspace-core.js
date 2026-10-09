@@ -346,7 +346,11 @@ function go(page){
     requestAnimationFrame(()=>requestAnimationFrame(()=>target.classList.remove('section-entering')));
   };
 
-  if(current&&current!==target){
+  // Detail navigation is an explicit user action: make its target active immediately.
+  // The old 230ms deferred switch could be superseded on WebKit while a detail
+  // panel was already rendered, leaving a permanently hidden page.
+  const isDetail=['personDetailPage','groupDetailPage','recordDetailPage','fr70PersonDetailPage'].includes(page);
+  if(current&&current!==target&&!isDetail){
     current.classList.add('section-leaving');
     setTimeout(activate,230);
   }else{
