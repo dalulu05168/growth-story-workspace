@@ -106,8 +106,12 @@ async function run(){
     // Running both in the same browser process can exhaust rendering resources in CI.
     const safariWorkspace=await webkit.launch({headless:true});
     try{await workspaceVisuals(safariWorkspace,url)}finally{await safariWorkspace.close()}
-    const safariScenes=await webkit.launch({headless:true});
-    try{await sceneVisuals(safariScenes,url)}finally{await safariScenes.close()}
+    // Keep the entire no-preference and reduced-motion scene assertions, but
+    // isolate expensive WebKit canvas/image lifetimes between browser processes.
+    for(const mode of ['no-preference','reduce']){
+      const safariScenes=await webkit.launch({headless:true});
+      try{await sceneVisuals(safariScenes,url,[mode])}finally{await safariScenes.close()}
+    }
   }finally{if(browser)await browser.close();await new Promise(resolve=>server.close(resolve))}
 }
 run().catch(e=>{console.error(e);process.exitCode=1});
