@@ -26,7 +26,16 @@ test('Romanian professor lesson begins at 19:30, not 20:00',()=>{
 });
 test('prompt includes the latest five formally saved sessions, not the oldest',()=>{
  const state=blank();
- state.sessions=Array.from({length:8},(_,i)=>({id:'s'+i,messages:[{message_id:'archived_'+i,character_id:'01',text:'历史原文'+i}]}));
+ state.sessions=Array.from({length:8},(_,i)=>({id:'s'+(7-i),createdAt:'2026-10-09T'+String(9+7-i).padStart(2,'0')+':00:00',messages:[{message_id:'archived_'+(7-i),character_id:'01',text:'历史原文'+(7-i)}]}));
  const p=E.prompt(reg,state,sc(),{},['01']);
- assert.deepEqual(p.recent_sessions.map(s=>s.id),['s3','s4','s5','s6','s7']);
+ assert.deepEqual(p.recent_sessions.map(s=>s.id),['s7','s6','s5','s4','s3']);
+ const participation=E.select(reg,state,sc(),{},{directTargets:['02']});
+ assert.ok(participation.includes('02'),'direct selection remains functional');
+});
+
+test('freshness of recent memories is independent of imported session storage order',()=>{
+ const state=blank();
+ state.sessions=[{id:'old',createdAt:'2026-10-06T09:30:00',messages:[message('01','旧记录')]},{id:'new',createdAt:'2026-10-09T19:30:00',messages:[message('02','最新记录')]}];
+ const p=E.prompt(reg,state,sc(),{},['02']);
+ assert.deepEqual(p.recent_sessions.map(s=>s.id),['new','old']);
 });
