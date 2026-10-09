@@ -77,7 +77,7 @@ function ensureTradeUI(){
   if(nav&&!byId('logoutBtn')){const out=document.createElement('button');out.id='logoutBtn';out.innerHTML='<i>↪</i><span>退出登录</span>';out.onclick=async function(){try{await window.ChenNanCloud.logout();location.reload()}catch(err){console.error('Logout failed',err);toast('退出未完成：请先确认云端保存成功')}};nav.appendChild(out)}
   if(!byId('trades')){
     const s=document.createElement('section');s.id='trades';s.className='section';
-    s.innerHTML='<div class="topbar"><div><div class="eyebrow">TRADE OPERATIONS</div><h1 class="page-title">持仓与交易计划</h1><p class="sub">按持仓、计划卖出时间和参与频率生成今日操作名单。</p></div><div class="actions"><button class="btn ghost" id="generateBuyList">生成 / 重算今日买入名单</button><button class="btn primary" id="addHolding">＋ 新增持仓</button></div></div><div class="trade-tabs" id="tradeTabs"></div><div id="tradePanel"></div>';
+    s.innerHTML='<div class="topbar"><div><div class="eyebrow">TRADE PLAN</div><h1 class="page-title">交易计划</h1><p class="sub">统一管理今日待售、待买、全部持仓、未持仓人员与自动生成规则。</p></div><div class="actions"><button class="btn ghost" id="generateBuyList">生成 / 重算今日买入名单</button><button class="btn primary" id="addHolding">＋ 新增持仓</button></div></div><div id="tradeSummary" class="trade-summary-grid"></div><div class="trade-tabs" id="tradeTabs"></div><div id="tradePanel"></div>';
     const records=byId('records');records.parentNode.insertBefore(s,records);
   }
   const overview=byId('overview');
@@ -98,6 +98,47 @@ function renderTabs(){
   t.querySelectorAll('[data-trade-tab]').forEach(function(b){b.onclick=function(){tradeTab=b.dataset.tradeTab;renderTrades()}});
 }
 
+function buildHoldingMixRows(holds){
+  const map=new Map();
+  holds.forEach(function(row){
+    const symbol=String(row.symbol||'').trim().toUpperCase()||'--';
+    const name=String(row.name||row.stockName||symbol||'未命名股票').trim();
+    const key=symbol+'|'+name;
+    if(!map.has(key))map.set(key,{symbol:symbol,name:name,people:new Set(),count:0});
+    const item=map.get(key);
+    item.count+=1;
+    if(row.personId!=null&&String(row.personId).trim())item.people.add(String(row.personId).trim());
+  });
+  const rows=[...map.values()].map(function(item){
+    return {symbol:item.symbol,name:item.name,count:item.people.size||item.count};
+  }).sort(function(a,b){return b.count-a.count||a.symbol.localeCompare(b.symbol)});
+  const max=Math.max(1,...rows.map(function(x){return x.count}));
+  return rows.slice(0,6).map(function(row){
+    return {symbol:row.symbol,name:row.name,count:row.count,width:Math.max(10,Math.round(row.count/max*100))};
+  });
+}
+function renderHoldingMixChart(holds){
+  const rows=buildHoldingMixRows(holds);
+  if(!rows.length)return '<div class="empty overview-empty">暂无持仓数据</div>';
+  return '<div class="hold-chart-overview">'+rows.map(function(row){
+    return '<div class="hold-chart-row">'+
+      '<div class="hold-chart-label"><b>'+safe(row.symbol)+'</b><small>'+safe(row.name)+'</small></div>'+
+      '<div class="hold-chart-track"><i class="hold-chart-fill" style="width:'+row.width+'%"></i></div>'+
+      '<span class="hold-chart-count">'+row.count+'人</span>'+
+    '</div>';
+  }).join('')+'</div>';
+}
+function renderOverviewSellList(rows){
+  if(!rows.length)return '<div class="empty overview-empty">今天没有待卖出股票</div>';
+  return '<div class="overview-sell-list">'+rows.slice(0,6).map(function(h){
+    const p=person(h.personId),hot=dueSoon(h)?' hot':'';
+    return '<div class="overview-sell-item'+hot+'">'+
+      '<div class="overview-sell-main"><b>'+safe(h.symbol||h.name||'未命名股票')+'</b><small>'+safe(pCode(p))+' · '+safe(pLabel(p))+'</small></div>'+
+      '<div class="overview-sell-time"><strong>'+safe(localDateTime(h.plannedSellAt))+'</strong><span>'+safe(countdown(h))+'</span></div>'+
+    '</div>';
+  }).join('')+'</div>';
+}
+
 function renderDashboard(){
   ensureTradeState();
   const holds=activeHoldings(),hid=holdingIds(),sell=todaySell(),buy=todayBuy();
@@ -115,19 +156,19 @@ function renderDashboard(){
       '<div class="card metric click-card" data-dash="unholding"><span class="label">未持仓人员</span><strong>'+noHold+'</strong><span class="trend">点击查看名单</span></div>'+
       '<div class="card metric click-card" data-dash="sell"><span class="label">今日待售</span><strong>'+sell.length+'</strong><span class="trend">'+sell.filter(dueSoon).length+' 笔临近/到时</span></div>'+
       '<div class="card metric click-card" data-dash="buy"><span class="label">今日待买人员</span><strong>'+buy.length+'</strong><span class="trend">按规则生成</span></div>'+
-      '<div class="card metric click-card" data-dash="groups"><span class="label">自定义小组</span><strong>'+db.customGroups.length+'</strong><span class="trend">人员规划</span></div>';
+      '<div class="card metric click-card" data-dash="groups"><span class="label">均衡小组</span><strong>'+db.customGroups.length+'</strong><span class="trend">人员规划</span></div>';
   }
   const ov=byId('tradeOverview');
   if(ov){
-    const sellHtml=sell.slice(0,6).map(function(h){
-      const p=person(h.personId),cls=dueSoon(h)?' due':'';
-      return '<div class="trade-item'+cls+'"><div><b>'+safe(h.symbol||h.name||'未命名股票')+' · '+safe(pCode(p))+' · '+safe(pLabel(p))+'</b><div class="trade-meta">计划卖出 '+safe(localDateTime(h.plannedSellAt))+' · '+safe(countdown(h))+'</div></div><button class="link-btn" data-person-detail="'+safe(h.personId)+'">人物详情</button></div>';
-    }).join('')||'<div class="empty">今天没有待售持仓</div>';
-    const buyHtml=buy.slice(0,6).map(function(x){
-      const p=person(x.personId);
-      return '<div class="trade-item"><div><b>'+safe(pCode(p))+' · '+safe(pLabel(p))+'</b><div class="trade-meta">'+safe(x.symbol||'股票待定')+' '+safe(x.stockName||'')+' · '+safe(x.reason||x.source||'规则名单')+'</div></div><button class="link-btn" data-person-detail="'+safe(x.personId)+'">人物详情</button></div>';
-    }).join('')||'<div class="empty">尚未生成今日待买入名单</div>';
-    ov.innerHTML='<div class="trade-grid"><div class="card panel"><div class="panel-head"><h2>今日待售股票与人员</h2><button class="link-btn" data-dash="sell">进入模块 →</button></div><div class="trade-list">'+sellHtml+'</div></div><div class="card panel"><div class="panel-head"><h2>今日待买入人员名单</h2><button class="link-btn" data-dash="buy">进入模块 →</button></div><div class="trade-list">'+buyHtml+'</div></div></div>';
+    ov.innerHTML=
+      '<div class="card panel overview-bottom-panel">'+
+        '<div class="panel-head"><h2>股票持仓组合图</h2><button class="link-btn" data-dash="holding">持仓管理 →</button></div>'+
+        renderHoldingMixChart(holds)+
+      '</div>'+
+      '<div class="card panel overview-bottom-panel">'+
+        '<div class="panel-head"><h2>今日待卖出股票</h2><button class="link-btn" data-dash="sell">交易计划 →</button></div>'+
+        renderOverviewSellList(sell)+
+      '</div>';
   }
   document.querySelectorAll('[data-dash]').forEach(function(el){el.onclick=function(){openDash(el.dataset.dash)}});
   document.querySelectorAll('[data-person-detail]').forEach(function(el){el.onclick=function(){viewPerson(el.dataset.personDetail)}});
@@ -147,6 +188,16 @@ function openDash(type){
 
 function renderTrades(){
   ensureTradeState();renderTabs();
+  const summary=byId('tradeSummary');
+  if(summary){
+    const sell=todaySell(),buy=todayBuy(),holds=activeHoldings(),unholding=noHoldingPeople();
+    const soon=sell.filter(dueSoon).length;
+    summary.innerHTML=
+      '<div class="card trade-summary-card"><span>今日待售</span><strong>'+sell.length+'</strong><small>'+soon+' 笔临近/到时</small></div>'+
+      '<div class="card trade-summary-card"><span>今日待买</span><strong>'+buy.length+'</strong><small>按规则生成名单</small></div>'+
+      '<div class="card trade-summary-card"><span>当前持仓</span><strong>'+holds.length+'</strong><small>未卖出记录</small></div>'+
+      '<div class="card trade-summary-card"><span>未持仓人员</span><strong>'+unholding.length+'</strong><small>可继续规划</small></div>';
+  }
   const panel=byId('tradePanel');if(!panel)return;
   if(tradeTab==='sell')panel.innerHTML=renderSell();
   else if(tradeTab==='buy')panel.innerHTML=renderBuy();
@@ -157,34 +208,39 @@ function renderTrades(){
 }
 function renderSell(){
   const rows=todaySell();
-  return '<div class="card panel"><div class="panel-head"><h2>今日待售股票</h2><span class="muted">临近 '+Number(db.portfolio.settings.warningMinutes||SALE_WARNING_MINUTES)+' 分钟会高亮</span></div><div class="trade-list">'+
-    (rows.map(function(h){
+  if(!rows.length)return '<div class="card panel"><div class="panel-head"><h2>今日待售股票</h2><span class="muted">临近提醒 '+Number(db.portfolio.settings.warningMinutes||SALE_WARNING_MINUTES)+' 分钟</span></div><div class="empty">今天没有计划卖出的持仓</div></div>';
+  return '<div class="card panel"><div class="panel-head"><h2>今日待售股票</h2><span class="muted">'+rows.length+' 笔 · 临近 '+Number(db.portfolio.settings.warningMinutes||SALE_WARNING_MINUTES)+' 分钟高亮</span></div>'+
+    '<div class="trade-plan-table"><div class="trade-plan-table-head"><span>股票</span><span>人物</span><span>数量</span><span>买入价</span><span>计划卖出</span><span>状态</span><span>操作</span></div>'+
+    rows.map(function(h){
       const p=person(h.personId),over=new Date(h.plannedSellAt).getTime()<=Date.now(),cl=over?' overdue':(dueSoon(h)?' due':'');
-      return '<div class="trade-item'+cl+'"><div><b>'+safe(h.symbol||'--')+' '+safe(h.name||'')+' · '+safe(pCode(p))+' · '+safe(pLabel(p))+'</b><div class="trade-meta">数量 '+safe(h.quantity||0)+' · 买入价 '+safe(h.buyPrice||'--')+' · 计划卖出 '+safe(localDateTime(h.plannedSellAt))+' · '+safe(countdown(h))+'</div></div><div class="trade-actions"><span class="pill '+(dueSoon(h)?'hot':'')+'">'+(over?'已到时':(dueSoon(h)?'临近卖出':'待售'))+'</span><button class="btn ghost small" data-person-detail="'+safe(h.personId)+'">人物</button><button class="btn primary small" data-sold="'+safe(h.id)+'">确认卖出</button><button class="btn ghost small" data-edit-holding="'+safe(h.id)+'">编辑</button></div></div>';
-    }).join('')||'<div class="empty">今天没有计划卖出的持仓</div>')+'</div></div>';
+      return '<div class="trade-plan-table-row'+cl+'" data-ui-surface="leaf"><div><b>'+safe(h.symbol||'--')+'</b><small>'+safe(h.name||'')+'</small></div><div><b>'+safe(pCode(p))+'</b><small>'+safe(pLabel(p))+'</small></div><div>'+safe(h.quantity||0)+'</div><div>'+safe(h.buyPrice||'--')+'</div><div><b>'+safe(localDateTime(h.plannedSellAt))+'</b><small>'+safe(countdown(h))+'</small></div><div><span class="pill '+(dueSoon(h)?'hot':'')+'">'+(over?'已到时':(dueSoon(h)?'临近卖出':'待售'))+'</span></div><div class="trade-table-actions"><button class="link-btn" data-person-detail="'+safe(h.personId)+'">人物</button><button class="link-btn" data-edit-holding="'+safe(h.id)+'">编辑</button><button class="link-btn" data-sold="'+safe(h.id)+'">确认卖出</button></div></div>';
+    }).join('')+'</div></div>';
 }
 function renderBuy(){
   const rows=todayBuy();
-  return '<div class="card panel"><div class="panel-head"><h2>今日待买入人员名单</h2><div class="button-row"><button class="btn ghost small" id="addManualBuy">＋ 手工加入</button><button class="btn primary small" id="generateBuyListInline">生成 / 重算</button></div></div><div class="trade-list">'+
-    (rows.map(function(x){
-      const p=person(x.personId),isHold=holdingIds().has(String(x.personId));
-      return '<div class="trade-item"><div><b>'+safe(pLabel(p))+' · '+safe(x.symbol||'股票待定')+' '+safe(x.stockName||'')+'</b><div class="trade-meta">参与频率 '+safe(freqLabel(p))+' · '+(isHold?'已有持仓':'当前未持仓')+' · '+safe(x.reason||'规则生成')+'</div></div><div class="trade-actions">'+(p&&p.trade_profile&&p.trade_profile.required_today?'<span class="pill hot">指定参与</span>':'')+'<button class="btn ghost small" data-person-detail="'+safe(x.personId)+'">人物</button><button class="btn primary small" data-buy-done="'+safe(x.id)+'">标记已买</button><button class="btn danger small" data-buy-remove="'+safe(x.id)+'">移除</button></div></div>';
-    }).join('')||'<div class="empty">尚未生成今天的买入人员名单</div>')+'</div></div>';
+  return '<div class="card panel"><div class="panel-head"><div><h2>今日待买入人员</h2><p class="muted">根据参与频率、持仓状态和规则排序生成。</p></div><div class="button-row"><button class="btn ghost small" id="addManualBuy">＋ 手工加入</button><button class="btn primary small" id="generateBuyListInline">生成 / 重算</button></div></div>'+
+    (rows.length?'<div class="trade-plan-table buy-table"><div class="trade-plan-table-head"><span>人物</span><span>股票</span><span>参与频率</span><span>持仓状态</span><span>来源/原因</span><span>指定</span><span>操作</span></div>'+
+      rows.map(function(x){
+        const p=person(x.personId),isHold=holdingIds().has(String(x.personId));
+        return '<div class="trade-plan-table-row" data-ui-surface="leaf"><div><b>'+safe(pCode(p))+' · '+safe(pLabel(p))+'</b><small>'+safe(genderRelationLabel(p)||'--')+'</small></div><div><b>'+safe(x.symbol||'股票待定')+'</b><small>'+safe(x.stockName||'')+'</small></div><div>'+safe(freqLabel(p))+'</div><div>'+(isHold?'已有持仓':'未持仓')+'</div><div>'+safe(x.reason||'规则生成')+'</div><div>'+(p&&p.trade_profile&&p.trade_profile.required_today?'<span class="pill hot">指定参与</span>':'—')+'</div><div class="trade-table-actions"><button class="link-btn" data-person-detail="'+safe(x.personId)+'">详情</button><button class="link-btn" data-buy-done="'+safe(x.id)+'">已买</button><button class="link-btn danger" data-buy-remove="'+safe(x.id)+'">移除</button></div></div>';
+      }).join('')+'</div>':'<div class="empty">尚未生成今天的买入人员名单</div>')+'</div>';
 }
 function renderHoldings(){
   const rows=activeHoldings();
-  return '<div class="card panel"><div class="panel-head"><h2>全部持仓</h2><button class="btn primary small" id="addHoldingInline">＋ 新增持仓</button></div><div class="table-wrap"><table class="mini-table"><thead><tr><th>人员</th><th>股票</th><th>数量</th><th>买入价</th><th>买入时间</th><th>计划卖出</th><th>操作</th></tr></thead><tbody>'+
-    (rows.map(function(h){const p=person(h.personId);return'<tr><td><button class="link-btn" data-person-detail="'+safe(h.personId)+'">'+safe(pLabel(p))+'</button></td><td>'+safe(h.symbol||'--')+' '+safe(h.name||'')+'</td><td>'+safe(h.quantity||0)+'</td><td>'+safe(h.buyPrice||'--')+'</td><td>'+safe(localDateTime(h.buyAt))+'</td><td>'+safe(localDateTime(h.plannedSellAt))+'</td><td><button class="link-btn" data-edit-holding="'+safe(h.id)+'">编辑</button> <button class="link-btn danger" data-delete-holding="'+safe(h.id)+'">删除</button></td></tr>'}).join('')||'<tr><td colspan="7" class="empty">暂无持仓</td></tr>')+'</tbody></table></div></div>';
+  return '<div class="card panel"><div class="panel-head"><h2>全部持仓</h2><div class="button-row"><span class="muted">'+rows.length+' 笔</span><button class="btn primary small" id="addHoldingInline">＋ 新增持仓</button></div></div>'+
+    (rows.length?'<div class="table-wrap"><table class="mini-table"><thead><tr><th>人物</th><th>股票</th><th>数量</th><th>买入价</th><th>买入时间</th><th>计划卖出</th><th>状态</th><th>操作</th></tr></thead><tbody>'+
+      rows.map(function(h){const p=person(h.personId),soon=dueSoon(h);return'<tr><td><button class="link-btn" data-person-detail="'+safe(h.personId)+'">'+safe(pCode(p))+' · '+safe(pLabel(p))+'</button></td><td><b>'+safe(h.symbol||'--')+'</b> '+safe(h.name||'')+'</td><td>'+safe(h.quantity||0)+'</td><td>'+safe(h.buyPrice||'--')+'</td><td>'+safe(localDateTime(h.buyAt))+'</td><td>'+safe(localDateTime(h.plannedSellAt))+'</td><td><span class="pill '+(soon?'hot':'')+'">'+(soon?'临近':'持有中')+'</span></td><td><button class="link-btn" data-edit-holding="'+safe(h.id)+'">编辑</button> <button class="link-btn danger" data-delete-holding="'+safe(h.id)+'">删除</button></td></tr>'}).join('')+
+      '</tbody></table></div>':'<div class="empty">暂无持仓</div>')+'</div>';
 }
 function renderUnholding(){
   const rows=noHoldingPeople();
-  return '<div class="card panel"><div class="panel-head"><h2>未持仓人员</h2><span class="muted">'+rows.length+' 人</span></div><div class="profile-list">'+
-    rows.map(function(p){return'<div class="profile-row"><div class="avatar">'+pAvatar(p)+'</div><div class="person"><b>'+safe(pCode(p))+' · '+safe(pLabel(p))+'</b><small>'+(opened(p)?'已开户':'未开户')+' · '+(joined(p)?'已入群':'未入群')+' · 参与频率 '+safe(freqLabel(p))+'</small></div><button class="link-btn" data-person-detail="'+safe(p.id)+'">详情</button><button class="btn ghost small" data-trade-pref="'+safe(p.id)+'">交易设置</button></div>'}).join('')+
-    '</div></div>';
+  return '<div class="card panel"><div class="panel-head"><h2>未持仓人员</h2><span class="muted">'+rows.length+' 人</span></div>'+
+    (rows.length?'<div class="unholding-grid">'+rows.map(function(p){return'<div class="unholding-row" data-ui-surface="leaf"><div class="person"><b>'+safe(pCode(p))+' · '+safe(pLabel(p))+'</b><small>'+safe(genderRelationLabel(p)||'--')+' · '+(opened(p)?'已开户':'未开户')+' · '+(joined(p)?'已入群':'未入群')+'</small></div><div><span>参与频率</span><b>'+safe(freqLabel(p))+'</b></div><div class="trade-table-actions"><button class="link-btn" data-person-detail="'+safe(p.id)+'">详情</button><button class="link-btn" data-trade-pref="'+safe(p.id)+'">交易设置</button></div></div>'}).join('')+'</div>':'<div class="empty">当前没有未持仓人员</div>')+'</div>';
 }
 function renderSettings(){
   const s=db.portfolio.settings;
-  return '<div class="card panel"><div class="panel-head"><h2>今日买入名单生成规则</h2><span class="muted">规则自动同步到云端</span></div><form id="tradeSettingsForm" class="form-grid"><div class="field"><label>目标人数</label><input class="input" type="number" min="1" max="70" name="target" value="'+safe(s.todayTarget)+'"></div><div class="field"><label>持仓人员是否可继续参与</label><select class="select" name="includeHolding"><option value="0" '+(!s.includeHolding?'selected':'')+'>否，优先未持仓</option><option value="1" '+(s.includeHolding?'selected':'')+'>是，可继续参与</option></select></div><div class="field"><label>今日拟买股票代码</label><input class="input" name="symbol" value="'+safe(s.defaultSymbol)+'" placeholder="例如 AIR.PA"></div><div class="field"><label>今日拟买股票名称</label><input class="input" name="stockName" value="'+safe(s.defaultStockName)+'" placeholder="例如 Airbus"></div><div class="field"><label>卖出临近提醒（分钟）</label><input class="input" type="number" min="5" max="1440" name="warning" value="'+safe(s.warningMinutes)+'"></div><div class="field full"><div class="notice">生成顺序：用户指定参与人员优先；其余从已开户人员中按参与频率、是否持仓和每日稳定随机分值综合排序。名单每日固定，重算时按当前规则重新生成。</div></div><div class="field full"><button class="btn primary">保存规则</button></div></form><div style="margin-top:20px"><h3>人员参与规则</h3><p class="muted">在人物库或“未持仓人员”里点击“交易设置”，可设置高/中/低参与频率，并强制指定今天参与。</p></div></div>';
+  return '<div class="trade-settings-layout"><div class="card panel"><div class="panel-head"><h2>今日名单生成规则</h2><span class="muted">自动同步云端</span></div><form id="tradeSettingsForm" class="form-grid"><div class="field"><label>目标人数</label><input class="input" type="number" min="1" max="70" name="target" value="'+safe(s.todayTarget)+'"></div><div class="field"><label>持仓人员继续参与</label><select class="select" name="includeHolding"><option value="0" '+(!s.includeHolding?'selected':'')+'>否，优先未持仓</option><option value="1" '+(s.includeHolding?'selected':'')+'>是，可继续参与</option></select></div><div class="field"><label>默认股票代码</label><input class="input" name="symbol" value="'+safe(s.defaultSymbol)+'" placeholder="例如 AIR.PA"></div><div class="field"><label>默认股票名称</label><input class="input" name="stockName" value="'+safe(s.defaultStockName)+'" placeholder="例如 Airbus"></div><div class="field"><label>卖出临近提醒（分钟）</label><input class="input" type="number" min="5" max="1440" name="warning" value="'+safe(s.warningMinutes)+'"></div><div class="field full"><button class="btn primary">保存规则</button></div></form></div>'+
+    '<div class="card panel"><div class="panel-head"><h2>规则说明</h2><span class="muted">执行顺序</span></div><div class="cn-rule-list"><div><span>第一优先级</span><b>用户指定今日参与人员</b></div><div><span>候选范围</span><b>已开户人物</b></div><div><span>排序因素</span><b>参与频率 / 持仓 / 稳定随机分</b></div><div><span>名单稳定性</span><b>同一天名单固定</b></div><div><span>重算</span><b>按当前规则重新生成</b></div><div><span>个人规则</span><b>可在人物交易设置中调整</b></div></div></div></div>';
 }
 function freqLabel(p){const f=p&&p.trade_profile&&p.trade_profile.participation_frequency;return f==='HIGH'?'高':(f==='LOW'?'低':'中')}
 

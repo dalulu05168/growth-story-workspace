@@ -1,7 +1,7 @@
 
 const STORAGE_KEY='growth-workspace-db';
 const DATA_URL='./data/people.json';
-const DEFAULT_DATASET_VERSION='3.0';
+const DEFAULT_DATASET_VERSION='4.0.0-script-engine-2';
 const emptyDB={people:[],records:[],docs:[],dailyDocs:{},customGroups:[],meta:{}};
 let db=loadLocal();
 let selectedDocId=db.docs[0]?.id||null;
@@ -50,7 +50,7 @@ function normalizePerson(raw={}){
   p.customer_relation=p.customer_relation&&typeof p.customer_relation==='object'?p.customer_relation:{type:(p.genderAge||'').includes('老')?'老客户':'新客户',type_code:(p.genderAge||'').includes('老')?'OLD':'NEW'};
   p.vip=p.vip&&typeof p.vip==='object'?p.vip:{is_vip:false,level:null,reason:null};
   p.account=p.account&&typeof p.account==='object'?p.account:{opened:false,status:'未开户',status_code:'NOT_OPENED',opened_date:null};
-  p.location=p.location&&typeof p.location==='object'?p.location:{country:'法国',country_code:'FR',city:'',region:''};
+  p.location=p.location&&typeof p.location==='object'?p.location:{country:'罗马尼亚',country_code:'RO',city:'',region:''};
   p.occupation=p.occupation&&typeof p.occupation==='object'?p.occupation:{title_fr:'',title_zh:'',industry_fr:'',industry_zh:'',employment_status:'',years_in_role:null,education:'',career_stage:''};
   p.family=p.family&&typeof p.family==='object'?p.family:{};
   p.finance=p.finance&&typeof p.finance==='object'?p.finance:{annual_income_eur:0,estimated_investable_assets_eur:0,estimated_liquid_assets_eur:0,available_investment_capital_eur:0};
@@ -78,7 +78,7 @@ async function seedDefaultPeople(){
       let added=0;
       list.map(normalizePerson).forEach(p=>{if(!existing.has(String(p.id))){db.people.push(p);added++}});
       db.meta.defaultDatasetVersion=DEFAULT_DATASET_VERSION;
-      db.meta.defaultDatasetName=dataset.dataset_name||'法国人物70位';
+      db.meta.defaultDatasetName=dataset.dataset_name||'罗马尼亚人物70位';
       save();
       $('#seedNotice').textContent=`默认人物数据已就绪：${list.length} 人；本次补充 ${added} 人。`;
     }else{
@@ -108,11 +108,104 @@ const SYSTEM_GROUPS=[
 function systemGroup(id){return SYSTEM_GROUPS.find(g=>g.id===id)||SYSTEM_GROUPS[0]}
 function customGroup(id){return db.customGroups.find(g=>g.id===id)||null}
 
+/* 固定 10 组：70人平均分组。当前70人结构可做到每组 老女1 + 新女2 + 老男2 + 新男2。 */
+function balancedGroupCategory(p){
+  const rel=pRelationCode(p),gender=pGender(p);
+  if(rel==='OLD'&&gender==='女')return'old_female';
+  if(rel==='NEW'&&gender==='女')return'new_female';
+  if(rel==='OLD'&&gender==='男')return'old_male';
+  if(rel==='NEW'&&gender==='男')return'new_male';
+  return'other';
+}
+function balancedGroupSignature(){
+  return [...db.people].sort((a,b)=>String(a.id).localeCompare(String(b.id),undefined,{numeric:true}))
+    .map(p=>String(p.id)+':'+balancedGroupCategory(p)).join('|');
+}
+function ensureTenBalancedGroups(){
+  const version='balanced-10-v1';
+  const signature=balancedGroupSignature();
+  const valid=Array.isArray(db.customGroups)&&db.customGroups.length===10&&
+    db.customGroups.every((g,i)=>g&&g.id==='balanced-'+String(i+1).padStart(2,'0')&&Array.isArray(g.members))&&
+    db.meta?.balancedGroupVersion===version&&db.meta?.balancedGroupSignature===signature;
+  if(valid)return false;
+
+  const preserveNames=new Map();
+  if(db.meta?.balancedGroupVersion===version){
+    (db.customGroups||[]).forEach(g=>{
+      if(/^balanced-\d{2}$/.test(String(g.id||'')))preserveNames.set(g.id,String(g.name||'').trim());
+    });
+  }
+  const buckets={old_female:[],new_female:[],old_male:[],new_male:[],other:[]};
+  [...db.people].sort((a,b)=>String(a.id).localeCompare(String(b.id),undefined,{numeric:true}))
+    .forEach(p=>buckets[balancedGroupCategory(p)].push(p));
+
+  const groups=Array.from({length:10},(_,i)=>({
+    id:'balanced-'+String(i+1).padStart(2,'0'),
+    name:preserveNames.get('balanced-'+String(i+1).padStart(2,'0'))||('第'+String(i+1).padStart(2,'0')+'组'),
+    leader:'',
+    members:[],
+    balanced:true,
+    lockedMembers:true,
+    updated:today()
+  }));
+  ['old_female','new_female','old_male','new_male'].forEach(key=>{
+    buckets[key].forEach((p,i)=>groups[i%10].members.push(String(p.id)));
+  });
+  buckets.other.forEach(p=>{
+    const target=groups.slice().sort((a,b)=>a.members.length-b.members.length||a.id.localeCompare(b.id))[0];
+    target.members.push(String(p.id));
+  });
+  groups.forEach(g=>g.members.sort((a,b)=>String(a).localeCompare(String(b),undefined,{numeric:true})));
+  db.customGroups=groups;
+  db.meta=db.meta&&typeof db.meta==='object'?db.meta:{};
+  db.meta.balancedGroupVersion=version;
+  db.meta.balancedGroupSignature=signature;
+  return true;
+}
+
+function ensureRecordDetailPage(){
+  let sec=$('#recordDetailPage');
+  if(sec)return sec;
+  sec=document.createElement('section');
+  sec.id='recordDetailPage';
+  sec.className='section';
+  sec.dataset.uiParent='records';
+  sec.innerHTML='<div id="recordDetailContent"></div>';
+  const records=$('#records');
+  if(records&&records.parentNode)records.parentNode.insertBefore(sec,records.nextSibling);
+  else $('.main')?.appendChild(sec);
+  return sec;
+}
+function renderRecordDetail(id){
+  const r=(db.records||[]).find(x=>String(x.id)===String(id));if(!r)return;
+  const p=person(r.personId);
+  ensureRecordDetailPage();
+  const host=$('#recordDetailContent');if(!host)return;
+  host.innerHTML=
+    '<div class="detail-head cn-page-header">'+
+      '<div class="detail-identity"><div class="cn-detail-mark">R</div><div><div class="eyebrow">RECORD DETAIL</div><h1 class="page-title">'+esc(r.title||r.type||'人物记录')+'</h1>'+
+      '<p class="sub">'+esc(r.date||'--')+' · '+esc(r.type||'记录')+(p?' · '+esc(pCode(p))+' · '+esc(pName(p)):'')+'</p></div></div>'+
+      '<div class="actions"><button class="btn ghost" id="recordDetailBack">← 返回人物记录</button><button class="btn primary" id="recordDetailEdit">编辑记录</button></div>'+
+    '</div>'+
+    '<div class="cn-record-detail-grid">'+
+      '<div class="card panel"><div class="panel-head"><h2>记录内容</h2><span class="muted">'+esc(r.type||'记录')+'</span></div><div class="cn-record-content">'+esc(r.content||'--')+'</div>'+
+      '<div class="tags" style="margin-top:12px">'+(r.topics||[]).map(t=>'<span class="tag"># '+esc(t)+'</span>').join('')+'</div></div>'+
+      '<div class="card panel"><div class="panel-head"><h2>关联人物</h2><span class="muted">'+(p?'已关联':'无人物')+'</span></div>'+
+      (p?'<div class="cn-linked-person"><b>'+esc(pCode(p))+' · '+esc(pName(p))+'</b><span>'+esc(genderRelationLabel(p)||'--')+' · '+esc(p.age||'--')+'岁 · '+esc(p.account?.status||'--')+'</span><button class="btn ghost small" id="recordPersonOpen">查看人物详情</button></div>':'<div class="empty">未找到关联人物</div>')+
+      '</div>'+
+    '</div>';
+  go('recordDetailPage');
+  $('#recordDetailBack').onclick=()=>go('records');
+  $('#recordDetailEdit').onclick=()=>openRecord(r.id);
+  if(p&&$('#recordPersonOpen'))$('#recordPersonOpen').onclick=()=>viewPerson(p.id);
+}
 function eventHTML(r){
   const p=person(r.personId);
-  return `<div class="timeline-item"><div class="date">${esc(r.date||'')}</div><div class="dotline"></div><div class="event"><div class="event-head"><div><span class="event-title">${esc(r.title)}</span><div class="muted" style="font-size:12px;margin-top:2px">${p?`${esc(pCode(p))} · ${esc(genderRelationLabel(p)||'未分类')} · ${esc(pName(p))}`:'未知人物'}</div></div><span class="type ${r.type==='发言记录'?'talk':''}">${esc(r.type)}</span></div><p>${esc(r.content)}</p><div class="tags">${(r.topics||[]).map(t=>`<span class="tag"># ${esc(t)}</span>`).join('')}<button class="link-btn edit-record" data-id="${esc(r.id)}">编辑</button></div></div></div>`;
+  return `<div class="timeline-item" data-record-id="${esc(r.id)}"><div class="date">${esc(r.date||'')}</div><div class="dotline"></div><div class="event"><div class="event-head"><div><span class="event-title">${esc(r.title)}</span><div class="muted" style="font-size:12px;margin-top:2px">${p?`${esc(pCode(p))} · ${esc(genderRelationLabel(p)||'未分类')} · ${esc(pName(p))}`:'未知人物'}</div></div><span class="type ${r.type==='发言记录'?'talk':''}">${esc(r.type)}</span></div><p>${esc(r.content)}</p><div class="tags">${(r.topics||[]).map(t=>`<span class="tag"># ${esc(t)}</span>`).join('')}<button class="link-btn view-record" data-id="${esc(r.id)}">详情</button><button class="link-btn edit-record" data-id="${esc(r.id)}">编辑</button></div></div></div>`;
 }
+
 function render(){
+  ensureTenBalancedGroups();
   if(db.people.length&&$('#seedNotice'))$('#seedNotice').textContent=`${db.people.length} 位人物资料已加载 · 完整画像与工作区数据`;
   renderOverview();renderPeopleFilters();renderPeople();renderGroups();fillSelect();renderRecords();renderTopics();renderDocs();bindDynamic();
 }
@@ -124,7 +217,7 @@ function renderOverview(){
     ['新客户',db.people.filter(p=>pRelationCode(p)==='NEW').length,'关系分层'],
     ['VIP 用户',db.people.filter(pVip).length,'金色标识'],
     ['已开户',db.people.filter(pOpened).length,'账户状态'],
-    ['群组数量',db.customGroups.length,'自定义小组']
+    ['群组数量',db.customGroups.length,'均衡小组']
   ].map(([l,n,t])=>`<div class="card metric"><span class="label">${l}</span><strong>${n}</strong><span class="trend">${t}</span></div>`).join('');
   $('#recentTimeline').innerHTML=rs.slice(0,4).map(eventHTML).join('')||'<div class="empty">还没有重要记录</div>';
   const ids=['new_male','new_female','old_male','old_female','vip','opened','joined'];
@@ -135,7 +228,7 @@ function renderPeopleFilters(){
   s.innerHTML=SYSTEM_GROUPS.map(g=>`<option value="${g.id}">${esc(g.name)} (${db.people.filter(g.test).length})</option>`).join('');
   s.value=SYSTEM_GROUPS.some(g=>g.id===old)?old:'all';
   const c=$('#customGroupFilter'),cold=c.value||'all';
-  c.innerHTML='<option value="all">全部自定义小组</option>'+db.customGroups.map(g=>`<option value="${esc(g.id)}">${esc(g.name)} (${g.members?.length||0})</option>`).join('');
+  c.innerHTML='<option value="all">全部小组</option>'+db.customGroups.map(g=>`<option value="${esc(g.id)}">${esc(g.name)} (${g.members?.length||0})</option>`).join('');
   c.value=db.customGroups.some(g=>g.id===cold)?cold:'all';
 }
 function personSearchBlob(p){
@@ -160,12 +253,24 @@ function renderPeople(){
   </div>`).join('')||'<div class="empty">没有匹配人物</div>';
 }
 function renderGroups(){
-  $('#systemGroups').innerHTML=SYSTEM_GROUPS.filter(g=>g.id!=='all').map(g=>`<div class="group-card"><button class="system-group-open" data-group="${g.id}"><small>系统分组</small><strong>${db.people.filter(g.test).length}</strong><b>${esc(g.name)}</b></button></div>`).join('');
-  $('#customGroupCount').textContent=`共 ${db.customGroups.length} 个小组`;
-  $('#customGroups').innerHTML=db.customGroups.map(g=>{
-    const names=(g.members||[]).map(id=>person(id)).filter(Boolean).slice(0,5).map(pName);
-    return `<div class="card custom-group"><h3>${esc(g.name)}</h3><div class="leader">组长：${esc(g.leader||'未设置')}</div><div class="members-preview">${g.members?.length||0} 位成员${names.length?` · ${names.map(esc).join('、')}${(g.members?.length||0)>5?'…':''}`:''}</div><div class="button-row" style="margin-top:12px"><button class="btn ghost small open-custom-group" data-id="${esc(g.id)}">查看成员</button><button class="btn ghost small edit-group" data-id="${esc(g.id)}">编辑</button><button class="btn danger small delete-group" data-id="${esc(g.id)}">删除</button></div></div>`;
-  }).join('')||'<div class="empty">还没有自定义小组，点击“新建自定义小组”开始规划。</div>';
+  ensureTenBalancedGroups();
+  const system=$('#systemGroups');if(system)system.innerHTML='';
+  const count=$('#customGroupCount');if(count)count.textContent='固定 10 组 · 每组 7 人 · 男女新老均衡';
+  const host=$('#customGroups');if(!host)return;
+  host.innerHTML=db.customGroups.map((g,index)=>{
+    const members=(g.members||[]).map(id=>person(id)).filter(Boolean);
+    const counts={old_female:0,new_female:0,old_male:0,new_male:0};
+    members.forEach(p=>{const k=balancedGroupCategory(p);if(counts[k]!=null)counts[k]++});
+    const memberHtml=members.map(p=>'<button class="balanced-member" type="button" data-person-detail="'+esc(p.id)+'"><span class="balanced-member-code">'+esc(pCode(p))+'</span><span class="balanced-member-name">'+esc(pName(p))+'</span><span class="balanced-member-type">'+esc(genderRelationLabel(p)||'未分类')+'</span><span class="balanced-member-vip">'+(pVip(p)?esc(p.vip?.level||'VIP'):'—')+'</span></button>').join('');
+    return '<div class="card custom-group balanced-group-card" data-group-index="'+index+'">'+
+      '<div class="balanced-group-head"><div><small>GROUP '+String(index+1).padStart(2,'0')+'</small><h3>'+esc(g.name)+'</h3></div><span class="balanced-group-total">'+members.length+'人</span></div>'+
+      '<div class="balanced-composition"><span>老女 '+counts.old_female+'</span><span>新女 '+counts.new_female+'</span><span>老男 '+counts.old_male+'</span><span>新男 '+counts.new_male+'</span></div>'+
+      '<div class="balanced-member-head"><span>编号</span><span>姓名</span><span>分类</span><span>VIP</span></div>'+
+      '<div class="balanced-members">'+memberHtml+'</div>'+
+      '<div class="button-row balanced-group-actions"><button class="btn ghost small open-custom-group" data-id="'+esc(g.id)+'">查看详情</button><button class="btn ghost small edit-group" data-id="'+esc(g.id)+'">修改名称</button></div>'+
+    '</div>';
+  }).join('');
+  host.querySelectorAll('[data-person-detail]').forEach(b=>b.onclick=e=>{e.stopPropagation();viewPerson(b.dataset.personDetail)});
 }
 function fillSelect(){
   const s=$('#recordPerson'),old=s.value;
@@ -174,16 +279,49 @@ function fillSelect(){
 }
 function renderRecords(){
   const ps=$('#recordPerson').value||'all',ty=$('#recordType').value||'all',q=($('#recordSearch').value||'').toLowerCase();
-  const rs=db.records.filter(r=>(ps==='all'||String(r.personId)===String(ps))&&(ty==='all'||r.type===ty)&&(`${r.title} ${r.content} ${(r.topics||[]).join(' ')}`).toLowerCase().includes(q)).sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+  const all=[...db.records].sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+  const rs=all.filter(r=>(ps==='all'||String(r.personId)===String(ps))&&(ty==='all'||r.type===ty)&&(`${r.title} ${r.content} ${(r.topics||[]).join(' ')}`).toLowerCase().includes(q));
+  const summary=$('#recordSummary');
+  if(summary){
+    const important=all.filter(r=>r.type==='重要事件').length,talk=all.filter(r=>r.type==='发言记录').length,contact=all.filter(r=>r.type==='联系记录').length;
+    const people=new Set(all.map(r=>String(r.personId||'')).filter(Boolean)).size;
+    summary.innerHTML=
+      '<div class="card record-summary-card"><span>全部记录</span><strong>'+all.length+'</strong><small>当前工作区记录</small></div>'+
+      '<div class="card record-summary-card"><span>重要事件</span><strong>'+important+'</strong><small>关键事实与变化</small></div>'+
+      '<div class="card record-summary-card"><span>发言记录</span><strong>'+talk+'</strong><small>历史发言与观点</small></div>'+
+      '<div class="card record-summary-card"><span>联系记录</span><strong>'+contact+'</strong><small>跟进与沟通</small></div>'+
+      '<div class="card record-summary-card"><span>涉及人物</span><strong>'+people+'</strong><small>已有历史人物</small></div>';
+  }
   $('#allTimeline').innerHTML=rs.map(eventHTML).join('')||'<div class="empty">没有匹配记录</div>';
-  document.querySelectorAll('.edit-record').forEach(b=>b.onclick=()=>openRecord(b.dataset.id)); // record-edit-rebind
+  document.querySelectorAll('.view-record').forEach(b=>b.onclick=()=>renderRecordDetail(b.dataset.id));
+  document.querySelectorAll('.edit-record').forEach(b=>b.onclick=()=>openRecord(b.dataset.id));
 }
 function topicCounts(){const m={};db.records.forEach(r=>(r.topics||[]).forEach(t=>{if(t)m[t]=(m[t]||0)+1}));return Object.entries(m).sort((a,b)=>b[1]-a[1])}
-function renderTopics(){const ts=topicCounts();$('#allTopics').innerHTML=ts.length?`<h3>已使用主题</h3><div class="tags" style="margin-top:10px">${ts.map(([t,n])=>`<span class="tag"># ${esc(t)} · ${n}</span>`).join('')}</div>`:'<div class="empty">暂未填写主题标签</div>'}
+function renderTopics(){
+  const ts=topicCounts();
+  const summary=$('#consistencySummary');
+  if(summary){
+    const categories={
+      newMale:db.people.filter(p=>pRelationCode(p)==='NEW'&&pGender(p)==='男').length,
+      newFemale:db.people.filter(p=>pRelationCode(p)==='NEW'&&pGender(p)==='女').length,
+      oldMale:db.people.filter(p=>pRelationCode(p)==='OLD'&&pGender(p)==='男').length,
+      oldFemale:db.people.filter(p=>pRelationCode(p)==='OLD'&&pGender(p)==='女').length
+    };
+    const groupOk=Array.isArray(db.customGroups)&&db.customGroups.length===10&&db.customGroups.every(g=>(g.members||[]).length===7);
+    summary.innerHTML=
+      '<div class="card consistency-summary-card"><span>人物总数</span><strong>'+db.people.length+'</strong><small>主人物库</small></div>'+
+      '<div class="card consistency-summary-card"><span>均衡小组</span><strong>'+db.customGroups.length+'</strong><small>'+(groupOk?'10×7 结构正常':'需要检查')+'</small></div>'+
+      '<div class="card consistency-summary-card"><span>新客户</span><strong>'+(categories.newMale+categories.newFemale)+'</strong><small>男 '+categories.newMale+' / 女 '+categories.newFemale+'</small></div>'+
+      '<div class="card consistency-summary-card"><span>老客户</span><strong>'+(categories.oldMale+categories.oldFemale)+'</strong><small>男 '+categories.oldMale+' / 女 '+categories.oldFemale+'</small></div>'+
+      '<div class="card consistency-summary-card"><span>主题标签</span><strong>'+ts.length+'</strong><small>来自人物记录</small></div>';
+  }
+  $('#allTopics').innerHTML=ts.length?'<div class="topic-summary-list">'+ts.map(([t,n])=>'<div class="topic-summary-row"><span># '+esc(t)+'</span><b>'+n+'</b></div>').join('')+'</div>':'<div class="empty">暂未填写主题标签</div>';
+}
 function bindDynamic(){
   document.querySelectorAll('.edit-person').forEach(b=>b.onclick=()=>openPerson(b.dataset.id));
   document.querySelectorAll('.view-person').forEach(b=>b.onclick=()=>viewPerson(b.dataset.id));
   document.querySelectorAll('.delete-person').forEach(b=>b.onclick=()=>deletePerson(b.dataset.id));
+  document.querySelectorAll('.view-record').forEach(b=>b.onclick=()=>renderRecordDetail(b.dataset.id));
   document.querySelectorAll('.edit-record').forEach(b=>b.onclick=()=>openRecord(b.dataset.id));
   document.querySelectorAll('.system-group-open').forEach(b=>b.onclick=()=>openSystemGroup(b.dataset.group));
   document.querySelectorAll('.edit-group').forEach(b=>b.onclick=()=>openGroup(b.dataset.id));
@@ -208,7 +346,11 @@ function go(page){
     requestAnimationFrame(()=>requestAnimationFrame(()=>target.classList.remove('section-entering')));
   };
 
-  if(current&&current!==target){
+  // Detail navigation is an explicit user action: make its target active immediately.
+  // The old 230ms deferred switch could be superseded on WebKit while a detail
+  // panel was already rendered, leaving a permanently hidden page.
+  const isDetail=['personDetailPage','groupDetailPage','recordDetailPage','fr70PersonDetailPage'].includes(page);
+  if(current&&current!==target&&!isDetail){
     current.classList.add('section-leaving');
     setTimeout(activate,230);
   }else{
@@ -248,7 +390,7 @@ function viewPerson(id){
     <div class="detail-box"><span>偏好行业</span><b>${esc(sectors.join('、')||'--')}</b></div>
     <div class="section-label">性格与规划</div>
     <div class="detail-box" style="grid-column:1/-1"><span>性格</span><b>${esc(p.personality?.summary||'--')}</b></div>
-    <div class="detail-box" style="grid-column:1/-1"><span>自定义小组</span><b>${esc(groups.join('、')||'未加入自定义小组')}</b></div>
+    <div class="detail-box" style="grid-column:1/-1"><span>所属小组</span><b>${esc(groups.join('、')||'未加入小组')}</b></div>
     <div class="detail-box" style="grid-column:1/-1"><span>内部备注</span><b>${esc(p.crm?.notes||'--')}</b></div>
   </div>`,null);
 }
@@ -283,7 +425,7 @@ function openPerson(id){
     x.id=pid;x.name=String(f.get('name')).trim();x.frenchName=x.name;
     x.gender=f.get('gender');x.gender_code=x.gender==='女'?'F':'M';x.age=Number(f.get('age'))||null;
     x.customer_relation=x.customer_relation||{};x.customer_relation.type_code=f.get('relation');x.customer_relation.type=x.customer_relation.type_code==='OLD'?'老客户':'新客户';
-    x.location=x.location||{};x.location.country=x.location.country||'法国';x.location.country_code=x.location.country_code||'FR';x.location.city=String(f.get('city')).trim();
+    x.location=x.location||{};x.location.country=x.location.country||'罗马尼亚';x.location.country_code=x.location.country_code||'RO';x.location.city=String(f.get('city')).trim();
     x.occupation=x.occupation||{};x.occupation.title_zh=String(f.get('occupation')).trim();x.occupation.industry_zh=String(f.get('industry')).trim();
     x.finance=x.finance||{};x.finance.annual_income_eur=Number(f.get('income'))||0;x.finance.estimated_investable_assets_eur=Number(f.get('assets'))||0;
     x.investment_profile=x.investment_profile||{};x.investment_profile.stock_enthusiasm_index=Math.max(0,Math.min(100,Number(f.get('enthusiasm'))||0));x.investment_profile.risk_tolerance=String(f.get('risk')).trim();
@@ -306,23 +448,85 @@ function deletePerson(id){
   const p=person(id);if(!p)return;
   const linked=[...(db.records||[]),...(db.portfolio?.holdings||[]),...(db.portfolio?.buyPlans||[])].some(x=>String(x.personId)===String(id))||(db.tradeSim?.recommendations||[]).some(r=>(r.candidates||[]).some(x=>String(x.personId)===String(id)))||(db.docs||[]).some(d=>String(d.html||'').includes('data-person="'+id+'"'))||Object.values(db.dailyDocs||{}).some(d=>String(d.html||'').includes('data-person="'+id+'"'));
   if(linked){toast('该人物有关联记录、交易或文档，请保留人物以维护历史完整性');return}
-  if(!confirm(`确定删除 ${pName(p)}（${p.id}）吗？\n该人物会同时从所有自定义小组中移除。`))return;
+  if(!confirm(`确定删除 ${pName(p)}（${p.id}）吗？\n该人物删除后，系统会重新校验并均衡分配其余小组成员。`))return;
   db.people=db.people.filter(x=>String(x.id)!==String(id));db.customGroups.forEach(g=>g.members=(g.members||[]).filter(x=>String(x)!==String(id)));save();render();toast('人物已删除');
 }
 function openSystemGroup(id){go('people');$('#systemGroupFilter').value=id;$('#customGroupFilter').value='all';renderPeople()}
-function openCustomGroup(id){go('people');$('#systemGroupFilter').value='all';$('#customGroupFilter').value=id;renderPeople()}
+
+function ensureGroupDetailPage(){
+  let sec=$('#groupDetailPage');
+  if(sec)return sec;
+  sec=document.createElement('section');
+  sec.id='groupDetailPage';
+  sec.className='section';
+  sec.dataset.uiParent='groups';
+  sec.innerHTML='<div id="groupDetailContent"></div>';
+  const groups=$('#groups');
+  if(groups&&groups.parentNode)groups.parentNode.insertBefore(sec,groups.nextSibling);
+  else $('.main')?.appendChild(sec);
+  return sec;
+}
+function renderGroupDetail(id){
+  const g=customGroup(id);if(!g)return;
+  ensureGroupDetailPage();
+  const members=(g.members||[]).map(pid=>person(pid)).filter(Boolean);
+  const counts={old_female:0,new_female:0,old_male:0,new_male:0};
+  members.forEach(p=>{const k=balancedGroupCategory(p);if(counts[k]!=null)counts[k]++});
+  const holdings=(db.portfolio?.holdings||[]).filter(h=>h.status!=='sold'&&(g.members||[]).includes(String(h.personId)));
+  const opened=members.filter(pOpened).length;
+  const vip=members.filter(pVip).length;
+  const joined=members.filter(pJoined).length;
+  const host=$('#groupDetailContent');if(!host)return;
+  host.innerHTML=
+    '<div class="detail-head cn-page-header">'+
+      '<div class="detail-identity"><div class="cn-detail-mark">G'+esc(String(db.customGroups.findIndex(x=>x.id===g.id)+1).padStart(2,'0'))+'</div><div>'+
+        '<div class="eyebrow">GROUP PROFILE</div><h1 class="page-title">'+esc(g.name)+'</h1>'+
+        '<p class="sub">固定均衡小组 · '+members.length+' 人 · 老女 '+counts.old_female+' / 新女 '+counts.new_female+' / 老男 '+counts.old_male+' / 新男 '+counts.new_male+'</p>'+
+      '</div></div>'+
+      '<div class="actions"><button class="btn ghost" id="groupDetailBack">← 返回分组管理</button><button class="btn ghost" id="groupDetailPeople">人物库筛选</button><button class="btn primary" id="groupDetailRename">修改名称</button></div>'+
+    '</div>'+
+    '<div class="cn-detail-kpis">'+
+      '<div class="card cn-detail-kpi"><span>成员人数</span><strong>'+members.length+'</strong></div>'+
+      '<div class="card cn-detail-kpi"><span>已开户</span><strong>'+opened+'</strong></div>'+
+      '<div class="card cn-detail-kpi"><span>VIP</span><strong>'+vip+'</strong></div>'+
+      '<div class="card cn-detail-kpi"><span>已入群</span><strong>'+joined+'</strong></div>'+
+      '<div class="card cn-detail-kpi"><span>当前持仓</span><strong>'+holdings.length+' 笔</strong></div>'+
+    '</div>'+
+    '<div class="cn-two-column-detail">'+
+      '<div class="card panel"><div class="panel-head"><h2>小组成员</h2><span class="muted">'+members.length+' 人</span></div>'+
+        '<div class="table-wrap"><table class="mini-table"><thead><tr><th>编号</th><th>姓名</th><th>分类</th><th>VIP</th><th>开户</th><th>入群</th><th>可投资资产</th><th>操作</th></tr></thead><tbody>'+
+        members.map(p=>'<tr><td>'+esc(pCode(p))+'</td><td><b>'+esc(pName(p))+'</b></td><td>'+esc(genderRelationLabel(p)||'--')+'</td><td>'+(pVip(p)?esc(p.vip?.level||'VIP'):'—')+'</td><td>'+(pOpened(p)?'已开户':'未开户')+'</td><td>'+(pJoined(p)?'已入群':'未入群')+'</td><td>€ '+Number(pAssets(p)||0).toLocaleString()+'</td><td><button class="link-btn group-person-detail" data-id="'+esc(p.id)+'">详情</button></td></tr>').join('')+
+        '</tbody></table></div>'+
+      '</div>'+
+      '<div class="card panel"><div class="panel-head"><h2>小组规则</h2><span class="muted">系统固定</span></div>'+
+        '<div class="cn-rule-list">'+
+          '<div><span>分组数量</span><b>固定 10 组</b></div>'+
+          '<div><span>单组人数</span><b>固定 7 人</b></div>'+
+          '<div><span>男女结构</span><b>3 女 / 4 男</b></div>'+
+          '<div><span>新老结构</span><b>3 老 / 4 新</b></div>'+
+          '<div><span>成员维护</span><b>系统自动保持均衡</b></div>'+
+          '<div><span>允许修改</span><b>小组名称</b></div>'+
+        '</div>'+
+        '<div class="notice" style="margin-top:12px">当前 70 人结构可精确保持每组：老女 1、新女 2、老男 2、新男 2。人物属性变化后系统重新校验均衡分配。</div>'+
+      '</div>'+
+    '</div>';
+  go('groupDetailPage');
+  $('#groupDetailBack').onclick=()=>go('groups');
+  $('#groupDetailPeople').onclick=()=>{go('people');$('#systemGroupFilter').value='all';$('#customGroupFilter').value=g.id;renderPeople()};
+  $('#groupDetailRename').onclick=()=>openGroup(g.id);
+  document.querySelectorAll('.group-person-detail').forEach(b=>b.onclick=()=>viewPerson(b.dataset.id));
+}
+function openCustomGroup(id){renderGroupDetail(id)}
 
 function openGroup(id){
-  const g=id?customGroup(id):{id:'g'+Date.now(),name:'',leader:'',members:[]};if(!g)return;
-  const memberRows=[...db.people].sort((a,b)=>String(a.id).localeCompare(String(b.id),undefined,{numeric:true})).map(p=>`<label class="member-option"><input type="checkbox" name="members" value="${esc(p.id)}" ${(g.members||[]).includes(String(p.id))?'checked':''}><span><b>${esc(pCode(p))} · ${esc(pName(p))}</b><br><small class="muted">${esc(genderRelationLabel(p)||'未分类')} · ${esc(p.age||'--')}岁 · ${pVip(p)?'VIP · ':''}${pOpened(p)?'已开户':'未开户'} · ${pJoined(p)?'已入群':'未入群'}</small></span></label>`).join('');
-  openModal(id?'编辑自定义小组':'新建自定义小组',`<div class="form-grid"><div class="field"><label>小组名称 *</label><input class="input" name="name" required value="${esc(g.name||'')}" placeholder="例如：重点跟进A组"></div><div class="field"><label>组长姓名（可不在名单中）</label><input class="input" name="leader" value="${esc(g.leader||'')}" placeholder="直接填写组长名称"></div><div class="field full"><label>选择成员</label><div class="member-picker">${memberRows||'<div class="empty">人物库为空</div>'}</div></div></div>`,f=>{
+  const g=customGroup(id);if(!g)return;
+  openModal('修改小组名称','<div class="form-grid"><div class="field full"><label>小组名称 *</label><input class="input" name="name" required maxlength="30" value="'+esc(g.name||'')+'" placeholder="输入新的小组名称"></div><div class="field full"><div class="notice">成员由系统按性别与新老属性均衡分配，每组固定 7 人；这里只修改名称。</div></div></div>',f=>{
     const name=String(f.get('name')).trim();if(!name)return false;
-    const members=[...document.querySelectorAll('#modalForm input[name="members"]:checked')].map(x=>String(x.value));
-    const x={id:g.id,name,leader:String(f.get('leader')).trim(),members,updated:today()};
-    if(id)db.customGroups=db.customGroups.map(a=>a.id===id?x:a);else db.customGroups.push(x);
+    g.name=name;g.updated=today();
+    setTimeout(()=>{if($('#groupDetailPage')?.classList.contains('active'))renderGroupDetail(g.id)},0);
   });
 }
-function deleteGroup(id){const g=customGroup(id);if(!g)return;if(!confirm(`确定删除自定义小组“${g.name}”吗？\n不会删除小组中的人物。`))return;db.customGroups=db.customGroups.filter(x=>x.id!==id);save();render();toast('小组已删除')}
+function deleteGroup(id){const g=customGroup(id);if(!g)return;toast('当前为固定10组，不能删除小组；可以修改小组名称')}
 
 function normalize(s){return String(s).toLowerCase().replace(/[\s，。！？、,.!?"“”‘’'：:；;（）()\[\]{}]/g,'')}
 function similarity(a,b){const x=normalize(a),y=normalize(b);if(!x||!y)return 0;const longer=x.length>=y.length?x:y,shorter=x.length>=y.length?y:x;if(longer.includes(shorter))return shorter.length/longer.length;let prev=Array(y.length+1).fill(0).map((_,i)=>i);for(let i=1;i<=x.length;i++){let cur=[i];for(let j=1;j<=y.length;j++)cur[j]=Math.min(cur[j-1]+1,prev[j]+1,prev[j-1]+(x[i-1]===y[j-1]?0:1));prev=cur}return 1-prev[y.length]/longer.length}
@@ -342,7 +546,7 @@ $('#editor').addEventListener('keydown',e=>{if(e.key!=='Enter')return;const el=e
 function download(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
 $('#importBtn').onclick=()=>$('#fileInput').click();
 $('#fileInput').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{const text=await file.text();let arr;if(file.name.toLowerCase().endsWith('.json')){const parsed=JSON.parse(text);arr=Array.isArray(parsed)?parsed:parsed.people}else{const lines=text.split(/\r?\n/).filter(Boolean),head=lines.shift().split(',').map(x=>x.trim());arr=lines.map(line=>{const vals=line.split(','),o={};head.forEach((h,i)=>o[h]=vals[i]||'');return o})}if(!Array.isArray(arr))throw Error('JSON 应为人物数组，或顶层包含 people 数组');let added=0,updated=0;arr.map(normalizePerson).forEach(x=>{if(!x.id)return;const old=person(x.id);if(old){const crm=old.crm;Object.assign(old,x);old.crm=x.crm||crm;updated++}else{db.people.push(x);added++}});save();render();toast(`导入完成：新增 ${added}，更新 ${updated}`)}catch(err){alert('导入失败：'+err.message)}e.target.value=''};
-$('#addPerson').onclick=()=>openPerson();$('#addGroup').onclick=()=>openGroup();
+$('#addPerson').onclick=()=>openPerson();const addGroupBtn=$('#addGroup');if(addGroupBtn)addGroupBtn.onclick=()=>toast('当前固定为10个均衡小组，不支持新增小组');
 $('#addRecord').onclick=()=>{if(!db.people.length)return alert('人物库为空');openRecord()};$('#quickAdd').onclick=()=>{go('records');if(db.people.length)openRecord()};
 $('#newDoc').onclick=createDoc;$('#saveDoc').onclick=saveDoc;$('#renameDoc').onclick=renameDoc;$('#insertPerson').onclick=insertPerson;
 $('#docTitle').oninput=()=>$('#docStatus').textContent='标题有未保存修改';$('#editor').oninput=()=>$('#docStatus').textContent='文档有未保存修改';

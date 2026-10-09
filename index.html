@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>辰南撰写 · 创作工作台</title>
+<title>辰南 · 创作工作台</title>
 
 <style>
 :root{--ink:#172236;--muted:#6c788c;--line:#e2e8f0;--paper:#fff;--bg:#f3f6fa;--blue:#3568f4;--blue-weak:#edf2ff;--green:#118461;--green-weak:#e6f7f0;--amber:#b96b08;--amber-weak:#fff5df;--red:#bd4b52;--red-weak:#fff0f0;--violet:#6941c6;--violet-weak:#f4f0ff;--shadow:0 12px 30px rgba(31,52,86,.06);--radius:16px}
@@ -15,23 +15,24 @@
 
 <style>.app:not(.app-ready){visibility:hidden}.auth-root{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:#f7f9fc}.auth-root.hidden{display:none!important}</style>
 <link rel="preload" as="image" href="./assets/login/landscape.webp" type="image/webp">
-<link rel="stylesheet" href="./intro.css?v=20261001-reliable-1">
-<link id="cnWorkspaceGlass" rel="stylesheet" href="./workspace-glass.css?v=20261002-people-contrast-1">
+<link rel="stylesheet" href="./intro.css?v=20261003-koi-final-1">
 <link rel="stylesheet" href="./france70-chat.css?v=20261002-reference-1">
-<link rel="preload" href="./data/france70-v6.1.json" as="fetch" crossorigin="anonymous">
+<link rel="stylesheet" href="./design-system.css?v=20261003-module-rebuild-5" id="chennanDesignSystemStyles">
+<link rel="stylesheet" href="./lumen-polish.css?v=20261009-reference-design-2" id="chennanLumenPolishStyles">
+<link rel="preload" href="./data/72人物整合汇总.json" as="fetch" crossorigin="anonymous">
 <script src="./theme-system.js?v=20261002-final-ui-2"></script>
 </head>
 <body>
 <div class="app app-lock">
 <aside class="sidebar">
-  <div class="brand"><div class="brand-mark">辰</div><div><b>辰南</b><small>人物与交易工作台</small></div></div>
+  <div class="brand"><div class="brand-mark" aria-hidden="true">辰</div><div><b>辰南</b><small>创作工作台</small></div></div>
   <nav class="nav">
     <button class="active" data-page="overview"><i>⌂</i><span>总览</span></button>
     <button data-page="people"><i>◎</i><span>人物库</span></button>
     <button data-page="groups"><i>◫</i><span>分组管理</span></button>
     <button data-page="records"><i>▤</i><span>重要事件</span></button>
     <button data-page="novel"><i>✎</i><span>小说文档</span></button>
-    <button data-page="france70chat"><i>✦</i><span>France 70 群聊</span></button>
+    <button data-page="france70chat"><i>✦</i><span>群聊引擎</span></button>
     <button data-page="topics"><i>◌</i><span>主题检查</span></button>
   </nav>
   <div class="side-note">70 位人物为全量虚构测试数据<br>修改内容保存在当前浏览器</div>
@@ -59,15 +60,14 @@
 </section>
 
 <section id="groups" class="section">
-  <div class="topbar"><div><div class="eyebrow">GROUP MANAGEMENT</div><h1 class="page-title">分组管理</h1><p class="sub">系统分组自动计算；自定义小组可自由命名、选择成员，并设置不在人物名单中的组长。</p></div><button class="btn primary" id="addGroup">＋ 新建自定义小组</button></div>
-  <div class="card panel"><div class="panel-head"><h2>系统定义分组</h2><span class="muted">点击分组可直接筛选人物</span></div><div id="systemGroups" class="group-grid"></div></div>
-  <div class="card panel" style="margin-top:18px"><div class="panel-head"><h2>自定义小组</h2><span id="customGroupCount" class="muted"></span></div><div id="customGroups" class="custom-groups"></div></div>
+  <div class="topbar"><div><div class="eyebrow">BALANCED GROUPS</div><h1 class="page-title">分组管理</h1><p class="sub">70 位人物固定平均分为 10 组，每组 7 人；男女与新老客户比例均衡，小组名称可随时修改。</p></div></div>
+  <div class="card panel balanced-groups-panel"><div class="panel-head"><h2>10 个均衡小组</h2><span id="customGroupCount" class="muted"></span></div><div id="systemGroups" hidden></div><div id="customGroups" class="custom-groups balanced-groups-grid"></div></div>
 </section>
 
 <section id="records" class="section">
-  <div class="topbar"><div><div class="eyebrow">FACTS & QUOTES</div><h1 class="page-title">重要事件</h1><p class="sub">记录人物事实 / 发言；保存前做重复与简单状态冲突检查。</p></div><button class="btn primary" id="addRecord">＋ 新增重要记录</button></div>
-  <div class="notice warn">一致性检查仅作辅助，不替代人工判断。</div>
-  <div class="card panel"><div class="toolbar"><select class="select" id="recordPerson"><option value="all">全部人物</option></select><select class="select" id="recordType"><option value="all">全部类型</option><option value="重要事件">重要事件</option><option value="发言记录">发言记录</option><option value="联系记录">联系记录</option></select><input class="input search" id="recordSearch" placeholder="搜索内容或标题…" /></div><div id="allTimeline" class="timeline"></div></div>
+  <div class="topbar"><div><div class="eyebrow">PERSON RECORDS</div><h1 class="page-title">人物记录</h1><p class="sub">统一查看重要事件、发言记录、联系记录与人物历史，并支持搜索、筛选和详情查看。</p></div><button class="btn primary" id="addRecord">＋ 新增人物记录</button></div>
+  <div id="recordSummary" class="record-summary-grid"></div>
+  <div class="card panel record-main-panel"><div class="panel-head"><div><h2>记录时间线</h2><p class="muted">一致性检查仅作辅助，不替代人工判断。</p></div></div><div class="toolbar"><select class="select" id="recordPerson"><option value="all">全部人物</option></select><select class="select" id="recordType"><option value="all">全部类型</option><option value="重要事件">重要事件</option><option value="发言记录">发言记录</option><option value="联系记录">联系记录</option></select><input class="input search" id="recordSearch" placeholder="搜索标题、内容或主题…" /></div><div id="allTimeline" class="timeline"></div></div>
 </section>
 
 
@@ -80,9 +80,9 @@
 <section id="france70chat" class="section">
   <div class="topbar">
     <div>
-      <div class="eyebrow">FRANCE 70 · FREE CHAT & MEMORY</div>
-      <h1 class="page-title">France 70 群聊与长期记忆</h1>
-      <p class="sub">70位虚构法国人物 · v6.1 Voice DNA · 作者正史 · 关系网 · 动态记忆。网页不调用额外付费 AI API。</p>
+      <div class="eyebrow">CHENNAN SCRIPT ENGINE 2.0</div>
+      <h1 class="page-title">辰南 Script Engine 2.0与长期记忆</h1>
+      <p class="sub">70位虚构罗马尼亚成员 · 完整人物背景 · 课程与模拟状态 · 正式记忆。网页不调用额外付费 AI API。</p>
     </div>
     <div class="actions">
       <span class="status good">✓ 0 额外 API 费用</span>
@@ -90,7 +90,7 @@
     </div>
   </div>
 
-  <div id="fr70LoadStatus" class="notice">正在读取 v6.1 角色库…</div>
+  <div id="fr70LoadStatus" class="notice">正在读取正式人物库…</div>
 
   <div class="fr70-stats">
     <div class="fr70-stat"><span>历史会话</span><b id="fr70SessionCount">0</b></div>
@@ -101,12 +101,12 @@
   <div class="card panel" style="margin-bottom:18px">
     <div class="panel-head">
       <h2>免费工作流</h2>
-      <span class="muted">一个入口 · 一个记忆源 · 一个 v6.1 主档</span>
+      <span class="muted">上午09:00–12:00 · 下午13:00–17:00 · 晚间19:00–21:00</span>
     </div>
     <div class="check-box">
       <b>① 输入助理 / 教授内容</b>：系统先从70人中筛选真正有理由参与的人。<br>
       <b>② 生成并复制提示词</b>：把人物人设、关系、Canon、近期记忆一并交给 ChatGPT。<br>
-      <b>③ 粘贴 JSON 回来</b>：先做问句比例、分号、重复话术等 QA，再写入本轮历史和人物动态记忆。
+      <b>③ 粘贴 JSON 回来</b>：先检查草稿；只有点击采用并保存，才更新正式会话和人物记忆。
     </div>
   </div>
 
@@ -125,14 +125,11 @@
         </div>
         <textarea id="fr70Source" class="fr70-textarea" placeholder="粘贴今天助理或教授的发言…"></textarea>
         <div class="fr70-options">
-          <div class="field">
-            <label>候选人物数量</label>
-            <select id="fr70Count" class="select">
-              <option value="10">10 人</option>
-              <option value="15">15 人</option>
-              <option value="20" selected>20 人</option>
-            </select>
-          </div>
+          <div class="field"><label>课程日期</label><input id="seDate" class="input" type="date"></div>
+          <div class="field"><label>课程时间</label><input id="seTime" class="input" type="time" value="09:00"></div>
+          <div class="field"><label>模拟交易计划</label><select id="seOffer" class="select"></select></div>
+          <div class="field"><label>话题复杂度</label><select id="seComplexity" class="select"><option value="0">普通</option><option value="3">多角度</option><option value="5">复杂</option></select></div>
+          <label><input id="seClose" type="checkbox"> 本条用户原话为闭群消息</label>
           <label class="fr70-check"><input id="fr70Reuse" type="checkbox"> 优先延续上一轮人物，但仍允许根据话题调整</label>
         </div>
         <div class="button-row" style="margin-top:13px">
@@ -146,8 +143,8 @@
       <div class="card fr70-card" style="margin-top:18px">
         <div class="eyebrow">STEP 2</div>
         <h2 style="margin:3px 0 10px">复制提示词到 ChatGPT</h2>
-        <textarea id="fr70Prompt" class="fr70-prompt" readonly placeholder="点击“生成提示词”后，这里会包含所选人物 v6.1 人设、关系网和动态记忆。"></textarea>
-        <div class="fr70-note">提示词已写入真实性规则：直接问句目标约25%–35%，牵引不能等于人人提问，也不能强迫观望者和质疑者统一结论。</div>
+        <textarea id="fr70Prompt" class="fr70-prompt" readonly placeholder="点击“生成提示词”后，这里会包含所选人物 完整人物资料、关系网和动态记忆。"></textarea>
+        <div class="fr70-note">成员可提问、补充、质疑或沉默。模拟状态决定交易事实；草稿不会写入正式记忆。</div>
       </div>
 
       <div class="card fr70-card" style="margin-top:18px">
@@ -155,8 +152,9 @@
         <h2 style="margin:3px 0 10px">粘贴 ChatGPT 返回的 JSON</h2>
         <textarea id="fr70Result" class="fr70-output" placeholder='粘贴 {"messages":[...],"memory_events":[...]}'></textarea>
         <div class="button-row" style="margin-top:12px">
-          <button class="btn primary" type="button" id="fr70Import">检查并导入群聊</button>
+          <button class="btn primary" type="button" id="fr70Import">检查草稿</button>
         </div>
+        <button class="btn primary" type="button" id="seAdopt">采用并保存正式会话</button>
         <div id="fr70Qa" class="fr70-qa"></div>
       </div>
     </div>
@@ -181,8 +179,12 @@
 </section>
 
 <section id="topics" class="section">
-  <div class="topbar"><div><div class="eyebrow">DATA NOTES</div><h1 class="page-title">主题与检查说明</h1><p class="sub">记录主题自动汇总，人物数据保留原始完整画像结构。</p></div></div>
-  <div class="card panel"><h2>数据规则</h2><div class="check-box"><h3>系统分组</h3><ul><li>新男 / 新女 / 老男 / 老女由客户关系与性别动态计算。</li><li>VIP、男性、女性、已开户、未开户、已入群、未入群均由人物当前字段动态计算。</li></ul></div><div class="check-box"><h3>自定义小组</h3><ul><li>小组名称、组长姓名、成员列表独立保存；组长无需存在于 70 人名单。</li><li>删除人物时会同步从所有自定义小组中移除。</li></ul></div><div id="allTopics" style="margin-top:22px"></div></div>
+  <div class="topbar"><div><div class="eyebrow">CONSISTENCY CHECK</div><h1 class="page-title">一致性检查</h1><p class="sub">汇总人物分类、均衡分组、主题标签和数据规则，帮助检查长期内容的一致性。</p></div></div>
+  <div id="consistencySummary" class="consistency-summary-grid"></div>
+  <div class="consistency-layout">
+    <div class="card panel"><div class="panel-head"><h2>基础数据规则</h2><span class="muted">自动校验</span></div><div class="check-box"><h3>人物分类</h3><ul><li>新男 / 新女 / 老男 / 老女由客户关系与性别动态计算。</li><li>VIP、开户、入群、持仓和参与次数均来自人物当前真实字段与业务记录。</li></ul></div><div class="check-box"><h3>固定均衡小组</h3><ul><li>70 位人物固定分为 10 组，每组 7 人；当前结构为每组老女 1、新女 2、老男 2、新男 2。</li><li>成员由系统保持均衡，小组名称允许修改；人物资料变化后系统会重新校验分组。</li></ul></div></div>
+    <div class="card panel"><div class="panel-head"><h2>主题标签汇总</h2><span class="muted">人物记录来源</span></div><div id="allTopics"></div></div>
+  </div>
 </section>
 </main></div>
 
@@ -190,18 +192,19 @@
 <div class="toast" id="toast"></div>
 
 <script src="./login-scene.js?v=20261001-reliable-1"></script>
-<script src="./auth.js?v=20261002-no-mfa-1"></script>
-<script src="./workspace-core.js?v=20261002-vip-levels-1"></script>
-<script src="./cloud-sync.js?v=20261002-no-mfa-1"></script>
-<script src="./trade-dashboard.js?v=20261001-reliable-1"></script>
-<script src="./people-detail.js?v=20261002-vip-levels-1"></script>
-<script src="./trading-simulator.js?v=20261002-holdings-layout-2"></script>
+<script src="./auth.js?v=20261003-koi-final-1"></script>
+<script src="./workspace-core.js?v=20261003-module-rebuild-5"></script>
+<script src="./cloud-sync.js?v=20261003-unified-2"></script>
+<script src="./trade-dashboard.js?v=20261003-module-rebuild-3"></script>
+<script src="./people-detail.js?v=20261003-unified-2"></script>
+<script src="./trading-simulator.js?v=20261003-module-rebuild-3"></script>
 <script src="./character-memory.js?v=20261001-reliable-1"></script>
-<script src="./france70-chat.js?v=20261002-free-1"></script>
-<script src="./document-workspace.js?v=20261001-reliable-1"></script>
-<script src="./ui-shell.js?v=20261002-mobile-modules-1"></script>
+<script src="./script-engine.js?v=20261006-2"></script>
+<script src="./france70-chat.js?v=20261003-detail-2"></script>
+<script src="./document-workspace.js?v=20261003-module-rebuild-2"></script>
 <script src="./security-ui.js?v=20261002-no-mfa-1"></script>
-<script src="./theme-ui.js?v=20261002-detail-fix-2"></script>
-<script src="./offline-register.js?v=20261001-reliable-1"></script>
+<script src="./offline-register.js?v=20261001-reliable-1"></script>\n<script src="./overview-final.js?v=20261009-chinese-navigation-1"></script>
+<script src="./design-system.js?v=20261003-final-system-4"></script>
+<script src="./lumen-interactions.js?v=20261007-2"></script>
 </body>
 </html>

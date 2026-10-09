@@ -91,7 +91,7 @@ function setupUI(){
   }
   if(!el('simStyles')){
     const st=document.createElement('style');st.id='simStyles';
-    st.textContent='.offer-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.offer-stat{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fafbfe}.offer-stat span{display:block;font-size:11px;color:var(--muted)}.offer-stat b{display:block;font-size:17px;margin-top:3px}.candidate-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.candidate-card{border:1px solid var(--line);border-radius:15px;padding:15px;background:#fff;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center}.gender-avatar{width:50px;height:50px;border-radius:16px;display:grid;place-items:center;font-weight:900;font-size:15px}.gender-avatar.f{background:#ffe7f2;color:#c24279}.gender-avatar.m{background:#e6efff;color:#3260c8}.candidate-card .meta{color:var(--muted);font-size:12px;margin-top:4px}.candidate-card .actions{justify-content:flex-end}.candidate-card.invited{border-color:#91d5bd;background:#f5fffb}.candidate-card.rejected{opacity:.58;background:#f7f7f8}.candidate-card.bought{border-color:#8fa7ff;background:#f6f8ff}.offer-list{display:grid;gap:10px}.offer-row{display:flex;justify-content:space-between;gap:15px;align-items:center;padding:13px;border:1px solid var(--line);border-radius:12px}.offer-row.active{border-color:#9eb1ff;background:#f7f9ff}.stock-chart-heading{align-items:flex-start}.stock-chart-heading p{margin:8px 0 0;font-size:12px;max-width:680px}.stock-chart-axis{font-size:12px;color:var(--muted);margin-bottom:10px}.hold-chart{display:flex;align-items:flex-end;gap:16px;min-height:294px;padding:16px 12px 12px;border:1px solid var(--line);border-radius:14px;overflow-x:auto;background:var(--paper)}.hold-bar-wrap{flex:0 0 100px;display:flex;flex-direction:column;align-items:center}.hold-bar-count{font-size:14px;font-weight:800;color:var(--ink);margin-bottom:8px}.hold-bar{flex:none;width:54px;border-radius:6px 6px 0 0;background:var(--blue);transition:none}.hold-bar.ready{background:var(--green)}.hold-bar.soon{background:var(--amber)}.hold-bar-label{font-size:11px;text-align:center;margin-top:8px;width:100%;min-height:55px;overflow-wrap:anywhere}.hold-bar-label b,.hold-bar-label span{display:block}.hold-bar-label b{font-size:13px;color:var(--ink)}.hold-bar-label span{color:var(--muted);margin-top:2px}.stock-chart-legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;color:var(--muted);font-size:12px}.stock-ready{color:var(--green);font-weight:900}.stock-soon{color:var(--amber);font-weight:900}.stock-holding{color:var(--blue);font-weight:900}.batch-card{border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:10px}.batch-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.person-mini{display:flex;gap:9px;align-items:center;border:1px solid var(--line);border-radius:11px;padding:9px}.person-mini .gender-avatar{width:38px;height:38px;border-radius:12px}.person-mini-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:12px}@media(max-width:1100px){.candidate-grid{grid-template-columns:1fr}.person-mini-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:700px){.offer-grid{grid-template-columns:repeat(2,1fr)}.candidate-card{grid-template-columns:auto 1fr}.candidate-card .actions{grid-column:1/-1}.person-mini-grid{grid-template-columns:1fr}}';
+    st.textContent='.offer-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.offer-stat{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fafbfe}.offer-stat span{display:block;font-size:11px;color:var(--muted)}.offer-stat b{display:block;font-size:17px;margin-top:3px}.candidate-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.candidate-card{border:1px solid var(--line);border-radius:15px;padding:15px;background:#fff;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center}.gender-avatar{width:50px;height:50px;border-radius:16px;display:grid;place-items:center;font-weight:900;font-size:15px}.gender-avatar.f{background:#ffe7f2;color:#c24279}.gender-avatar.m{background:#e6efff;color:#3260c8}.candidate-card .meta{color:var(--muted);font-size:12px;margin-top:4px}.candidate-card .actions{justify-content:flex-end}.candidate-card.invited{border-color:#91d5bd;background:#f5fffb}.candidate-card.rejected{opacity:.58;background:#f7f7f8}.candidate-card.bought{border-color:#8fa7ff;background:#f6f8ff}.offer-list{display:grid;gap:10px}.offer-row{display:flex;justify-content:space-between;gap:15px;align-items:center;padding:13px;border:1px solid var(--line);border-radius:12px}.offer-row.active{border-color:#9eb1ff;background:#f7f9ff}.stock-chart-heading{align-items:flex-start}.stock-chart-heading p{margin:8px 0 0;font-size:12px;max-width:680px}.stock-chart-axis{font-size:12px;color:#43534a;margin-bottom:10px}.hold-chart{display:flex;align-items:flex-end;gap:16px;min-height:294px;padding:16px 12px 12px;border:1px solid var(--line);border-radius:14px;overflow-x:auto;background:var(--paper)}.hold-bar-wrap{flex:0 0 100px;display:flex;flex-direction:column;align-items:center}.hold-bar-count{font-size:14px;font-weight:800;color:var(--ink);margin-bottom:8px}.hold-bar{flex:none;width:54px;border-radius:6px 6px 0 0;background:var(--blue);transition:none}.hold-bar.ready{background:var(--green)}.hold-bar.soon{background:var(--amber)}.hold-bar-label{font-size:11px;text-align:center;margin-top:8px;width:100%;min-height:55px;overflow-wrap:anywhere}.hold-bar-label b,.hold-bar-label span{display:block}.hold-bar-label b{font-size:13px;color:var(--ink)}.hold-bar-label span{color:var(--muted);margin-top:2px}.stock-chart-legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;color:#43534a;font-size:12px}.stock-ready{color:var(--green);font-weight:900}.stock-soon{color:var(--amber);font-weight:900}.stock-holding{color:var(--blue);font-weight:900}.batch-card{border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:10px}.batch-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.person-mini{display:flex;gap:9px;align-items:center;border:1px solid var(--line);border-radius:11px;padding:9px}.person-mini .gender-avatar{width:38px;height:38px;border-radius:12px}.person-mini-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:12px}@media(max-width:1100px){.candidate-grid{grid-template-columns:1fr}.person-mini-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:700px){.offer-grid{grid-template-columns:repeat(2,1fr)}.candidate-card{grid-template-columns:auto 1fr}.candidate-card .actions{grid-column:1/-1}.person-mini-grid{grid-template-columns:1fr}}';
     document.head.appendChild(st);
   }
 }
@@ -102,19 +102,73 @@ function renderRecommend(){
   const offers=[...db.tradeSim.offers].sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));
   if(!activeOfferId&&offers[0])activeOfferId=offers[0].id;
   const o=offer(activeOfferId),rec=o?recommendationFor(o.id):null;
-  body.innerHTML='<div class="topbar"><div><div class="eyebrow">SIMULATED TRADE RECOMMENDATION</div><h1 class="page-title">人物交易列表</h1><p class="sub">设定模拟股票条件，一键从主看板“今日待买”人员优先推荐，再由用户逐一邀请或拒绝。</p></div><button class="btn primary" id="newOffer">＋ 新建股票计划</button></div>'+
-  '<div class="grid"><div class="card panel"><div class="panel-head"><h2>股票计划</h2><span class="muted">'+offers.length+' 个计划</span></div><div class="offer-list">'+(offers.map(x=>'<div class="offer-row '+(x.id===activeOfferId?'active':'')+'"><div><b class="stock-title">'+h(x.symbol)+' · '+h(x.name)+'</b><div class="muted">'+h(x.market||'美股')+' · 折扣 '+h(x.discountPct)+'% · 单价 '+money(x.unitPrice,x.currency||'USD')+' · 最低 '+h(x.minShares)+'股 · 持有'+h(x.holdDays)+'天 · '+h(x.participantCount)+'人</div></div><div class="button-row"><button class="btn ghost small" data-offer-open="'+h(x.id)+'">打开</button><button class="btn ghost small" data-offer-edit="'+h(x.id)+'">编辑</button></div></div>').join('')||'<div class="empty">还没有股票计划</div>')+'</div></div>'+
-  '<div class="card panel"><div class="panel-head"><h2>当前计划</h2><span class="muted">模拟交易</span></div>'+(o?offerInfo(o):'<div class="empty">请先新建股票计划</div>')+'</div></div>'+
-  (o?'<div class="card panel" style="margin-top:18px"><div class="panel-head"><h2>推荐购买人物</h2><div class="button-row"><span class="muted">主页面今日待买：'+todayPlans().length+' 人</span><button class="btn primary" id="recommendPeople">一键推荐购买人物</button></div></div>'+(rec?renderCandidates(o,rec):'<div class="empty">点击“一键推荐购买人物”生成名单</div>')+'</div>':'');
+  const todayCount=todayPlans().length;
+  const invited=rec?rec.candidates.filter(x=>x.status==='invited').length:0;
+  const bought=rec?rec.candidates.filter(x=>x.status==='bought').length:0;
+
+  const planRows=offers.length?offers.map(function(x){
+    const active=x.id===activeOfferId?' active':'';
+    return '<div class="trade-plan-row'+active+'" data-offer-row="'+h(x.id)+'">'+
+      '<div class="trade-plan-main"><div class="trade-plan-title"><b>'+h(x.symbol)+'</b><span>'+h(x.name)+'</span></div>'+
+      '<div class="trade-plan-meta"><span>'+h(x.market||'美股')+'</span><span>折扣 '+h(x.discountPct)+'%</span><span>单价 '+money(x.unitPrice,x.currency||'USD')+'</span><span>最低 '+h(x.minShares)+' 股</span><span>持有 '+h(x.holdDays)+' 天</span><span>目标 '+h(x.participantCount)+' 人</span></div></div>'+
+      '<div class="trade-plan-actions"><button class="link-btn" data-offer-open="'+h(x.id)+'">打开</button><button class="link-btn" data-offer-edit="'+h(x.id)+'">编辑</button></div>'+
+    '</div>';
+  }).join(''):'<div class="empty">还没有股票计划</div>';
+
+  body.innerHTML=
+    '<div class="topbar"><div><div class="eyebrow">INVESTOR TRANSACTIONS</div><h1 class="page-title">人物交易</h1><p class="sub">管理股票计划、计划参数、推荐购买人物，以及邀请、拒绝和确认买入结果。</p></div><div class="actions"><button class="btn primary" id="newOffer">＋ 新建股票计划</button></div></div>'+
+    '<div class="trade-recommend-top">'+
+      '<section class="card panel trade-plan-panel"><div class="panel-head"><h2>股票计划</h2><span class="muted">'+offers.length+' 个计划</span></div><div class="trade-plan-list">'+planRows+'</div></section>'+
+      '<section class="card panel trade-current-panel"><div class="panel-head"><h2>当前计划</h2><span class="muted">'+(o?'计划已选择':'未选择')+'</span></div>'+
+        (o?offerInfo(o):'<div class="empty">请先新建或选择股票计划</div>')+
+      '</section>'+
+    '</div>'+
+    '<section class="card panel trade-recommend-people">'+
+      '<div class="panel-head"><div><h2>推荐购买人物</h2><p class="muted">基于开户、资金条件与今日待买名单生成推荐结果。</p></div>'+
+      '<div class="trade-recommend-head-actions"><span class="trade-summary-chip">今日待买 '+todayCount+'</span><span class="trade-summary-chip">已邀请 '+invited+'</span><span class="trade-summary-chip">已买入 '+bought+'</span>'+
+      (o?'<button class="btn primary" id="recommendPeople">一键推荐购买人物</button>':'')+'</div></div>'+
+      (o?(rec?renderCandidates(o,rec):'<div class="empty">当前计划尚未生成推荐名单</div>'):'<div class="empty">选择股票计划后可生成推荐购买人物</div>')+
+    '</section>';
   bindRecommend();
 }
 function offerInfo(o){
-  return '<div class="offer-grid">'+stat('股票',o.symbol+' · '+o.name)+stat('市场',o.market||'美股')+stat('折扣占比',o.discountPct+'%')+stat('单价',money(o.unitPrice,o.currency||'USD'))+stat('最低购买',o.minShares+' 股')+stat('持有时限',o.holdDays+' 天')+stat('购买人数',o.participantCount+' 人')+stat('最低资金',money(Number(o.minShares)*Number(o.unitPrice),o.currency||'USD'))+'</div>';
+  const minMoney=Number(o.minShares||0)*Number(o.unitPrice||0);
+  return '<div class="trade-current-summary"><div class="trade-current-title"><b>'+h(o.symbol)+'</b><span>'+h(o.name)+'</span></div>'+
+    '<div class="offer-grid">'+
+      stat('市场',o.market||'美股')+
+      stat('币种',o.currency||'USD')+
+      stat('折扣占比',o.discountPct+'%')+
+      stat('单价',money(o.unitPrice,o.currency||'USD'))+
+      stat('最低购买',o.minShares+' 股')+
+      stat('持有时限',o.holdDays+' 天')+
+      stat('购买人数',o.participantCount+' 人')+
+      stat('最低资金',money(minMoney,o.currency||'USD'))+
+    '</div></div>';
 }
 function stat(k,v){return'<div class="offer-stat"><span>'+h(k)+'</span><b>'+h(v)+'</b></div>'}
 function renderCandidates(o,rec){
   const people=rec.candidates.map(c=>({c,p:person(c.personId)})).filter(x=>x.p);
-  return '<div class="candidate-grid">'+people.map(({c,p})=>{const cls=c.status==='invited'?'invited':c.status==='rejected'?'rejected':c.status==='bought'?'bought':'',fs=fundingState(p,o),no=pCode(p),labelLine=no+(genderRelationLabel(p)||'')+' · '+nm(p);return '<div class="candidate-card '+cls+'"><div class="gender-avatar '+(sex(p)==='女'?'f':'m')+'">'+pAvatar(p)+'</div><div><b>'+h(labelLine)+'</b><div class="candidate-meta-line"><span class="meta-label">VIP</span>'+(vip(p)?vipBadge(p):'<span class="vip-none">—</span>')+'<span class="meta-divider">·</span><span class="meta-label">组长</span><span class="meta-value">'+h(leaderFor(p))+'</span></div><div class="meta">已参与联系次数：'+contactCount(p)+'　推荐来源：'+h(c.source)+'</div><div class="meta">最低资金：'+h(money(fs.need,o.currency||'USD'))+'　'+(fs.known?(fs.ok?'资金满足':'资金不足'):'该币种资金待确认')+'</div><div class="meta">当前状态：'+h(c.status==='pending'?'待确认':c.status==='invited'?'已邀请':c.status==='rejected'?'已拒绝':'已确认买入')+'</div></div><div class="actions">'+(c.status==='pending'?'<button class="btn danger small" data-reject="'+h(p.id)+'">拒绝</button><button class="btn primary small" data-invite="'+h(p.id)+'" '+(!fs.ok?'disabled':'')+'>邀请</button>':'')+(c.status==='invited'?'<button class="btn ghost small" data-reject="'+h(p.id)+'">拒绝</button><button class="btn primary small" data-confirm-buy="'+h(p.id)+'">确认买入</button>':'')+(c.status==='rejected'?'<button class="btn ghost small" data-invite="'+h(p.id)+'" '+(!fs.ok?'disabled':'')+'>重新邀请</button>':'')+(c.status==='bought'?'<span class="pill good">已形成持仓</span>':'')+'</div></div>'}).join('')+'</div>';
+  if(!people.length)return '<div class="empty">没有符合当前计划条件的人物</div>';
+  return '<div class="trade-candidate-table"><div class="trade-candidate-head"><span>人物</span><span>分类</span><span>VIP</span><span>资金状态</span><span>推荐来源</span><span>当前状态</span><span>操作</span></div>'+
+  people.map(({c,p})=>{
+    const fs=fundingState(p,o),statusLabel=c.status==='pending'?'待确认':c.status==='invited'?'已邀请':c.status==='rejected'?'已拒绝':'已确认买入';
+    const cls=c.status==='invited'?' invited':c.status==='rejected'?' rejected':c.status==='bought'?' bought':'';
+    const fund=fs.known?(fs.ok?'资金满足':'资金不足'):'资金待确认';
+    return '<div class="trade-candidate-row'+cls+'" data-ui-surface="leaf">'+
+      '<div class="trade-candidate-person"><span class="trade-candidate-avatar">'+pAvatar(p)+'</span><span><b>'+h(pCode(p))+' · '+h(nm(p))+'</b><small>联系 '+contactCount(p)+' 次</small></span></div>'+
+      '<div>'+h(genderRelationLabel(p)||'--')+'</div>'+
+      '<div>'+(vip(p)?vipBadge(p):'<span class="vip-none">—</span>')+'</div>'+
+      '<div><b class="'+(fs.known&&fs.ok?'fund-ok':fs.known?'fund-bad':'fund-wait')+'">'+h(fund)+'</b><small>'+h(money(fs.need,o.currency||'USD'))+'</small></div>'+
+      '<div>'+h(c.source||'--')+'</div>'+
+      '<div><span class="candidate-state candidate-state-'+h(c.status)+'">'+h(statusLabel)+'</span></div>'+
+      '<div class="trade-candidate-actions">'+
+        (c.status==='pending'?'<button class="link-btn danger" data-reject="'+h(p.id)+'">拒绝</button><button class="link-btn" data-invite="'+h(p.id)+'" '+(!fs.ok?'disabled':'')+'>邀请</button>':'')+
+        (c.status==='invited'?'<button class="link-btn danger" data-reject="'+h(p.id)+'">拒绝</button><button class="link-btn" data-confirm-buy="'+h(p.id)+'">确认买入</button>':'')+
+        (c.status==='rejected'?'<button class="link-btn" data-invite="'+h(p.id)+'" '+(!fs.ok?'disabled':'')+'>重新邀请</button>':'')+
+        (c.status==='bought'?'<span class="pill good">已形成持仓</span>':'')+
+      '</div>'+
+    '</div>';
+  }).join('')+'</div>';
 }
 function bindRecommend(){
   el('newOffer')?.addEventListener('click',()=>editOffer());
@@ -201,10 +255,29 @@ function renderStockChart(stocks){
 function renderHoldings(){
   ensure();setupUI();
   const body=el('holdingsV2Body');if(!body)return;
-  const bs=batches(),stocks=stockGroups();
-  body.innerHTML='<div class="topbar"><div><div class="eyebrow">PORTFOLIO HOLDINGS</div><h1 class="page-title">持仓页面</h1><p class="sub">按买入先后展示股票批次、持有人和距离计划卖出时间的剩余时长。</p></div><button class="btn ghost" id="goRecommend">返回人物交易列表</button></div>'+
-  '<div class="card panel"><div class="panel-head stock-chart-heading"><div><h2>各股票买入人数</h2><p class="muted">每根柱子代表一只股票，柱高表示当前持有人数；同一人物多次买入只计 1 人，已卖出持仓不计入。</p></div><span class="count">'+stocks.length+' 只股票</span></div><div class="stock-chart-axis">持有人数（人） · 0 至 '+Math.max(1,...stocks.map(x=>x.count))+' 人</div><div class="hold-chart" role="list" aria-label="按股票汇总的当前持有人数">'+renderStockChart(stocks)+
-  '</div><div class="stock-chart-legend"><span>绿色：满足持有条件</span><span>橙色：部分临近或可卖</span><span>主题色：持有中</span></div></div><div class="card panel" style="margin-top:18px"><div class="panel-head"><h2>持仓明细</h2><span class="muted">'+currentHoldings().length+' 笔</span></div>'+renderBatches(bs)+'</div>';
+  const bs=batches(),stocks=stockGroups(),holdingRows=currentHoldings();
+  const readyBatches=bs.filter(b=>batchStatus(b).key==='ready').length;
+  const nextSell=holdingRows.length?holdingRows.slice().sort((a,b)=>new Date(a.plannedSellAt)-new Date(b.plannedSellAt))[0]:null;
+  body.innerHTML=
+    '<div class="topbar"><div><div class="eyebrow">PORTFOLIO HOLDINGS</div><h1 class="page-title">持仓管理</h1><p class="sub">查看当前持仓组合、股票批次、持有人、买入金额、最早卖出时间与持仓状态。</p></div><div class="actions"><button class="btn ghost" id="goRecommend">返回人物交易</button></div></div>'+
+    '<div class="holding-kpis">'+
+      '<div class="card holding-kpi"><span>持仓股票</span><strong>'+stocks.length+'</strong><small>当前股票种类</small></div>'+
+      '<div class="card holding-kpi"><span>持仓记录</span><strong>'+holdingRows.length+'</strong><small>未卖出持仓</small></div>'+
+      '<div class="card holding-kpi"><span>可卖批次</span><strong>'+readyBatches+'</strong><small>已满足持有条件</small></div>'+
+      '<div class="card holding-kpi"><span>最近卖出节点</span><strong>'+(nextSell?h(dt(nextSell.plannedSellAt)):'--')+'</strong><small>'+(nextSell?h(remaining(new Date(nextSell.plannedSellAt).getTime()-Date.now())):'暂无计划')+'</small></div>'+
+    '</div>'+
+    '<div class="holding-main-grid">'+
+      '<section class="card panel holding-chart-panel"><div class="panel-head stock-chart-heading"><div><h2>股票持仓组合</h2><p class="muted">每根柱子代表一只股票，柱高表示当前持有人数；同一人物多次买入只计 1 人。</p></div><span class="count">'+stocks.length+' 只股票</span></div>'+
+      '<div class="stock-chart-axis">持有人数（人） · 0 至 '+Math.max(1,...stocks.map(x=>x.count))+' 人</div><div class="hold-chart" role="list" aria-label="按股票汇总的当前持有人数">'+renderStockChart(stocks)+'</div>'+
+      '<div class="stock-chart-legend"><span>绿色：满足持有条件</span><span>橙色：临近卖出</span><span>金色：持有中</span></div></section>'+
+      '<section class="card panel holding-next-panel"><div class="panel-head"><h2>卖出节点</h2><span class="muted">按时间排序</span></div>'+
+        (holdingRows.length?'<div class="holding-next-list">'+holdingRows.slice().sort((a,b)=>new Date(a.plannedSellAt)-new Date(b.plannedSellAt)).slice(0,6).map(x=>{
+          const p=person(x.personId),hs=holdingStatus(x);
+          return '<div class="holding-next-row" data-ui-surface="leaf"><div><b>'+h(x.symbol||'--')+' · '+h(nm(p))+'</b><small>'+h(pCode(p))+' · '+h(x.quantity)+' 股 · '+h(money(x.buyPrice,x.currency||'USD'))+'</small></div><div><strong>'+h(dt(x.plannedSellAt))+'</strong><span class="holding-state-text '+h(hs.key)+'">'+h(remaining(hs.left))+'</span></div></div>';
+        }).join('')+'</div>':'<div class="empty">暂无计划卖出节点</div>')+
+      '</section>'+
+    '</div>'+
+    '<section class="card panel holding-detail-panel"><div class="panel-head"><h2>持仓明细</h2><span class="muted">'+holdingRows.length+' 笔</span></div>'+renderBatches(bs)+'</section>';
   el('goRecommend')?.addEventListener('click',()=>{go('tradeRecommend');renderRecommend()});
   qsa('[data-sell-batch]').forEach(b=>b.onclick=()=>openSellBatch(b.dataset.sellBatch));
 }
@@ -222,7 +295,7 @@ function renderBatches(bs){
         '<div class="batch-summary-grid">'+
           '<span><em>买入时间</em><strong>'+h(dt(b.buyAt))+'</strong></span>'+
           '<span><em>持仓人数</em><strong>'+b.rows.length+' 人</strong></span>'+
-          '<span><em>本批投入</em><strong>'+h(money(total,b.currency||'USD'))+'</strong></span>'+
+          '<span><em>本批投入 · '+h(b.currency||'USD')+'</em><strong>'+h(money(total,b.currency||'USD'))+'</strong></span>'+
           '<span><em>下一节点</em><strong>'+h(left)+'</strong></span>'+
         '</div>'+
       '</div><button class="btn '+(st.key==='ready'?'primary':'ghost')+' small" data-sell-batch="'+h(b.key)+'" '+(canSell?'':'disabled')+'>卖出</button></div>'+
@@ -236,7 +309,7 @@ function renderBatches(bs){
             '<div class="holding-person-head"><b>'+h(pCode(p)+(genderRelationLabel(p)||'')+' · '+nm(p))+'</b>'+(vip(p)?vipBadge(p):'')+'</div>'+
             '<div class="holding-info-grid">'+
               '<div><span>买入股数</span><strong>'+h(x.quantity)+' 股</strong></div>'+
-              '<div><span>买入价</span><strong>'+h(money(x.buyPrice,currency))+'</strong></div>'+
+              '<div><span>买入价 · '+h(currency)+'</span><strong>'+h(money(x.buyPrice,currency))+'</strong></div>'+
               '<div><span>买入金额</span><strong>'+h(money(amount,currency))+'</strong></div>'+
               '<div><span>买入时间</span><strong>'+h(dt(x.buyAt||b.buyAt))+'</strong></div>'+
               '<div><span>最早卖出</span><strong>'+h(dt(x.plannedSellAt))+'</strong></div>'+
@@ -259,6 +332,17 @@ function bindNav(){
     if(b.dataset.page==='holdingsV2')b.onclick=()=>{go('holdingsV2');renderHoldings()};
   });
 }
-if(typeof window!=='undefined')window.ChenNanTrading={sellHolding:id=>{const holding=db.portfolio.holdings.find(x=>x.id===id);if(holding)openSellBatch(stockKey(holding))}};
+// Projection of actual simulator records; never writes invitations, plans or holdings.
+function scriptSnapshot({date,offerId,toId}={}){
+  const map=toId||((id)=>String(id)),facts=[],required=new Set(),targets=[],holders=[];
+  const selected=(db.tradeSim?.offers||[]).find(o=>o.id===offerId);
+  if(offerId&&!selected)throw Error('模拟交易计划不存在');
+  const recs=(db.tradeSim?.recommendations||[]).filter(r=>r.date===date&&r.offerId===offerId);
+  for(const r of recs)for(const c of r.candidates||[]){const id=map(c.personId);if(!id)throw Error('交易人物编号无法映射');const kind=c.status==='bought'?'bought':c.status==='invited'?'invited':c.status==='rejected'?'rejected':'pending';facts.push({id:'candidate:'+r.id+':'+c.personId,character_id:id,kind,offer_id:r.offerId,status:c.status});targets.push(id);required.add(id);}
+  const rows=(db.portfolio?.holdings||[]).filter(h=>!offerId||h.offerId===offerId);
+  for(const row of rows){const id=map(row.personId);if(!id)throw Error('持仓人物编号无法映射');facts.push({id:'holding:'+row.id,character_id:id,kind:row.status==='sold'?'sold':'holding',record:JSON.parse(JSON.stringify(row))});if(row.status!=='sold')holders.push(id);if(row.status==='sold'&&String(row.soldAt||'').slice(0,10)===date)required.add(id);}
+  return {source:'trading-simulator.js',date,offer_id:offerId||null,offer:selected?JSON.parse(JSON.stringify(selected)):null,eligible_participants:[...new Set(recs.flatMap(r=>(r.candidates||[]).filter(c=>c.status==='invited'||c.status==='bought').map(c=>map(c.personId))))],current_holders:[...new Set(holders)],trade_targets:[...new Set(targets)],reservation_state:'not_required',execution_state:facts,required_participants:[...required],facts};
+}
+if(typeof window!=='undefined')window.ChenNanTrading={scriptSnapshot,sellHolding:id=>{const holding=db.portfolio.holdings.find(x=>x.id===id);if(holding)openSellBatch(stockKey(holding))}};
 setupUI();bindNav();
 })();
