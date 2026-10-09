@@ -22,7 +22,7 @@ const labels={
   trades:'交易计划',
   records:'人物记录',
   novel:'撰写',
-  france70chat:'France 70',
+  france70chat:'群聊引擎',
   topics:'一致性检查'
 };
 const icons={

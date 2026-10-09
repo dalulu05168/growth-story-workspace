@@ -7,7 +7,7 @@ const hosts=['assistant','professor'];
 const courses={
  morning:[['opening','09:00','09:30',5,8],['indicators','09:30','10:00',5,8],['news','10:00','10:30',6,8],['theme','10:30','10:50',3,5],['lecture','10:50','11:30',6,8],['discussion','11:30','11:40',3,8],['summary','11:40','12:00',0,5]],
  afternoon:[['opening','13:00','13:30',5,8],['holdings','13:30','14:00',3,6],['sell','14:00','14:30',0,8],['news','14:30','15:00',6,8],['buy','15:00','15:30',0,8],['lecture','15:30','16:20',6,8],['summary','16:20','17:00',0,5]],
- evening:[['opening','19:00','19:30',5,8],['review','19:30','20:00',5,8],['lecture','20:00','20:30',5,7],['discussion','20:30','20:50',3,8],['summary','20:50','21:00',0,5]]
+ evening:[['opening','19:00','19:15',5,8],['review','19:15','19:30',5,8],['lecture','19:30','20:30',5,7],['discussion','20:30','20:50',3,8],['summary','20:50','21:00',0,5]]
 };
 function stageAt(time){if(!/^\d{2}:\d{2}$/.test(time))throw Error('时间须为 HH:mm');for(const [period,stages] of Object.entries(courses))for(const s of stages)if(time>=s[1]&&time<s[2])return {period,stage:s[0],start:s[1],end:s[2],reference:[s[3],s[4]]};return {period:'rest',stage:'rest',reference:[0,0]};}
 function identity(p){return String(p.character_id||p.legacy_id||'');}
@@ -18,6 +18,7 @@ function registry(profiles,people){
  for(const p of people||[]){const id=identity(p);if(ids.includes(id)){if(Object.values(external).includes(id))throw Error('工作区编号重复 '+id);external[p.id]=id;}}
  return {byId,external,toId(value){const id=String(value||'');return byId[id]?id:external[id]||null;}};
 }
+function newestSessions(state){return (state.sessions||[]).map((s,i)=>({s,i})).sort((a,b)=>String(b.s.createdAt||b.s.date||'').localeCompare(String(a.s.createdAt||a.s.date||''))||a.i-b.i).map(x=>x.s);}
 function memberType(p){return p.member_type||String(p.customer_relation&&p.customer_relation.type_code||'').toLowerCase();}
 function migrate(legacy,reg,baseline){
  const state={schemaVersion:'2.0',revision:0,sessions:[],memory:{},questions:[],disagreements:[],facts:[],interactions:[],dailySummaries:{},closed:[],migrationIssues:[]};
@@ -36,7 +37,7 @@ function select(reg,state,sc,simulation,options={}){
  if(sc.closed||state.closed.includes(sc.date+'|'+sc.period))return [];
  const must=new Set((simulation&&simulation.required_participants||[]).map(id=>reg.toId(id)).filter(Boolean));
  const direct=new Set((options.directTargets||[]).map(id=>reg.toId(id)).filter(Boolean));
- const history=state.sessions.flatMap(s=>s.messages||[]).slice(-100),recent=history.slice(-20);
+ const history=newestSessions(state).flatMap(s=>[...(s.messages||[])].reverse()).slice(0,100),recent=history.slice(0,20);
  const text=String(sc.topic||''),scored=ids.map(id=>{const p=reg.byId[id],count=recent.filter(m=>(m.character_id||m.speaker_id)===id).length,group=p.group_role||p.novel_profile&&p.novel_profile.style_cluster||'',details=JSON.stringify(p),words=text.match(/[\p{L}]{2,}/gu)||[];let score=words.filter(w=>details.includes(w)).length*3-count*8;
  if(state.questions.some(q=>q.character_id===id&&q.status==='open'))score+=12;
  if(options.reuse&&recent.some(m=>m.character_id===id))score+=2;
@@ -52,7 +53,7 @@ function select(reg,state,sc,simulation,options={}){
  return out;
 }
 function prompt(reg,state,sc,simulation,selected){
- return {engine:'辰南 Script Engine 2.0',status:'draft',scene:clone(sc),source:{message_id:'source',kind:sc.sourceKind,text:sc.sourceText},selected_characters:selected.map(id=>({...clone(reg.byId[id]),character_id:id,member_type:memberType(reg.byId[id])})),character_memories:Object.fromEntries(selected.map(id=>[id,clone(state.memory[id]||state.profileMemories&&state.profileMemories[id]||{})])),recent_sessions:clone(state.sessions.slice(0,5)),open_questions:clone(state.questions.filter(q=>q.status==='open')),disagreements:clone(state.disagreements),established_facts:clone(state.facts),simulation:clone(simulation),instructions:[
+ return {engine:'辰南 Script Engine 2.0',status:'draft',scene:clone(sc),source:{message_id:'source',kind:sc.sourceKind,text:sc.sourceText},selected_characters:selected.map(id=>({...clone(reg.byId[id]),character_id:id,member_type:memberType(reg.byId[id])})),character_memories:Object.fromEntries(selected.map(id=>[id,clone(state.memory[id]||state.profileMemories&&state.profileMemories[id]||{})])),recent_sessions:clone(newestSessions(state).slice(0,5)),open_questions:clone(state.questions.filter(q=>q.status==='open')),disagreements:clone(state.disagreements),established_facts:clone(state.facts),simulation:clone(simulation),instructions:[
  '所有内容是虚构演练。仅生成01–70成员互动；助理和教授原话由用户提供，原样保留，不代写、补写或闭群。',
  '人物完整资料是唯一背景来源。姓名仅用于显示，身份和所有关联使用character_id。新人/老人、VIP、开户分别读取，不相互推导。',
  '模拟程序当前状态 > 正式会话记忆 > 正式人物配置 > 课程规则 > 草稿建议。对白不得改变交易状态。',

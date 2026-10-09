@@ -13,9 +13,9 @@ async function workspaceVisuals(browser,url){
   const calls=[];
   await context.route('**/functions/v1/workspace-cloud',async route=>{
    const request=route.request().postDataJSON();calls.push(request.action);
-   assert(['login','load'].includes(request.action),'visual tests may not modify cloud data');
+   assert(['login','load'].includes(request.action),'visual tests may not modify cloud data; unexpected action: '+String(request.action));
    const body=request.action==='login'?{ok:true,token:'local-visual-session',account:{username:'e2e_local_visual'}}:
-    {ok:true,version:1,payload:{people,records:[],docs:[],dailyDocs:{},customGroups:[],meta:{},portfolio:{},tradeSim:{offers:[{id:'visual-offer',symbol:'SOTA',name:'Elbo EU',market:'美股',currency:'USD',unitPrice:32,minShares:300,discountPct:15,holdDays:3,participantCount:10}],recommendations:[]}}};
+    {ok:true,version:1,payload:{people,records:[],docs:[],dailyDocs:{},customGroups:[],meta:{romanianProfiles2:true,defaultDatasetVersion:'4.0.0-script-engine-2'},portfolio:{},tradeSim:{offers:[{id:'visual-offer',symbol:'SOTA',name:'Elbo EU',market:'美股',currency:'USD',unitPrice:32,minShares:300,discountPct:15,holdDays:3,participantCount:10}],recommendations:[]}}};
    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(body)});
   });
   try{
@@ -43,6 +43,7 @@ async function workspaceVisuals(browser,url){
    const animation=await page.locator('.sidebar').evaluate(e=>getComputedStyle(e).animationName);
    assert.equal(animation,'none','the unified workspace sidebar should remain stable after login');
    assert.equal(await page.locator('.app').evaluate(e=>getComputedStyle(e).transform),'none');
+   assert.equal(await page.locator('.nav [data-page="france70chat"] span').innerText(),'群聊引擎','group engine navigation must remain Chinese');
    await settle(page);
    for(const theme of ['reference']){
     assert.equal(await page.locator('[data-theme-button]').count(),0);
@@ -82,7 +83,13 @@ async function workspaceVisuals(browser,url){
    }
    await page.setViewportSize({width:390,height:844});
    for(const id of ['overview','people','groups','records','novel','topics','trades','tradeRecommend','holdingsV2','france70chat']){
-    await page.locator('.nav [data-page="'+id+'"]').click();
+    const sidebarStyle=await page.locator('.app.app-ready>.sidebar').evaluate(el=>({height:getComputedStyle(el).height,width:getComputedStyle(el).width,position:getComputedStyle(el).position}));
+    assert.equal(sidebarStyle.position,'fixed','mobile navigation stylesheet must remain active');
+    assert(Number.parseFloat(sidebarStyle.height)<110,'mobile navigation must not revert to tall desktop sidebar '+JSON.stringify(sidebarStyle));
+    try{await page.locator('.nav [data-page="'+id+'"]').click({timeout:6500})}catch(error){
+      const diagnostics=await page.evaluate(id=>{const nav=document.querySelector('.nav [data-page="'+id+'"]'),side=document.querySelector('.app.app-ready>.sidebar'),main=document.querySelector('.app.app-ready>.main');const box=el=>{const r=el.getBoundingClientRect(),css=getComputedStyle(el);return{x:r.x,y:r.y,w:r.width,h:r.height,z:css.zIndex,pos:css.position,transform:css.transform,visibility:css.visibility}};const r=nav.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2,hit=document.elementFromPoint(x,y);return {width:innerWidth,height:innerHeight,scrollY,nav:box(nav),sidebar:box(side),main:box(main),hit:{tag:hit?.tagName,cls:hit?.className,html:hit?.outerHTML.slice(0,220)},at:[x,y]};},id);
+      console.error('MOBILE_NAV_INTERCEPT_DEBUG',JSON.stringify({reducedMotion,id,diagnostics}));throw error;
+    }
     await page.locator('#'+id+'.active').waitFor({state:'visible'});await settle(page);
     const overflow=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,width:innerWidth,offenders:[...document.querySelectorAll('.app.app-ready *')].filter(e=>e.getClientRects().length&&e.getBoundingClientRect().right>innerWidth+2).slice(0,12).map(e=>({tag:e.tagName,id:e.id,cls:String(e.className).slice(0,80),right:Math.round(e.getBoundingClientRect().right),width:Math.round(e.getBoundingClientRect().width)}))}));
     assert(overflow.scroll<=overflow.width+1,'mobile page overflow '+id+' '+JSON.stringify(overflow));

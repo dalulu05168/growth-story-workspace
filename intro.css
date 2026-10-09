@@ -211,3 +211,26 @@
   #authRoot #authStage,#authRoot.auth-success #authStage{transition:none!important}
   #authRoot .auth-card{backdrop-filter:none!important}
 }
+/* Short landscape windows: keep credential controls reachable without hiding fields.
+   The regular cinematic desktop and portrait layouts remain unchanged. */
+@media(min-width:821px) and (max-height:500px){
+  #authRoot{overflow-y:auto!important;overscroll-behavior-y:contain}
+  #authRoot #authStage{height:auto!important;min-height:100svh!important}
+  #authRoot .login-shell{
+    height:auto!important;min-height:100svh!important;
+    padding:12px 0 22px!important;display:flow-root!important;
+  }
+  #authRoot .login-shell .auth-card{
+    position:relative!important;left:auto!important;right:auto!important;top:auto!important;
+    width:min(420px,calc(100% - 30px))!important;
+    min-width:0!important;max-width:570px!important;min-height:0!important;
+    margin:0 2.5% 16px auto!important;padding:24px 22px 18px!important;
+  }
+  #authRoot .auth-title{font-size:32px!important;margin-bottom:5px!important}
+  #authRoot .auth-sub{margin-bottom:10px!important}
+  #authRoot .auth-field{margin-bottom:8px!important}
+  #authRoot .auth-field input{height:39px!important;min-height:39px!important}
+  #authRoot .auth-assist{margin:4px 0 9px!important}
+  #authRoot .auth-btn{height:43px!important;min-height:43px!important}
+  #authRoot .auth-security-note{margin-top:9px!important;padding-top:8px!important}
+}
