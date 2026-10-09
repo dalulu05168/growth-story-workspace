@@ -4,7 +4,7 @@ async function sceneVisuals(browser,url){
  for(const reducedMotion of ['no-preference','reduce']){
   const context=await browser.newContext({serviceWorkers:"block",viewport:{width:1440,height:900},reducedMotion});
   const people=JSON.parse(fs.readFileSync('data/people.json')).people;
-  await context.route('**/functions/v1/workspace-cloud',route=>{const r=route.request().postDataJSON();assert(['login','load'].includes(r.action));return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(r.action==='login'?{ok:true,token:'local-scene-session',account:{username:'e2e_local_scene'}}:{ok:true,version:1,payload:{people,records:[],docs:[],dailyDocs:{},customGroups:[],meta:{},portfolio:{},tradeSim:{}}})})});
+  await context.route('**/functions/v1/workspace-cloud',route=>{const r=route.request().postDataJSON();assert(['login','load'].includes(r.action));return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(r.action==='login'?{ok:true,token:'local-scene-session',account:{username:'e2e_local_scene'}}:{ok:true,version:1,payload:{people,records:[],docs:[],dailyDocs:{},customGroups:[],meta:{romanianProfiles2:true,defaultDatasetVersion:'4.0.0-script-engine-2'},portfolio:{},tradeSim:{}}})})});
   try{
    const p=await context.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));await p.goto(url);await p.waitForFunction(()=>document.querySelector('#authRoot')?.dataset.introPhase==='login-ready');await p.evaluate(async()=>{await Promise.all(document.getAnimations().filter(a=>a.effect.getComputedTiming().iterations!==Infinity).map(a=>a.finished.catch(()=>{})))});
    await p.waitForFunction(()=>['webgl','canvas2d'].includes(document.querySelector('#authRoot').dataset.sceneRenderer));
