@@ -82,6 +82,9 @@ async function workspaceVisuals(browser,url){
    }
    await page.setViewportSize({width:390,height:844});
    for(const id of ['overview','people','groups','records','novel','topics','trades','tradeRecommend','holdingsV2','france70chat']){
+    const sidebarStyle=await page.locator('.app.app-ready>.sidebar').evaluate(el=>({height:getComputedStyle(el).height,width:getComputedStyle(el).width,position:getComputedStyle(el).position}));
+    assert.equal(sidebarStyle.position,'fixed','mobile navigation stylesheet must remain active');
+    assert(Number.parseFloat(sidebarStyle.height)<110,'mobile navigation must not revert to tall desktop sidebar '+JSON.stringify(sidebarStyle));
     try{await page.locator('.nav [data-page="'+id+'"]').click({timeout:6500})}catch(error){
       const diagnostics=await page.evaluate(id=>{const nav=document.querySelector('.nav [data-page="'+id+'"]'),side=document.querySelector('.app.app-ready>.sidebar'),main=document.querySelector('.app.app-ready>.main');const box=el=>{const r=el.getBoundingClientRect(),css=getComputedStyle(el);return{x:r.x,y:r.y,w:r.width,h:r.height,z:css.zIndex,pos:css.position,transform:css.transform,visibility:css.visibility}};const r=nav.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2,hit=document.elementFromPoint(x,y);return {width:innerWidth,height:innerHeight,scrollY,nav:box(nav),sidebar:box(side),main:box(main),hit:{tag:hit?.tagName,cls:hit?.className,html:hit?.outerHTML.slice(0,220)},at:[x,y]};},id);
       console.error('MOBILE_NAV_INTERCEPT_DEBUG',JSON.stringify({reducedMotion,id,diagnostics}));throw error;
