@@ -102,8 +102,12 @@ async function run(){
     await unavailable.close();
     await workspaceVisuals(browser,url);
     await sceneVisuals(browser,url);
-    const safari=await webkit.launch({headless:true});
-    try{await workspaceVisuals(safari,url);await sceneVisuals(safari,url)}finally{await safari.close()}
+    // Isolate WebKit's layout-heavy workspace sweeps from the scene/WebGL pass.
+    // Running both in the same browser process can exhaust rendering resources in CI.
+    const safariWorkspace=await webkit.launch({headless:true});
+    try{await workspaceVisuals(safariWorkspace,url)}finally{await safariWorkspace.close()}
+    const safariScenes=await webkit.launch({headless:true});
+    try{await sceneVisuals(safariScenes,url)}finally{await safariScenes.close()}
   }finally{if(browser)await browser.close();await new Promise(resolve=>server.close(resolve))}
 }
 run().catch(e=>{console.error(e);process.exitCode=1});
