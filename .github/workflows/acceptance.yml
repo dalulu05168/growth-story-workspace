@@ -46,7 +46,7 @@ jobs:
       - run: npm run build:static
       - name: Verify GitHub Pages production release
         env:
-          ORIGIN: https://nuvexapro.com/
+          ORIGIN: https://dalulu05168.github.io/growth-story-workspace/
           RELEASE_CHECK_ATTEMPTS: '30'
         run: node scripts/verify-release.cjs "$ORIGIN"
 
@@ -77,7 +77,7 @@ jobs:
         env:
           E2E_STAGE: ${{ matrix.stage }}
           E2E_CREDENTIALS: /tmp/chennan-e2e.json
-          E2E_URL: https://nuvexapro.com/
+          E2E_URL: https://dalulu05168.github.io/growth-story-workspace/
         run: |
           case "$E2E_STAGE" in
             business) node tests/business-e2e.cjs && node tests/planning-e2e.cjs ;;
