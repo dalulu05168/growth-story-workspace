@@ -40,18 +40,18 @@ python -m http.server 3000 --directory dist/pages
 
 ## 发布与自定义域名
 
-Vercel 和 GitHub Pages 都发布 `dist/pages`。Vercel 构建参数由 `vercel.json` 管理；主分支提交经 Pages 工作流验证后自动同步到 `gh-pages`。Pages 应继续使用现有 `gh-pages` 根目录来源；CNAME 中保留已有 `nuvexapro.com`，本轮无需修改 DNS。
+Vercel 和 GitHub Pages 都发布 `dist/pages`。Vercel 构建参数由 `vercel.json` 管理；主分支提交经 Pages 工作流验证后自动同步到 `gh-pages`。Pages 采用项目默认地址，不再声明已移出管理范围的品牌域名；变更自定义域名时需在托管平台核对。
 
 `release.json` 记录源码提交和完整静态文件哈希。发布完成后验证两个入口：
 
 ```bash
-node scripts/verify-release.cjs https://nuvexapro.com/
+node scripts/verify-release.cjs https://dalulu05168.github.io/growth-story-workspace/
 node scripts/verify-release.cjs https://growth-story-workspace.vercel.app/
-E2E_URL=https://nuvexapro.com/ npm run test:public-login
+E2E_URL=https://dalulu05168.github.io/growth-story-workspace/ npm run test:public-login
 E2E_URL=https://growth-story-workspace.vercel.app/ npm run test:public-login
 ```
 
-一处入口通过不代表另一处通过。若仓库禁止 Actions 写 `gh-pages`，需在仓库设置启用工作流写权限；若 Pages 未按分支更新，需核实 Pages 来源设置。未通过公网验证的提交不能宣称已正式上线。
+不同托管入口需要分别验证。若仓库禁止 Actions 写 `gh-pages`，需在仓库设置启用工作流写权限；若 Pages 未按分支更新，需核实 Pages 来源设置。未通过公网验证的提交不能宣称已正式上线。
 
 当前验收要求见 [UI 与发布规范](docs/CODEX_UI_THEME_IMPLEMENTATION_SPEC.md)，历史修复记录见 [repair-notes](docs/repair-notes.md)。
 
