@@ -67,8 +67,8 @@ npm run test:gate
 npm run build:static
 npx playwright install --with-deps chromium webkit
 npm run test:prelogin
-E2E_URL=https://nuvexapro.com/ npm run test:public-login
-node scripts/verify-release.cjs https://nuvexapro.com/
+E2E_URL=https://dalulu05168.github.io/growth-story-workspace/ npm run test:public-login
+node scripts/verify-release.cjs https://dalulu05168.github.io/growth-story-workspace/
 ```
 
 `test:prelogin` 在本地静态产物启动服务器，以可控拒绝/停滞响应验证登录失败、超时重试、固定主题、密码显隐、用户名记忆、1280/1366/1440/1920 桌面尺寸、跳过动画和脚本缺失。它不证明云端正常账号登录成功。
