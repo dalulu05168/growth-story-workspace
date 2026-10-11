@@ -3,20 +3,12 @@ name: Nuvexa source preflight and governance pilot (not release approval)
 on:
   pull_request:
     branches: [main]
-    paths:
-      - '.github/workflows/nuvexa-qa-pilot.yml'
-      - 'docs/NUVEXA-QA-PILOT.md'
-      - 'tests/**'
-      - 'scripts/**'
-      - '*.js'
-      - '*.css'
-      - '*.html'
-      - 'package.json'
-      - 'package-lock.json'
   workflow_dispatch:
 
 permissions:
   contents: read
+  checks: read
+  pull-requests: read
 
 jobs:
   source-preflight:
@@ -83,3 +75,56 @@ jobs:
         run: |
           echo "BLOCK until GitHub branch protection and required checks are enforced." >> "$GITHUB_STEP_SUMMARY"
           echo "No production release, DNS changes, or fees were triggered by this pilot." >> "$GITHUB_STEP_SUMMARY"
+
+  pr-readiness:
+    name: nuvexa-pr-readiness-audit
+    if: ${{ always() && github.event_name == 'pull_request' }}
+    needs: [source-preflight, branch-governance]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout fixed central audit code (not candidate PR code)
+        uses: actions/checkout@v4
+        with:
+          repository: dalulu05168/-Skill
+          ref: a35f75a6b12a335ef150224c0e50ed236507d3b7
+          path: central-qa
+          persist-credentials: false
+      - name: Fetch real GitHub PR, checks, reviews and branch data
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          gh api "repos/$REPO/pulls/$PR" > pr-snapshot.json
+          gh api "repos/$REPO/commits/$HEAD_SHA/check-runs?per_page=100" > check-snapshot.json
+          gh api "repos/$REPO/pulls/$PR/reviews?per_page=100" > review-snapshot.json
+          gh api "repos/$REPO/branches/main" > branch-snapshot.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Fail closed if required checks/reviews/branch security are missing
+        env:
+          REPO: ${{ github.repository }}
+        run: |
+          python central-qa/dev_framework/release_readiness.py \
+            --repo "$REPO" \
+            --pr pr-snapshot.json \
+            --checks check-snapshot.json \
+            --reviews review-snapshot.json \
+            --branch branch-snapshot.json \
+            --require-check nuvexa-source-preflight-only \
+            --require-check nuvexa-branch-governance \
+            --out pr-readiness-decision.json
+      - name: Save report even when it blocks release
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuvexa-pr-readiness-report-${{ github.event.pull_request.number }}
+          path: pr-readiness-decision.json
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Remind that READY is not deployment permission
+        if: always()
+        run: echo "READY_FOR_HUMAN_AUTHORIZATION never merges, releases, or replaces final user permission." >> "$GITHUB_STEP_SUMMARY"
