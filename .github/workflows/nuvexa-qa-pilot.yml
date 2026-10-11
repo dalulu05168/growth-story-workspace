@@ -1,0 +1,85 @@
+name: Nuvexa source preflight and governance pilot (not release approval)
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/nuvexa-qa-pilot.yml'
+      - 'docs/NUVEXA-QA-PILOT.md'
+      - 'tests/**'
+      - 'scripts/**'
+      - '*.js'
+      - '*.css'
+      - '*.html'
+      - 'package.json'
+      - 'package-lock.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-preflight:
+    name: nuvexa-source-preflight-only
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install exact locked dependencies
+        run: npm ci
+      - name: Real repository unit tests
+        run: npm test
+      - name: Real repository static regression tests
+        run: npm run test:gate
+      - name: Real repository static build
+        run: npm run build:static
+      - name: Label the limited scope of this job
+        if: always()
+        run: |
+          echo "Source preflight only: this does not prove live login, API persistence, mobile visual QA, independent reviewer approval, or release permission." >> "$GITHUB_STEP_SUMMARY"
+
+  branch-governance:
+    name: nuvexa-branch-governance
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout central auditor at a fixed reviewed commit
+        uses: actions/checkout@v4
+        with:
+          repository: dalulu05168/-Skill
+          ref: 2f92a9edb185ba6c60edd8518613e80a31bc5b67
+          path: central-qa
+          persist-credentials: false
+      - name: Read actual GitHub branch snapshot with a read-only token
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: gh api "repos/$REPO/branches/main" > branch-snapshot.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: BLOCK when main permits bypassing tests
+        env:
+          REPO: ${{ github.repository }}
+        run: |
+          python central-qa/dev_framework/governance_audit.py \
+            --repo "$REPO" \
+            --input branch-snapshot.json \
+            --out governance-decision.json
+      - name: Save audit decision for review, not as acceptance
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuvexa-governance-pilot-${{ github.sha }}
+          path: governance-decision.json
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Explain expected BLOCK on unprotected main
+        if: always()
+        run: |
+          echo "BLOCK until GitHub branch protection and required checks are enforced." >> "$GITHUB_STEP_SUMMARY"
+          echo "No production release, DNS changes, or fees were triggered by this pilot." >> "$GITHUB_STEP_SUMMARY"
