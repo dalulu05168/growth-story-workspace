@@ -108,7 +108,7 @@ jobs:
         env:
           REPO: ${{ github.repository }}
         run: |
-          python central-qa/dev_framework/release_readiness.py \
+          PYTHONPATH=central-qa python -m dev_framework.release_readiness \
             --repo "$REPO" \
             --pr pr-snapshot.json \
             --checks check-snapshot.json \
